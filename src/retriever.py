@@ -35,7 +35,14 @@ from config import (
     TFIDF_NGRAM_RANGE,
     TOP_K,
 )
-from preprocess import normalize_basic, tokenize
+from preprocess import (
+    fold_query,
+    fold_tokens,
+    has_diacritics,
+    normalize_basic,
+    strip_accents,
+    tokenize,
+)
 from vectorizer import TfidfVectorizer, cosine_similarity
 
 # Số lần lặp lại title/description khi dựng document index.
@@ -76,6 +83,15 @@ class NewsRetriever:
             max_df=max_df,
             sublinear_tf=True,   # bài báo dài, cần hãm term lặp nhiều lần
         )
+        # Index thứ hai, dựng trên bản ĐÃ BỎ DẤU của cùng corpus. Chỉ dùng khi
+        # câu hỏi của người dùng không có dấu. Giữ hai index tách biệt (thay vì
+        # trộn chung) để index chính không bị pha loãng và các ngưỡng đã dò
+        # được trên nó vẫn còn hiệu lực.
+        self.folded_vectorizer = TfidfVectorizer(
+            ngram_range=ngram_range, min_df=min_df, max_df=max_df, sublinear_tf=True
+        )
+        self.folded_matrix = None
+
         self.threshold = threshold
         self.df: pd.DataFrame | None = None
         self.doc_matrix = None
@@ -98,12 +114,30 @@ class NewsRetriever:
         tokenized = [tokenize(doc, CONFIG_RETRIEVAL) for doc in raw_docs]
 
         self.doc_matrix = self.vectorizer.fit_transform(tokenized)
+
+        # Index phụ ở mức ÂM TIẾT không dấu. Tách từ vẫn chạy trên bản có dấu
+        # (chính xác), rồi mới hạ xuống âm tiết — xem preprocess.fold_tokens.
+        folded = [fold_tokens(doc) for doc in tokenized]
+        self.folded_matrix = self.folded_vectorizer.fit_transform(folded)
+
         self._sentence_cache.clear()
         return self
 
     # -- truy hồi ------------------------------------------------------------
     def _query_vector(self, query: str):
         return self.vectorizer.transform([tokenize(query, CONFIG_RETRIEVAL)])
+
+    def _folded_query_vector(self, query: str):
+        return self.folded_vectorizer.transform([fold_query(query)])
+
+    def _select_index(self, query: str):
+        """Chọn index phù hợp với câu hỏi -> (vector query, ma trận document).
+
+        Câu có dấu -> index chính. Câu không dấu -> index đã bỏ dấu.
+        """
+        if has_diacritics(query):
+            return self._query_vector(query), self.doc_matrix
+        return self._folded_query_vector(query), self.folded_matrix
 
     def search(
         self,
@@ -121,12 +155,13 @@ class NewsRetriever:
 
         threshold = self.threshold if min_score is None else min_score
 
-        q_vec = self._query_vector(query)
+        folded = not has_diacritics(query)
+        q_vec, doc_matrix = self._select_index(query)
         if q_vec.nnz == 0:
             # Không term nào của query có trong vocabulary -> không có căn cứ.
             return []
 
-        scores = cosine_similarity(q_vec, self.doc_matrix)[0]
+        scores = cosine_similarity(q_vec, doc_matrix)[0]
 
         # Lọc theo chuyên mục bằng cách triệt tiêu điểm của bài ngoài mục.
         if category:
@@ -150,7 +185,7 @@ class NewsRetriever:
                     url=str(row.get("url", "")),
                     description=normalize_basic(row.get("description", "")),
                     snippet=self.best_sentences(int(doc_id), query),
-                    matched_terms=self._matched_terms(q_vec, doc_id),
+                    matched_terms=self._matched_terms(q_vec, doc_id, folded=folded),
                 )
             )
         return results
@@ -175,13 +210,18 @@ class NewsRetriever:
         if not sentences:
             return normalize_basic(self.df.iloc[doc_id].get("description", ""))
 
+        fold = not has_diacritics(query)
         sent_tokens = [tokenize(s, CONFIG_RETRIEVAL) for s in sentences]
+        if fold:
+            # Câu hỏi không dấu -> hạ luôn phía câu trong bài về mức âm tiết.
+            sent_tokens = [fold_tokens(toks) for toks in sent_tokens]
         # Vectorizer riêng cho từng bài: IDF tính trong phạm vi bài đó, nên
         # term đặc trưng của bài này được đánh giá đúng mức.
         local_vec = TfidfVectorizer(ngram_range=(1, 1), min_df=1, sublinear_tf=True)
         try:
             S = local_vec.fit_transform(sent_tokens)
-            q = local_vec.transform([tokenize(query, CONFIG_RETRIEVAL)])
+            q_tokens = fold_query(query) if fold else tokenize(query, CONFIG_RETRIEVAL)
+            q = local_vec.transform([q_tokens])
         except ValueError:
             return sentences[0]
 
@@ -196,11 +236,14 @@ class NewsRetriever:
         return " ".join(sentences[i] for i in chosen)
 
     # -- giải thích ----------------------------------------------------------
-    def _matched_terms(self, q_vec, doc_id: int, k: int = 6) -> list[tuple[str, float]]:
+    def _matched_terms(self, q_vec, doc_id: int, k: int = 6, folded: bool = False
+                       ) -> list[tuple[str, float]]:
         """Term nào của query thực sự khớp với bài, và đóng góp bao nhiêu điểm."""
-        doc_vec = self.doc_matrix.getrow(doc_id)
+        matrix = self.folded_matrix if folded else self.doc_matrix
+        vectorizer = self.folded_vectorizer if folded else self.vectorizer
+        doc_vec = matrix.getrow(doc_id)
         doc_map = dict(zip(doc_vec.indices, doc_vec.data))
-        names = self.vectorizer.feature_names_
+        names = vectorizer.feature_names_
 
         contributions = [
             (names[idx], float(val * doc_map[idx]))
@@ -212,13 +255,16 @@ class NewsRetriever:
 
     def explain(self, query: str, top_k: int = 3) -> dict:
         """Bảng chẩn đoán đầy đủ cho một query — dùng ở phần error analysis."""
-        tokens = tokenize(query, CONFIG_RETRIEVAL)
-        q_vec = self._query_vector(query)
-        known = {self.vectorizer.feature_names_[i] for i in q_vec.indices}
+        folded = not has_diacritics(query)
+        tokens = fold_query(query) if folded else tokenize(query, CONFIG_RETRIEVAL)
+        q_vec, _ = self._select_index(query)
+        vectorizer = self.folded_vectorizer if folded else self.vectorizer
+        known = {vectorizer.feature_names_[i] for i in q_vec.indices}
         results = self.search(query, top_k=top_k, min_score=0.0)
 
         return {
             "query": query,
+            "index": "đã bỏ dấu" if folded else "có dấu",
             "tokens": tokens,
             "terms_in_vocab": sorted(known),
             "oov_terms": [t for t in tokens if t not in known],

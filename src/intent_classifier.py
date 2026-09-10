@@ -30,7 +30,7 @@ import numpy as np
 from scipy import sparse
 
 from config import CONFIG_INTENT, INTENT_W_NB, INTENTS_PATH, TFIDF_NGRAM_RANGE
-from preprocess import tokenize
+from preprocess import fold_query, fold_tokens, has_diacritics, tokenize
 from vectorizer import TfidfVectorizer, cosine_similarity
 
 
@@ -130,6 +130,14 @@ class IntentClassifier:
         self.pattern_matrix = None
         self.pattern_labels: np.ndarray | None = None
 
+        # Bộ thứ hai huấn luyện trên pattern ĐÃ BỎ DẤU, phục vụ người dùng gõ
+        # không dấu ("cam on nhe"). Xem giải thích ở preprocess.strip_accents.
+        self.folded_vectorizer = TfidfVectorizer(
+            ngram_range=ngram_range, min_df=1, sublinear_tf=True
+        )
+        self.folded_model = MultinomialNaiveBayes(alpha=alpha)
+        self.folded_pattern_matrix = None
+
         self._trained = False
 
     # -- nạp dữ liệu ---------------------------------------------------------
@@ -159,6 +167,12 @@ class IntentClassifier:
         self.pattern_matrix = X
         self.pattern_labels = np.array(labels)
 
+        # Bản bỏ dấu, dùng cùng nhãn.
+        folded_docs = [fold_tokens(doc) for doc in docs]
+        Xf = self.folded_vectorizer.fit_transform(folded_docs)
+        self.folded_model.fit(Xf, labels)
+        self.folded_pattern_matrix = Xf
+
         self._trained = True
         return self
 
@@ -169,17 +183,27 @@ class IntentClassifier:
         if not tokens:
             return None
 
-        X = self.vectorizer.transform([tokens])
+        # Câu không dấu -> dùng bộ mô hình đã bỏ dấu.
+        folded = not has_diacritics(text)
+        if folded:
+            tokens = fold_query(text)
+            vectorizer, model = self.folded_vectorizer, self.folded_model
+            patterns = self.folded_pattern_matrix
+        else:
+            vectorizer, model = self.vectorizer, self.model
+            patterns = self.pattern_matrix
+
+        X = vectorizer.transform([tokens])
         # Không term nào khớp vocabulary -> mô hình không có bằng chứng gì.
         if X.nnz == 0:
             return None
 
-        nb_probs = self.model.predict_proba(X)[0]
+        nb_probs = model.predict_proba(X)[0]
 
         # Cosine tới pattern gần nhất CỦA TỪNG LỚP.
-        sims = cosine_similarity(X, self.pattern_matrix)[0]
-        cos_per_class = np.zeros(len(self.model.classes_), dtype=np.float64)
-        for i, cls in enumerate(self.model.classes_):
+        sims = cosine_similarity(X, patterns)[0]
+        cos_per_class = np.zeros(len(model.classes_), dtype=np.float64)
+        for i, cls in enumerate(model.classes_):
             mask = self.pattern_labels == cls
             if mask.any():
                 cos_per_class[i] = sims[mask].max()

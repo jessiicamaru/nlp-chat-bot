@@ -48,6 +48,83 @@ def normalize_basic(text) -> str:
 
 
 # ---------------------------------------------------------------------------
+# 1b. Bỏ dấu tiếng Việt (accent folding)
+# ---------------------------------------------------------------------------
+# Người Việt gõ chat rất hay bỏ dấu: "tin ve dao hai nam". Nếu chỉ index bản
+# CÓ dấu thì mọi term của câu đó đều là OOV và bot trả lời trượt hoàn toàn.
+# Ta không cố KHÔI PHỤC dấu (bài toán khó, cần mô hình riêng) mà đi hướng
+# ngược lại: bỏ dấu cả hai phía rồi so khớp trên cùng một mặt phẳng.
+_TONE_MARKS = re.compile(r"[̀-ͯ]")
+
+
+def strip_accents(text: str) -> str:
+    """Bỏ toàn bộ dấu tiếng Việt: "Đảo Hải Nam" -> "dao hai nam".
+
+    Tách NFD để dấu thanh/dấu mũ tách khỏi nguyên âm rồi xoá chúng. Riêng
+    "đ/Đ" không phải nguyên âm có dấu tổ hợp nên phải thay thủ công.
+    """
+    if not text:
+        return ""
+    nfd = unicodedata.normalize("NFD", text)
+    out = _TONE_MARKS.sub("", nfd)
+    out = out.replace("đ", "d").replace("Đ", "D")
+    return unicodedata.normalize("NFC", out)
+
+
+# Ký tự chỉ tồn tại trong tiếng Việt có dấu.
+_HAS_DIACRITIC = re.compile(
+    r"[àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợ"
+    r"ùúủũụưừứửữựỳýỷỹỵđ]",
+    re.IGNORECASE,
+)
+
+
+def has_diacritics(text: str) -> bool:
+    """Câu này có dấu tiếng Việt không?
+
+    Dùng để quyết định nên tra index có dấu hay index đã bỏ dấu. Một câu
+    tiếng Việt thật gần như luôn có ít nhất một ký tự có dấu, nên việc
+    KHÔNG có dấu nào là tín hiệu khá chắc chắn rằng người dùng gõ không dấu.
+    """
+    return bool(_HAS_DIACRITIC.search(text or ""))
+
+
+def fold_tokens(tokens: list[str]) -> list[str]:
+    """Đưa token đã tách từ về dạng ÂM TIẾT không dấu.
+
+        ["đảo", "hải_nam"] -> ["dao", "hai", "nam"]
+
+    Vì sao phải tách ngược từ ghép ra âm tiết: `word_tokenize` được huấn luyện
+    trên tiếng Việt CÓ DẤU. Đưa câu không dấu vào, nó tách sai hoàn toàn —
+    đo được trên chính dự án này:
+
+        "tin ve dao hai nam" -> ['ve_dao', 'hai', 'nam']
+
+    Nó dính "ve dao" thành một từ và cắt rời "hai nam". Vậy nên với câu không
+    dấu ta KHÔNG tách từ nữa, mà so khớp ở mức âm tiết. Muốn thế thì phía
+    document cũng phải hạ về cùng mức âm tiết — đó là việc hàm này làm.
+    Bigram trong TF-IDF sẽ khôi phục lại phần lớn thông tin từ ghép:
+    "hai nam" xuất hiện như một bigram.
+    """
+    out: list[str] = []
+    for token in tokens:
+        for piece in strip_accents(token).split("_"):
+            if piece:
+                out.append(piece)
+    return out
+
+
+def fold_query(text: str) -> list[str]:
+    """Chuyển câu hỏi KHÔNG DẤU thành list âm tiết, bỏ qua word segmentation."""
+    text = normalize_basic(text).lower()
+    if not text:
+        return []
+    text = strip_accents(text)
+    text = remove_punctuation(text, keep_inner=True)
+    return [t for t in text.split() if t]
+
+
+# ---------------------------------------------------------------------------
 # 2. Tách từ tiếng Việt
 # ---------------------------------------------------------------------------
 @lru_cache(maxsize=20000)

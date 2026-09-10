@@ -211,6 +211,15 @@ class NewsChatbot:
     def _act_browse(self, tag: str, user_text: str, info) -> BotReply:
         category = info.category or self.state.last_category
         if not category:
+            # Classifier đoán là "duyệt chuyên mục" nhưng không có chuyên mục nào
+            # được nêu. Nếu câu vẫn có từ khóa nội dung ("tin ve dao hai nam"),
+            # thì người dùng đang hỏi một chủ đề cụ thể — đi tìm kiếm sẽ hữu ích
+            # hơn nhiều so với việc hỏi ngược lại "bạn muốn xem mục nào?".
+            if self._has_topic_beyond_category(user_text, ""):
+                retrieved = self._handle_retrieval(user_text, info)
+                if retrieved.route != "fallback":
+                    return retrieved
+
             cats = ", ".join(self.retriever.list_categories())
             return BotReply(
                 text=f"Bạn muốn xem chuyên mục nào? Hiện có: {cats}",
