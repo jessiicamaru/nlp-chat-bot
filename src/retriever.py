@@ -197,7 +197,19 @@ class NewsRetriever:
             text = normalize_basic(self.df.iloc[doc_id].get("text", ""))
             sents = [s.strip() for s in sent_tokenize(text)] if text else []
             # Bỏ câu quá ngắn (chú thích ảnh, tên tác giả) và quá dài.
-            self._sentence_cache[doc_id] = [s for s in sents if 30 <= len(s) <= 400]
+            kept = [s for s in sents if 30 <= len(s) <= 400]
+
+            # Khử trùng lặp, giữ nguyên thứ tự xuất hiện. Nhiều bài VnExpress
+            # lặp lại nguyên câu sapo trong phần thân; nếu không lọc thì hai
+            # câu điểm cao nhất có thể là cùng một câu, và snippet đọc như bị lỗi.
+            seen: set[str] = set()
+            unique: list[str] = []
+            for s in kept:
+                key = s.lower()
+                if key not in seen:
+                    seen.add(key)
+                    unique.append(s)
+            self._sentence_cache[doc_id] = unique
         return self._sentence_cache[doc_id]
 
     def best_sentences(self, doc_id: int, query: str, n: int = 2) -> str:
