@@ -41,6 +41,7 @@ from preprocess import (
     has_diacritics,
     normalize_basic,
     strip_accents,
+    strip_frame_words,
     tokenize,
 )
 from vectorizer import TfidfVectorizer, cosine_similarity
@@ -125,10 +126,11 @@ class NewsRetriever:
 
     # -- truy hồi ------------------------------------------------------------
     def _query_vector(self, query: str):
-        return self.vectorizer.transform([tokenize(query, CONFIG_RETRIEVAL)])
+        tokens = strip_frame_words(tokenize(query, CONFIG_RETRIEVAL))
+        return self.vectorizer.transform([tokens])
 
     def _folded_query_vector(self, query: str):
-        return self.folded_vectorizer.transform([fold_query(query)])
+        return self.folded_vectorizer.transform([strip_frame_words(fold_query(query))])
 
     def _select_index(self, query: str):
         """Chọn index phù hợp với câu hỏi -> (vector query, ma trận document).
@@ -268,7 +270,9 @@ class NewsRetriever:
     def explain(self, query: str, top_k: int = 3) -> dict:
         """Bảng chẩn đoán đầy đủ cho một query — dùng ở phần error analysis."""
         folded = not has_diacritics(query)
-        tokens = fold_query(query) if folded else tokenize(query, CONFIG_RETRIEVAL)
+        tokens = strip_frame_words(
+            fold_query(query) if folded else tokenize(query, CONFIG_RETRIEVAL)
+        )
         q_vec, _ = self._select_index(query)
         vectorizer = self.folded_vectorizer if folded else self.vectorizer
         known = {vectorizer.feature_names_[i] for i in q_vec.indices}

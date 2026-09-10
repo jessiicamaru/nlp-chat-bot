@@ -37,6 +37,7 @@ import pandas as pd
 
 from config import (
     CONFIG_RETRIEVAL,
+    QUERY_FRAME_WORDS,
     CORPUS_RAW_PATH,
     INTENT_THRESHOLD,
     INTENTS_PATH,
@@ -48,6 +49,7 @@ from dialogue import DialogueState, Turn
 from entities import extract, expand_query
 from preprocess import tokenize
 from intent_classifier import IntentClassifier
+from normalizer import TeencodeNormalizer
 from retriever import NewsRetriever, RetrievalResult
 
 
@@ -61,6 +63,8 @@ class BotReply:
     route: str = "fallback"                 # intent | retrieval | fallback
     results: list[RetrievalResult] = field(default_factory=list)
     entities: dict = field(default_factory=dict)
+    normalized_input: str = ""              # câu sau khi chuẩn hóa teencode
+    normalizations: list = field(default_factory=list)  # các cặp (gốc, đã sửa)
 
     @property
     def sources(self) -> list[dict]:
@@ -78,11 +82,16 @@ class NewsChatbot:
         intent_threshold: float = INTENT_THRESHOLD,
         retrieval_threshold: float = RETRIEVAL_THRESHOLD,
         use_ner: bool = True,
+        use_normalizer: bool = True,
         seed: int | None = RANDOM_SEED,
     ):
         self.intent_threshold = intent_threshold
         self.use_ner = use_ner
         self.rng = random.Random(seed)
+
+        # Chuẩn hóa teencode chạy TRƯỚC mọi bước khác. Chỉ áp dụng cho câu
+        # người dùng gõ — corpus báo chí vốn đã là văn viết chuẩn.
+        self.normalizer = TeencodeNormalizer() if use_normalizer else None
 
         self.classifier = IntentClassifier()
         self.retriever = NewsRetriever(threshold=retrieval_threshold)
@@ -112,9 +121,19 @@ class NewsChatbot:
         if not self._ready:
             raise RuntimeError("Phai goi train() truoc khi chat.")
 
-        user_text = (user_text or "").strip()
-        if not user_text:
+        raw_text = (user_text or "").strip()
+        if not raw_text:
             return BotReply(text="Bạn chưa nhập gì cả. Hãy hỏi mình điều gì đó nhé!")
+
+        # [0] Chuẩn hóa teencode: "bt gì về vụ iphone k b"
+        #                      -> "biết gì về vụ iphone không bạn"
+        # Phải chạy trước tách từ, vì word_tokenize không biết "bt", "k", "đc".
+        normalizations = []
+        if self.normalizer is not None:
+            normalizations = self.normalizer.explain(raw_text)
+            user_text = self.normalizer.normalize(raw_text)
+        else:
+            user_text = raw_text
 
         # [1] Trích xuất thực thể + chuyên mục.
         info = extract(user_text, use_ner=self.use_ner)
@@ -133,6 +152,8 @@ class NewsChatbot:
             reply.intent = tag or ""
             reply.confidence = confidence
 
+        reply.normalized_input = user_text
+        reply.normalizations = normalizations
         reply.entities = {
             "category": info.category,
             "persons": info.persons,
@@ -147,7 +168,7 @@ class NewsChatbot:
 
         self.state.add_turn(
             Turn(
-                user_text=user_text,
+                user_text=raw_text,
                 bot_text=reply.text,
                 intent=reply.intent,
                 confidence=reply.confidence,
@@ -302,18 +323,34 @@ class NewsChatbot:
         "xem", "mới nhất"...). Nếu vẫn còn token -> người dùng đang hỏi một
         chủ đề cụ thể chứ không chỉ muốn duyệt mục.
         """
-        frame_words = {
-            "tin", "tức", "bài", "viết", "xem", "cho", "mới", "nhất", "có",
-            "gì", "nào", "đi", "về", "của", "liệt_kê", "mục", "chuyên_mục",
-            "đọc", "hiện", "danh_sách", "tôi", "mình", "bạn",
-        }
-        category_tokens = set(tokenize(category, CONFIG_RETRIEVAL))
-        tokens = tokenize(user_text, CONFIG_RETRIEVAL)
-        remaining = [
-            t for t in tokens
-            if t not in category_tokens and t not in frame_words
-        ]
-        return len(remaining) > 0
+        # Dùng chung QUERY_FRAME_WORDS với retriever, để "câu này còn nội dung
+        # gì không?" và "vector query còn term gì không?" luôn trả lời giống
+        # nhau. Hai nơi từng giữ hai danh sách riêng và đã lệch nhau.
+        #
+        # So khớp ở mức ÂM TIẾT, không so nguyên token. Lý do: `word_tokenize`
+        # tách CÙNG một cụm khác nhau tùy ngữ cảnh —
+        #     word_tokenize("Sức khỏe")                    -> ["sức", "khỏe"]
+        #     word_tokenize("... tin sức khỏe gì luôn")    -> ["sức_khỏe"]
+        # nên so theo token thì "sức_khỏe" không khớp {"sức","khỏe"}, và câu
+        # chỉ nêu đúng tên chuyên mục lại bị coi là có chủ đề riêng.
+        def syllables(tokens: list[str]) -> set[str]:
+            out: set[str] = set()
+            for t in tokens:
+                out.update(t.lower().split("_"))
+            return out
+
+        frame_syllables = syllables(list(QUERY_FRAME_WORDS))
+        category_syllables = syllables(tokenize(category, CONFIG_RETRIEVAL))
+        skip = category_syllables | frame_syllables
+
+        for token in tokenize(user_text, CONFIG_RETRIEVAL):
+            if token.lower() in QUERY_FRAME_WORDS:
+                continue
+            # Token còn mang nội dung nếu có ÍT NHẤT một âm tiết không thuộc
+            # tên chuyên mục và cũng không phải từ khung.
+            if any(syl not in skip for syl in token.lower().split("_")):
+                return True
+        return False
 
     def _format_retrieval(self, results: list[RetrievalResult], route: str) -> BotReply:
         """Định dạng kết quả truy hồi — dùng chung cho cả hai đường vào."""
@@ -335,6 +372,14 @@ class NewsChatbot:
         return BotReply(text="\n".join(lines), route=route, results=results)
 
     def _handle_retrieval(self, user_text: str, info) -> BotReply:
+        # Câu chỉ nêu ĐÚNG tên chuyên mục, không có chủ đề cụ thể nào khác
+        # ("không biết tin sức khỏe gì luôn") — đây thực chất là yêu cầu duyệt
+        # mục. Đem đi tìm kiếm sẽ trượt, vì tên chuyên mục có idf rất thấp
+        # (xuất hiện ở mọi bài trong mục đó) nên điểm cosine không bao giờ
+        # đạt ngưỡng.
+        if info.category and not self._has_topic_beyond_category(user_text, info.category):
+            return self._act_browse("", user_text, info)
+
         # Nhân đôi thực thể để tăng trọng số tên riêng trong vector query.
         query = expand_query(user_text, info)
 
@@ -353,8 +398,16 @@ class NewsChatbot:
     # -- tiện ích ------------------------------------------------------------
     def explain(self, user_text: str) -> dict:
         """Gộp chẩn đoán của cả intent classifier và retriever cho một câu."""
+        raw = user_text
+        norm_pairs = []
+        if self.normalizer is not None:
+            norm_pairs = self.normalizer.explain(raw)
+            user_text = self.normalizer.normalize(raw)
         info = extract(user_text, use_ner=self.use_ner)
         return {
+            "raw_input": raw,
+            "normalized_input": user_text,
+            "normalizations": norm_pairs,
             "intent": self.classifier.explain(user_text),
             "entities": info.summary(),
             "retrieval": self.retriever.explain(expand_query(user_text, info)),

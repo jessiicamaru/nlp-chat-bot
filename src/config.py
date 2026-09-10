@@ -92,3 +92,25 @@ TFIDF_NGRAM_RANGE = (1, 2)  # unigram + bigram
 HISTORY_MAXLEN = 10
 
 RANDOM_SEED = 42
+
+
+# ------------------------------------------------- TỪ KHUNG CÂU HỎI --
+# Những từ chỉ đóng vai trò "khung" của câu hỏi hội thoại, không mang nội dung
+# cần tìm. Chúng KHÔNG nằm trong stopword list chuẩn vì trong văn bản thường
+# chúng vẫn là từ nội dung ("tin" trong "bản tin", "biết" trong "hiểu biết").
+#
+# Vì sao phải loại riêng cho truy hồi: vector query được chuẩn hóa L2, nên mỗi
+# token thừa đều chia bớt trọng số của token thực sự quan trọng. Đo được:
+#   "giá iphone"                         -> top-1 = 0.167  (đạt ngưỡng)
+#   "biết gì về vụ iphone không bạn"     -> top-1 = 0.100  (trượt ngưỡng)
+# Cùng một ý định, chỉ khác cách diễn đạt hội thoại. Việc chuẩn hóa teencode
+# còn làm nặng thêm vì nó BUNG các từ viết tắt thành từ đầy đủ
+# ("k" -> "không", "b" -> "bạn"), tức là thêm token khung vào câu.
+QUERY_FRAME_WORDS = {
+    "tin", "tức", "tin_tức", "bài", "bài_viết", "viết", "báo", "bài_báo",
+    "xem", "đọc", "tìm", "tìm_kiếm", "tra", "tra_cứu", "cho", "biết", "hỏi",
+    "vụ", "chuyện", "thông_tin", "nội_dung", "gì", "nào", "sao", "thế_nào",
+    "mới", "nhất", "mới_nhất", "hiện", "đi", "nhé", "nha", "ạ", "vậy", "với",
+    "tôi", "mình", "bạn", "em", "anh", "chị", "tớ", "cậu", "muốn", "cần",
+    "liệt_kê", "danh_sách", "mục", "chuyên_mục", "có", "là", "được",
+}

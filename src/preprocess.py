@@ -20,7 +20,7 @@ from pathlib import Path
 
 from underthesea import word_tokenize
 
-from config import DEFAULT_CONFIG, STOPWORDS_PATH
+from config import DEFAULT_CONFIG, QUERY_FRAME_WORDS, STOPWORDS_PATH
 
 
 # ---------------------------------------------------------------------------
@@ -262,3 +262,16 @@ def tokenize(text, config: dict | None = None) -> list[str]:
     """preprocess_vi + tách thành list token. Đây là input của vectorizer."""
     processed = preprocess_vi(text, config)
     return processed.split() if processed else []
+
+
+def strip_frame_words(tokens: list[str]) -> list[str]:
+    """Bỏ các từ khung của câu hỏi hội thoại, chỉ giữ token mang nội dung.
+
+        ["biết", "vụ", "iphone", "bạn"] -> ["iphone"]
+
+    An toàn: nếu bỏ hết thì TRẢ LẠI nguyên bản. Câu như "có tin gì mới không"
+    toàn từ khung — bỏ sạch sẽ thành vector rỗng và bot mất luôn khả năng
+    trả lời, tệ hơn là cứ để nguyên.
+    """
+    kept = [t for t in tokens if t.lower() not in QUERY_FRAME_WORDS]
+    return kept if kept else tokens
