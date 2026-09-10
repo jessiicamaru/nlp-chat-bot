@@ -1,0 +1,9 @@
+.venv/
+local/
+models/*.pkl
+models/*.joblib
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+data/processed/*.csv
+data/raw/crawl_errors.csv

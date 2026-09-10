@@ -1,0 +1,95 @@
+{
+  "meta": {
+    "description": "Tập TEST viết tay, KHÔNG trùng với patterns trong intents_vi.json. Dùng để đo accuracy thật và dò ngưỡng. Nếu lấy chính patterns đi test thì kết quả sẽ đẹp giả tạo.",
+    "note": "expected='__retrieve__' nghĩa là câu này KHÔNG thuộc intent cố định nào, phải chuyển sang module truy hồi. expected='__fallback__' nghĩa là nằm ngoài phạm vi kho dữ liệu, bot phải từ chối trả lời."
+  },
+
+  "intent_tests": [
+    {"text": "chào bot nhé", "expected": "chao_hoi"},
+    {"text": "hế lô bạn ơi", "expected": "chao_hoi"},
+    {"text": "chào buổi chiều", "expected": "chao_hoi"},
+
+    {"text": "thôi mình đi ngủ đây", "expected": "tam_biet"},
+    {"text": "bye nhé bot", "expected": "tam_biet"},
+
+    {"text": "cảm ơn bạn rất nhiều", "expected": "cam_on"},
+    {"text": "thank nha", "expected": "cam_on"},
+
+    {"text": "bạn là con người à", "expected": "hoi_ve_bot"},
+    {"text": "ai đã lập trình ra bạn vậy", "expected": "hoi_ve_bot"},
+    {"text": "bạn hoạt động dựa trên nguyên lý gì", "expected": "hoi_ve_bot"},
+
+    {"text": "chỉ mình cách hỏi với", "expected": "huong_dan"},
+    {"text": "bạn hỗ trợ được những gì", "expected": "huong_dan"},
+
+    {"text": "cho mình xem danh sách các mục", "expected": "liet_ke_chuyen_muc"},
+    {"text": "bạn có những lĩnh vực nào", "expected": "liet_ke_chuyen_muc"},
+
+    {"text": "kho của bạn có bao nhiêu tin", "expected": "thong_ke_corpus"},
+    {"text": "dữ liệu lấy từ nguồn nào vậy", "expected": "thong_ke_corpus"},
+
+    {"text": "cho xem tin thể thao đi", "expected": "tin_theo_chuyen_muc"},
+    {"text": "mục giáo dục có bài gì", "expected": "tin_theo_chuyen_muc"},
+    {"text": "liệt kê tin kinh doanh", "expected": "tin_theo_chuyen_muc"},
+
+    {"text": "tóm tắt lại giúp mình với", "expected": "tom_tat_bai"},
+    {"text": "bài vừa rồi nói gì vậy", "expected": "tom_tat_bai"},
+
+    {"text": "cho xin đường dẫn bài viết", "expected": "hoi_nguon"},
+    {"text": "link gốc ở đâu vậy bạn", "expected": "hoi_nguon"},
+
+    {"text": "ừ đúng rồi đó", "expected": "dong_y"},
+    {"text": "không phải ý mình", "expected": "tu_choi"},
+    {"text": "bot trả lời chán quá đi", "expected": "che_bai"},
+
+    {"text": "cho tôi biết về giá iphone", "expected": "__retrieve__"},
+    {"text": "tin về đảo hải nam", "expected": "__retrieve__"},
+    {"text": "thông tin về ninh bình", "expected": "__retrieve__"},
+    {"text": "bạn biết gì về man utd", "expected": "__retrieve__"},
+    {"text": "giá xăng dầu thế nào", "expected": "__retrieve__"},
+    {"text": "học sinh bị bắt nạt", "expected": "__retrieve__"},
+    {"text": "robot chó dẫn đường", "expected": "__retrieve__"},
+    {"text": "có bài nào về bệnh viện không", "expected": "__retrieve__"}
+  ],
+
+  "retrieval_tests": [
+    {"query": "đảo hải nam miễn visa 30 ngày", "expect_title_contains": "Hải Nam"},
+    {"query": "du lịch ninh bình dịp quốc khánh", "expect_title_contains": "Ninh Bình"},
+    {"query": "đi tả van ngắm mùa vàng", "expect_title_contains": "Tả Van"},
+    {"query": "khách mỹ vi phạm lệnh cấm ở venice", "expect_title_contains": "Venice"},
+    {"query": "lịch nghỉ lễ tết của du lịch việt", "expect_title_contains": "nghỉ lễ"},
+
+    {"query": "giá iphone 18 pro tại việt nam", "expect_title_contains": "iPhone"},
+    {"query": "điện thoại gập đầu tiên của apple", "expect_title_contains": "Duo"},
+    {"query": "apple tăng giá iphone 17", "expect_title_contains": "tăng giá"},
+
+    {"query": "giá xăng dầu tăng", "expect_title_contains": "xăng"},
+    {"query": "scb thu hồi nợ trương mỹ lan", "expect_title_contains": "SCB"},
+
+    {"query": "học sinh việt bị bắt nạt học đường", "expect_title_contains": "bắt nạt"},
+    {"query": "match day đại học y hà nội", "expect_title_contains": "Match Day"},
+    {"query": "học sinh huế thiếu sách giáo khoa", "expect_title_contains": "sách giáo khoa"},
+
+    {"query": "robot chó dẫn đường trung quốc", "expect_title_contains": "robot chó"},
+    {"query": "vụ nổ tên lửa blue origin", "expect_title_contains": "Blue Origin"},
+    {"query": "hạn hán kênh đào panama", "expect_title_contains": "Panama"},
+
+    {"query": "champions league man utd", "expect_title_contains": "Man Utd"},
+    {"query": "asiad 20 khởi tranh", "expect_title_contains": "ASIAD"},
+
+    {"query": "kẹp tiền để được xạ trị sớm", "expect_title_contains": "xạ trị"},
+    {"query": "ăn chuối sai cách hại tiêu hóa", "expect_title_contains": "chuối"},
+    {"query": "cơm nguội để được bao lâu", "expect_title_contains": "Cơm nguội"}
+  ],
+
+  "out_of_scope": [
+    "thời tiết sao hỏa hôm nay thế nào",
+    "công thức nấu phở bò gia truyền",
+    "giải phương trình bậc hai giúp mình",
+    "dịch câu này sang tiếng nhật",
+    "kể một câu chuyện cười đi",
+    "asdfgh qwerty zxcvb",
+    "bitcoin sẽ lên bao nhiêu vào năm 2030",
+    "viết giúp mình một bài thơ về mùa thu"
+  ]
+}

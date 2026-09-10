@@ -1,0 +1,201 @@
+{
+  "meta": {
+    "name": "Intent dataset tiếng Việt cho chatbot tin tức",
+    "version": "1.0",
+    "description": "Mỗi intent gồm: patterns (câu người dùng dùng để TRAIN classifier) và responses (câu bot trả lời). Intent có action=retrieve sẽ chuyển sang module truy hồi TF-IDF thay vì trả lời có sẵn.",
+    "note": "Viết tay bởi nhóm. Câu pattern cố tình đa dạng về cách xưng hô (tôi/mình/em/bạn), có cả câu thiếu dấu và teencode vì người dùng thật gõ như vậy."
+  },
+  "intents": [
+    {
+      "tag": "chao_hoi",
+      "action": "reply",
+      "patterns": [
+        "xin chào", "chào bạn", "chào bot", "hello", "hi", "helo", "alo",
+        "chào buổi sáng", "chào buổi tối", "hey", "xin chao", "chao ban",
+        "có ai ở đó không", "bạn ơi", "ê bot", "chào em", "hế lô"
+      ],
+      "responses": [
+        "Chào bạn! Mình là trợ lý tin tức. Bạn muốn tìm hiểu tin gì hôm nay?",
+        "Xin chào! Bạn cần mình tìm tin về chủ đề nào?",
+        "Chào bạn, mình có thể tra cứu tin tức trong kho dữ liệu. Bạn hỏi thử xem!"
+      ]
+    },
+    {
+      "tag": "tam_biet",
+      "action": "reply",
+      "patterns": [
+        "tạm biệt", "bye", "bai bai", "chào tạm biệt", "hẹn gặp lại",
+        "mình đi đây", "thôi nhé", "kết thúc", "goodbye", "tam biet",
+        "mình off đây", "dừng lại", "thoát"
+      ],
+      "responses": [
+        "Tạm biệt bạn! Hẹn gặp lại.",
+        "Chào bạn nhé, chúc bạn một ngày tốt lành!",
+        "Hẹn gặp lại bạn lần sau."
+      ]
+    },
+    {
+      "tag": "cam_on",
+      "action": "reply",
+      "patterns": [
+        "cảm ơn", "cám ơn bạn", "thanks", "thank you", "cảm ơn nhiều",
+        "cám ơn nha", "tks", "thanks bot", "cảm ơn bot nhiều lắm", "cam on"
+      ],
+      "responses": [
+        "Không có gì đâu bạn!",
+        "Rất vui được giúp bạn.",
+        "Có gì cần thì cứ hỏi mình nhé!"
+      ]
+    },
+    {
+      "tag": "hoi_ve_bot",
+      "action": "reply",
+      "patterns": [
+        "bạn là ai", "bạn tên gì", "bot là gì", "giới thiệu bản thân đi",
+        "bạn là người hay máy", "ai tạo ra bạn", "bạn làm được gì",
+        "bạn thông minh không", "bạn có phải AI không", "ban la ai",
+        "bạn được xây dựng thế nào", "bạn dùng công nghệ gì"
+      ],
+      "responses": [
+        "Mình là chatbot tin tức tiếng Việt, được xây dựng bằng TF-IDF và cosine similarity tự cài đặt — không dùng mô hình ngôn ngữ lớn. Mình tìm câu trả lời trong kho bài báo VnExpress đã thu thập sẵn.",
+        "Mình là một trợ lý tra cứu tin tức. Cách hoạt động: phân loại ý định câu hỏi bằng Naive Bayes, rồi tìm bài báo liên quan nhất bằng độ tương đồng cosine trên vector TF-IDF."
+      ]
+    },
+    {
+      "tag": "huong_dan",
+      "action": "help",
+      "patterns": [
+        "giúp tôi với", "hướng dẫn", "help", "mình dùng thế nào",
+        "bạn giúp được gì", "cách sử dụng", "tôi nên hỏi gì",
+        "có chức năng gì", "chỉ mình cách dùng", "menu", "hướng dẫn sử dụng"
+      ],
+      "responses": [
+        "Mình có thể giúp bạn:"
+      ]
+    },
+    {
+      "tag": "liet_ke_chuyen_muc",
+      "action": "list_categories",
+      "patterns": [
+        "có những chuyên mục nào", "danh sách chủ đề", "bạn biết những gì",
+        "kho dữ liệu có gì", "có bao nhiêu chủ đề", "liệt kê chuyên mục",
+        "chủ đề nào có sẵn", "bạn có tin về lĩnh vực nào",
+        "có những loại tin gì", "danh muc"
+      ],
+      "responses": [
+        "Kho tin của mình gồm các chuyên mục sau:"
+      ]
+    },
+    {
+      "tag": "thong_ke_corpus",
+      "action": "stats",
+      "patterns": [
+        "có bao nhiêu bài báo", "kho dữ liệu lớn cỡ nào", "thống kê dữ liệu",
+        "bạn có bao nhiêu tin", "số lượng bài viết", "dữ liệu từ đâu",
+        "nguồn dữ liệu là gì", "bao nhiêu bài", "corpus có bao nhiêu document"
+      ],
+      "responses": [
+        "Thống kê kho dữ liệu:"
+      ]
+    },
+    {
+      "tag": "tin_theo_chuyen_muc",
+      "action": "browse_category",
+      "patterns": [
+        "cho tôi xem tin du lịch", "tin mới về công nghệ", "có tin gì về kinh doanh",
+        "bài viết về sức khỏe", "tin thể thao hôm nay", "tin giáo dục",
+        "cho xem tin về khoa học", "tin đời sống mới nhất",
+        "mục du lịch có gì", "đọc tin công nghệ", "tin tức kinh tế",
+        "liệt kê bài viết du lịch", "xem tin mục sức khỏe"
+      ],
+      "responses": [
+        "Đây là các bài trong chuyên mục bạn quan tâm:"
+      ]
+    },
+    {
+      "tag": "tom_tat_bai",
+      "action": "summarize",
+      "patterns": [
+        "tóm tắt bài đó", "tóm tắt giúp mình", "nội dung chính là gì",
+        "bài này nói về cái gì", "tóm tắt ngắn gọn", "rút gọn lại",
+        "cho mình bản tóm tắt", "tóm tắt bài vừa rồi", "summary",
+        "đại ý bài báo là gì", "tom tat"
+      ],
+      "responses": [
+        "Tóm tắt bài viết:"
+      ]
+    },
+    {
+      "tag": "hoi_nguon",
+      "action": "source",
+      "patterns": [
+        "nguồn ở đâu", "link bài báo", "cho mình link", "bài này từ đâu",
+        "dẫn nguồn đi", "url bài viết", "đọc bản đầy đủ ở đâu",
+        "cho xin nguồn", "trích từ đâu vậy", "link goc"
+      ],
+      "responses": [
+        "Nguồn bài viết:"
+      ]
+    },
+    {
+      "tag": "dong_y",
+      "action": "reply",
+      "patterns": [
+        "đúng rồi", "ok", "oke", "vâng", "ừ", "phải", "chính xác",
+        "yes", "đồng ý", "được", "uh", "ukm", "chuẩn"
+      ],
+      "responses": [
+        "Vâng, bạn muốn mình tìm thêm gì nữa không?",
+        "Tốt quá. Bạn cần hỏi gì tiếp nào?"
+      ]
+    },
+    {
+      "tag": "tu_choi",
+      "action": "reply",
+      "patterns": [
+        "không", "không phải", "sai rồi", "no", "không đúng", "chưa đúng",
+        "không phải cái đó", "khong", "trật rồi", "không đúng ý mình"
+      ],
+      "responses": [
+        "Xin lỗi bạn, mình hiểu chưa đúng. Bạn thử diễn đạt lại rõ hơn giúp mình nhé.",
+        "Mình chưa nắm đúng ý. Bạn có thể thêm từ khóa cụ thể hơn không?"
+      ]
+    },
+    {
+      "tag": "che_bai",
+      "action": "reply",
+      "patterns": [
+        "bot ngu quá", "trả lời sai bét", "dở tệ", "không hiểu gì cả",
+        "vô dụng", "tệ thật", "chán quá", "bot kém quá", "bạn trả lời linh tinh"
+      ],
+      "responses": [
+        "Mình xin lỗi vì chưa giúp được bạn. Mình chỉ tìm trong kho bài báo có sẵn nên có thể chưa bao phủ câu hỏi của bạn. Bạn thử hỏi bằng từ khóa khác xem sao?",
+        "Rất tiếc vì câu trả lời chưa tốt. Bạn gõ 'hướng dẫn' để xem mình làm được những gì nhé."
+      ]
+    },
+    {
+      "tag": "tim_tin",
+      "action": "retrieve",
+      "patterns": [
+        "cho tôi biết về đảo hải nam", "tin về miễn visa",
+        "có bài nào nói về du lịch ninh bình không", "thông tin về nghỉ lễ quốc khánh",
+        "giá tour đi trung quốc thế nào", "tìm bài viết về khách du lịch việt",
+        "bạn biết gì về sa pa", "có tin gì về hàng không không",
+        "cho mình hỏi về chính sách visa", "tìm kiếm thông tin về mùa vàng tả van",
+        "bài báo nào nói về venice", "thông tin về điểm đến mới",
+        "mình muốn biết về giá vé máy bay", "có gì về thị trường bất động sản",
+        "tra cứu tin về trí tuệ nhân tạo", "tìm bài về sức khỏe tim mạch"
+      ],
+      "responses": [
+        "Mình tìm được thông tin sau:"
+      ]
+    }
+  ],
+  "fallback": {
+    "responses": [
+      "Xin lỗi, mình chưa tìm thấy thông tin phù hợp trong kho dữ liệu. Bạn thử dùng từ khóa khác hoặc gõ 'hướng dẫn' để xem mình làm được gì nhé.",
+      "Mình chưa đủ tự tin để trả lời câu này. Kho tin của mình có hạn — bạn thử hỏi về một chủ đề trong danh sách chuyên mục xem sao?",
+      "Câu hỏi này nằm ngoài phạm vi dữ liệu của mình. Gõ 'có những chuyên mục nào' để xem mình biết gì nhé."
+    ]
+  }
+}

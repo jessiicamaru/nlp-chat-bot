@@ -1,0 +1,23 @@
+# Core NLP
+underthesea>=9.5.0            # tách từ / POS / NER tiếng Việt (dùng từ Lab 01)
+
+# Data
+pandas>=2.2
+numpy>=1.26
+
+# Machine learning (chỉ dùng để ĐỐI CHIẾU với bản tự cài đặt)
+scikit-learn>=1.5
+
+# Crawler (Lab 02)
+requests>=2.32
+beautifulsoup4>=4.12
+lxml>=5.2
+
+# Web demo
+fastapi>=0.115
+uvicorn>=0.30
+
+# Notebook
+jupyter>=1.0
+ipykernel>=6.29
+matplotlib>=3.8
