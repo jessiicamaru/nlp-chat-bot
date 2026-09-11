@@ -302,7 +302,7 @@ class NewsChatbot:
             )
             if scoped:
                 self.state.remember_results(scoped, user_text)
-                return self._format_retrieval(scoped, route="intent")
+                return self._format_retrieval(scoped, route="retrieval")
 
         results = self.retriever.browse(category, n=5)
         if not results:

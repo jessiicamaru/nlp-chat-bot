@@ -8,3 +8,5 @@ __pycache__/
 data/processed/*.csv
 data/raw/crawl_errors.csv
 models/retriever_index.joblib
+dist/
+rag_out/

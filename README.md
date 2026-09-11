@@ -100,6 +100,29 @@ gồm đầy đủ lý thuyết, thực nghiệm, đánh giá và phân tích l�
 
 ---
 
+## RAG với PhoGPT (tùy chọn, chạy trên Google Colab)
+
+Lớp **thêm** lên trên chatbot trích xuất: phần truy hồi tự cài đặt tìm 1–3 bài
+báo, rồi **PhoGPT-4B-Chat** (VinAI) diễn đạt lại thành câu trả lời tự nhiên, có
+dẫn nguồn `[1]`, `[2]`. Tắt nó đi thì chatbot vẫn chạy nguyên như cũ. Đây là
+phần **duy nhất** dùng mô hình tiền huấn luyện — nằm ngoài phạm vi from scratch.
+
+**Nguyên tắc an toàn:** PhoGPT chỉ được gọi khi truy hồi đã tìm được bằng chứng
+vượt ngưỡng; câu ngoài phạm vi bị từ chối **trước** khi tới mô hình.
+
+```powershell
+python tools/make_colab_bundle.py   # tạo dist/rag_bundle.zip (mã nguồn + dữ liệu)
+python tests/test_rag.py            # 9 kiểm thử RAG, không cần GPU (backend giả lập)
+```
+
+Chạy trên Colab: mở `dist/RAG_PhoGPT_Colab.ipynb` trong Colab → Runtime → T4 GPU
+→ Run all → tải lên `dist/rag_bundle.zip` khi được hỏi. Notebook tự đánh giá độ
+trung thành với nguồn (số bịa, trích dẫn), ca tin mâu thuẫn, câu bẫy (hỏi chi
+tiết bài báo không có) và câu ngoài phạm vi, rồi tải về `rag_results.json` +
+`rag_samples.csv`.
+
+---
+
 ## Cấu trúc dự án
 
 ```text
@@ -113,6 +136,7 @@ final-project/
 │   ├── normalizer.py        # chuẩn hóa teencode học từ ViLexNorm
 │   ├── generator.py         # n-gram LM — thí nghiệm đối chứng sinh văn bản
 │   ├── dates.py             # phân tích ngày đăng + điểm độ mới
+│   ├── rag.py               # RAG: truy hồi + PhoGPT (tùy chọn, chạy trên Colab)
 │   ├── entities.py          # NER + Regex (Lab 01)
 │   ├── dialogue.py          # trạng thái hội thoại, giải tham chiếu
 │   ├── chatbot.py           # bộ điều phối
@@ -132,6 +156,7 @@ final-project/
 │   ├── resources/teencode_lexicon.json  # học được từ ViLexNorm
 │   └── resources/vilexnorm/         # corpus chuẩn hóa (CC BY-NC-SA 4.0)
 ├── notebooks/FinalProject_Chatbot_23IT036.ipynb   # BÁO CÁO
+├── notebooks/RAG_PhoGPT_Colab.ipynb              # RAG trên Colab
 ├── docs/
 │   ├── 01-nghien-cuu-du-an-tham-khao.md
 │   ├── 02-kien-truc.md
@@ -139,6 +164,7 @@ final-project/
 │   └── 04-thi-nghiem-sinh-van-ban.md
 ├── tests/test_vectorizer.py         # TF-IDF vs sklearn, BM25 vs tham chiếu
 ├── tests/test_chatbot.py            # 21 kiểm thử hồi quy
+├── tests/test_rag.py                # 9 kiểm thử RAG (không cần GPU)
 ├── tools/build_eval_sets.py         # sinh tập dev/test
 ├── tools/build_notebook.py          # sinh notebook báo cáo
 └── requirements.txt
