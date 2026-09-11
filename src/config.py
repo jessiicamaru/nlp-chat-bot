@@ -64,12 +64,22 @@ CONFIG_RETRIEVAL = {
 # ---- Các giá trị dưới đây được DÒ BẰNG THỰC NGHIỆM, không chọn cảm tính.
 # Chạy `python src/evaluate.py` để tái lập bảng dò ngưỡng.
 
-# Ngưỡng cosine similarity để chấp nhận câu trả lời từ retriever.
-# Dò trên 21 truy vấn trong phạm vi + 8 truy vấn ngoài phạm vi:
-#   0.08 -> trả lời được 100%, chặn đúng 87.5%
-#   0.12 -> trả lời được 100%, chặn đúng 100%   <- chọn
-#   0.18 -> trả lời được 77.8%, chặn đúng 100%  (bắt đầu bỏ sót)
-RETRIEVAL_THRESHOLD = 0.12
+# Ngưỡng để chấp nhận câu trả lời từ retriever.
+#
+# LƯU Ý: đây là ngưỡng trên điểm ĐÃ NHÂN hệ số độ mới, không phải cosine thuần.
+# Hệ số (1 + FRESHNESS_ALPHA * recency) thổi mọi điểm lên tối đa 1,6 lần, nên
+# ngưỡng phải được dò LẠI sau khi bật độ mới: 0.12 -> 0.18.
+#
+# Bảng dò (30 truy vấn trong phạm vi + 12 ngoài phạm vi, gồm cả câu không dấu
+# và teencode — ngưỡng phải dò trên đúng phân bố truy vấn mà bot thực sự nhận):
+#   0.120 -> trả lời được 90.0%, chặn đúng  91.7%
+#   0.150 -> trả lời được 90.0%, chặn đúng  91.7%
+#   0.155 -> trả lời được 90.0%, chặn đúng 100.0%   <- chọn
+#   0.180 -> trả lời được 86.7%, chặn đúng 100.0%   (bắt đầu bỏ sót)
+#
+# Điểm cao nhất của truy vấn NGOÀI phạm vi là 0.151, nên 0.155 là ngưỡng thấp
+# nhất còn chặn được 100% — tối đa hóa số câu trả lời được mà vẫn không đoán bừa.
+RETRIEVAL_THRESHOLD = 0.155
 
 # Ngưỡng điểm ensemble để chấp nhận nhãn intent từ classifier.
 # Dò lưới (w_nb x threshold): w_nb=0.8, threshold=0.25 cho điểm cân bằng
@@ -114,3 +124,35 @@ QUERY_FRAME_WORDS = {
     "tôi", "mình", "bạn", "em", "anh", "chị", "tớ", "cậu", "muốn", "cần",
     "liệt_kê", "danh_sách", "mục", "chuyên_mục", "có", "là", "được",
 }
+
+
+# ------------------------------------------------------- ĐỘ MỚI CỦA TIN --
+# Hệ số thưởng cho bài mới khi xếp hạng:  score' = cosine * (1 + alpha * recency)
+#
+# Cố tình để NHỎ. Mục đích không phải luôn ưu tiên tin mới, mà chỉ PHÁ THẾ HÒA:
+# khi hai bài liên quan xấp xỉ nhau thì bài mới thắng. Bài cũ nhưng liên quan
+# hơn hẳn vẫn phải thắng — nếu không, bot sẽ chỉ trả tin mới nhất bất kể hỏi gì.
+#
+# Cả hai giá trị dưới đây được dò bằng `python src/evaluate.py`, tối ưu đồng
+# thời hai mục tiêu: (a) không làm giảm Recall@1/MRR, (b) xử lý được ca tin mới
+# phủ định tin cũ. Bảng quét (half-life x alpha):
+#
+#   half-life  alpha   Recall@1  MRR     ca tin mâu thuẫn
+#          30   0.35      90.5%  0.952   SAI (trả tin cũ)
+#          14   0.60      95.2%  0.976   SAI (trả tin cũ)
+#           3   0.60      90.5%  0.952   ĐÚNG
+#           7   0.60      95.2%  0.976   ĐÚNG   <- chọn
+#
+# Đáng chú ý: thêm độ mới còn LÀM TỐT LÊN chất lượng truy hồi
+# (Recall@1 90.5% -> 95.2%, MRR 0.952 -> 0.976), chứ không chỉ là đánh đổi.
+FRESHNESS_ALPHA = 0.6
+
+# Nửa chu kỳ suy giảm: sau ngần này ngày, điểm độ mới còn một nửa.
+# 7 ngày — đủ ngắn để phân biệt hai bài cách nhau vài ngày (chính là tình huống
+# tin mới phủ định tin cũ), nhưng chưa ngắn tới mức vùi lấp bài liên quan hơn
+# chỉ vì nó cũ hơn một tuần. Với 30 ngày, hai bài cách nhau 9 ngày chỉ chênh
+# nhau 5% điểm thưởng — không đủ để lật thứ hạng.
+FRESHNESS_HALFLIFE_DAYS = 7.0
+
+# Thư mục cache index đã dựng (tránh phải tách từ lại 381 bài mỗi lần khởi động).
+INDEX_CACHE_PATH = MODELS_DIR / "retriever_index.joblib"

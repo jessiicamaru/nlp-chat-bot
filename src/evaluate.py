@@ -244,16 +244,19 @@ def tune_retrieval(tests: dict, retriever: NewsRetriever) -> float:
     print("-" * 46)
 
     best = (0.0, -1.0)
-    for th in [0.02, 0.04, 0.06, 0.08, 0.10, 0.12, 0.15, 0.18, 0.22, 0.26, 0.30]:
+    # Lưới mịn quanh vùng ranh giới: điểm cao nhất của truy vấn ngoài phạm vi
+    # thường nằm quanh 0.15, nên bước 0.01 ở đó mới tìm được ngưỡng tối ưu.
+    for th in [0.02, 0.04, 0.06, 0.08, 0.10, 0.12, 0.14, 0.15, 0.155,
+               0.16, 0.165, 0.17, 0.18, 0.20, 0.22, 0.26, 0.30]:
         answered = sum(1 for s in in_scores if s >= th) / len(in_scores)
         blocked = sum(1 for s in oos_scores if s < th) / len(oos_scores)
         score = (answered + blocked) / 2
         mark = ""
         if score > best[1]:
             best = (th, score)
-        print(f"{th:>8.2f} {answered:>13.1%} {blocked:>11.1%} {score:>8.1%}{mark}")
+        print(f"{th:>8.3f} {answered:>13.1%} {blocked:>11.1%} {score:>8.1%}{mark}")
 
-    print(f"\nChọn: RETRIEVAL_THRESHOLD = {best[0]:.2f}")
+    print(f"\nChọn: RETRIEVAL_THRESHOLD = {best[0]:.3f}")
     print("  Ngưỡng cao -> bot im lặng nhiều (bỏ sót câu trả lời đúng).")
     print("  Ngưỡng thấp -> bot trả lời bừa cho cả câu ngoài phạm vi.")
     return best[0]
@@ -277,7 +280,7 @@ def main() -> int:
     hr("TÓM TẮT — CẬP NHẬT VÀO config.py")
     print(f"  IntentClassifier(w_nb={w_nb})")
     print(f"  INTENT_THRESHOLD    = {intent_th}")
-    print(f"  RETRIEVAL_THRESHOLD = {retr_th:.2f}")
+    print(f"  RETRIEVAL_THRESHOLD = {retr_th:.3f}")
     return 0
 
 

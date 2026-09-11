@@ -7,3 +7,4 @@ __pycache__/
 .ipynb_checkpoints/
 data/processed/*.csv
 data/raw/crawl_errors.csv
+models/retriever_index.joblib

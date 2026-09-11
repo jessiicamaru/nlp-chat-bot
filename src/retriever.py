@@ -21,7 +21,10 @@ và mọi kết quả đều truy vết được về term cụ thể (xem `expl
 
 from __future__ import annotations
 
+import hashlib
+import json
 from dataclasses import dataclass, field
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -29,6 +32,8 @@ from underthesea import sent_tokenize
 
 from config import (
     CONFIG_RETRIEVAL,
+    FRESHNESS_ALPHA,
+    INDEX_CACHE_PATH,
     RETRIEVAL_THRESHOLD,
     TFIDF_MAX_DF,
     TFIDF_MIN_DF,
@@ -44,6 +49,7 @@ from preprocess import (
     strip_frame_words,
     tokenize,
 )
+from dates import compute_recency, format_vn_date, parse_vn_date
 from vectorizer import TfidfVectorizer, cosine_similarity
 
 # Số lần lặp lại title/description khi dựng document index.
@@ -63,6 +69,12 @@ class RetrievalResult:
     snippet: str
     description: str = ""
     matched_terms: list[tuple[str, float]] = field(default_factory=list)
+    published_date: object = None        # datetime.date | None
+    base_score: float = 0.0              # điểm cosine TRƯỚC khi nhân độ mới
+
+    @property
+    def published_str(self) -> str:
+        return format_vn_date(self.published_date)
 
     def __repr__(self) -> str:
         return f"<{self.score:.3f} | {self.category} | {self.title[:60]}>"
@@ -77,6 +89,7 @@ class NewsRetriever:
         min_df=TFIDF_MIN_DF,
         max_df=TFIDF_MAX_DF,
         threshold=RETRIEVAL_THRESHOLD,
+        freshness_alpha: float = FRESHNESS_ALPHA,
     ):
         self.vectorizer = TfidfVectorizer(
             ngram_range=ngram_range,
@@ -94,6 +107,9 @@ class NewsRetriever:
         self.folded_matrix = None
 
         self.threshold = threshold
+        self.freshness_alpha = freshness_alpha
+        self.recency = None              # điểm độ mới (0, 1] cho từng bài
+        self.published_dates: list = []
         self.df: pd.DataFrame | None = None
         self.doc_matrix = None
         self._sentence_cache: dict[int, list[str]] = {}
@@ -121,7 +137,97 @@ class NewsRetriever:
         folded = [fold_tokens(doc) for doc in tokenized]
         self.folded_matrix = self.folded_vectorizer.fit_transform(folded)
 
+        # Độ mới: dùng để phá thế hòa khi hai bài liên quan xấp xỉ nhau.
+        self.published_dates = [parse_vn_date(v) for v in self.df.get("published_at", [])]
+        self.recency = compute_recency(self.published_dates)
+
         self._sentence_cache.clear()
+        return self
+
+
+    # -- cache ra đĩa --------------------------------------------------------
+    def fingerprint(self, df: pd.DataFrame) -> str:
+        """Chữ ký của (dữ liệu + tham số ảnh hưởng tới index).
+
+        Đổi một bài báo, hoặc đổi ngram_range/min_df/trọng số trường, đều phải
+        làm cache hết hiệu lực. Ngược lại, đổi FRESHNESS_ALPHA thì KHÔNG — hệ số
+        độ mới chỉ áp dụng lúc tìm kiếm, không nằm trong index.
+        """
+        h = hashlib.sha256()
+        for col in ("url", "title", "description", "text", "published_at"):
+            if col in df.columns:
+                h.update(col.encode())
+                h.update("".join(df[col].astype(str)).encode("utf-8", "ignore"))
+        params = {
+            "ngram_range": list(self.vectorizer.counter.ngram_range),
+            "min_df": self.vectorizer.counter.min_df,
+            "max_df": self.vectorizer.counter.max_df,
+            "sublinear_tf": self.vectorizer.sublinear_tf,
+            "title_weight": TITLE_WEIGHT,
+            "desc_weight": DESC_WEIGHT,
+            "config": CONFIG_RETRIEVAL,
+        }
+        h.update(json.dumps(params, sort_keys=True, ensure_ascii=False).encode())
+        return h.hexdigest()
+
+    def fit_cached(self, df: pd.DataFrame, cache_path: Path | None = None,
+                   verbose: bool = False) -> "NewsRetriever":
+        """Như fit(), nhưng nạp lại index đã lưu nếu dữ liệu chưa đổi.
+
+        Dựng index tốn ~20 giây cho 381 bài, gần như toàn bộ là thời gian tách
+        từ. `lru_cache` của segment_vi chỉ sống trong một tiến trình, nên khởi
+        động lại là mất trắng. Cache ra đĩa giúp lần chạy sau gần như tức thì.
+        """
+        import joblib
+
+        cache_path = Path(cache_path) if cache_path else INDEX_CACHE_PATH
+        expected = self.fingerprint(df)
+
+        if cache_path.exists():
+            try:
+                blob = joblib.load(cache_path)
+                if blob.get("fingerprint") == expected:
+                    self.vectorizer = blob["vectorizer"]
+                    self.folded_vectorizer = blob["folded_vectorizer"]
+                    self.doc_matrix = blob["doc_matrix"]
+                    self.folded_matrix = blob["folded_matrix"]
+                    self.published_dates = blob["published_dates"]
+                    self.recency = blob["recency"]
+                    self.df = df.reset_index(drop=True)
+                    self._sentence_cache = blob.get("sentence_cache", {})
+                    if verbose:
+                        print(f"Nạp index từ cache: {cache_path}")
+                    return self
+                if verbose:
+                    print("Cache có nhưng dữ liệu đã đổi -> dựng lại index.")
+            except Exception as exc:
+                # Cache hỏng/lệch phiên bản thư viện: bỏ qua, dựng lại từ đầu.
+                if verbose:
+                    print(f"Không đọc được cache ({exc}) -> dựng lại index.")
+
+        self.fit(df)
+        try:
+            cache_path.parent.mkdir(parents=True, exist_ok=True)
+            joblib.dump(
+                {
+                    "fingerprint": expected,
+                    "vectorizer": self.vectorizer,
+                    "folded_vectorizer": self.folded_vectorizer,
+                    "doc_matrix": self.doc_matrix,
+                    "folded_matrix": self.folded_matrix,
+                    "published_dates": self.published_dates,
+                    "recency": self.recency,
+                    "sentence_cache": self._sentence_cache,
+                },
+                cache_path,
+                compress=3,
+            )
+            if verbose:
+                print(f"Đã lưu index vào {cache_path}")
+        except Exception as exc:
+            # Không ghi được cache thì vẫn chạy bình thường, chỉ chậm hơn.
+            if verbose:
+                print(f"Không lưu được cache: {exc}")
         return self
 
     # -- truy hồi ------------------------------------------------------------
@@ -163,7 +269,15 @@ class NewsRetriever:
             # Không term nào của query có trong vocabulary -> không có căn cứ.
             return []
 
-        scores = cosine_similarity(q_vec, doc_matrix)[0]
+        base_scores = cosine_similarity(q_vec, doc_matrix)[0]
+
+        # Thưởng độ mới: score' = cosine * (1 + alpha * recency).
+        # Nhân chứ không cộng, để bài không liên quan (cosine ~ 0) vẫn ở lại 0
+        # dù mới tinh — nếu cộng thì tin mới nhất sẽ nổi lên với mọi câu hỏi.
+        if self.freshness_alpha and self.recency is not None:
+            scores = base_scores * (1.0 + self.freshness_alpha * self.recency)
+        else:
+            scores = base_scores
 
         # Lọc theo chuyên mục bằng cách triệt tiêu điểm của bài ngoài mục.
         if category:
@@ -188,6 +302,10 @@ class NewsRetriever:
                     description=normalize_basic(row.get("description", "")),
                     snippet=self.best_sentences(int(doc_id), query),
                     matched_terms=self._matched_terms(q_vec, doc_id, folded=folded),
+                    published_date=(
+                        self.published_dates[doc_id] if self.published_dates else None
+                    ),
+                    base_score=float(base_scores[doc_id]),
                 )
             )
         return results
@@ -302,11 +420,24 @@ class NewsRetriever:
     def browse(self, category: str, n: int = 5) -> list[RetrievalResult]:
         """Liệt kê bài mới nhất trong một chuyên mục (không cần query)."""
         mask = self.df["category"].astype(str).str.lower() == category.lower()
-        subset = self.df[mask].head(n)
+        subset = self.df[mask]
+
+        # Sắp theo ngày đăng giảm dần. Trước đây dùng .head(n) tức là theo thứ tự
+        # chèn vào corpus — người dùng hỏi "tin mới nhất" mà lại nhận bài cũ.
+        if self.published_dates:
+            import datetime as _dt
+
+            oldest = _dt.date.min
+            subset = subset.assign(
+                _pub=[self.published_dates[i] or oldest for i in subset.index]
+            ).sort_values("_pub", ascending=False).drop(columns=["_pub"])
+        subset = subset.head(n)
+
         return [
             RetrievalResult(
                 doc_id=int(idx),
                 score=1.0,
+                published_date=(self.published_dates[idx] if self.published_dates else None),
                 title=str(row.get("title", "")),
                 category=str(row.get("category", "")),
                 url=str(row.get("url", "")),

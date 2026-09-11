@@ -47,7 +47,7 @@ from config import (
 )
 from dialogue import DialogueState, Turn
 from entities import extract, expand_query
-from preprocess import tokenize
+from preprocess import has_diacritics, strip_accents, tokenize
 from intent_classifier import IntentClassifier
 from normalizer import TeencodeNormalizer
 from retriever import NewsRetriever, RetrievalResult
@@ -69,7 +69,14 @@ class BotReply:
     @property
     def sources(self) -> list[dict]:
         return [
-            {"title": r.title, "url": r.url, "category": r.category, "score": round(r.score, 4)}
+            {
+                "title": r.title,
+                "url": r.url,
+                "category": r.category,
+                "score": round(r.score, 4),
+                "cosine": round(r.base_score, 4),
+                "published": r.published_str,
+            }
             for r in self.results
         ]
 
@@ -104,14 +111,24 @@ class NewsChatbot:
         corpus_path: Path | None = None,
         intents_path: Path | None = None,
         df: pd.DataFrame | None = None,
+        use_cache: bool = True,
+        verbose: bool = False,
     ) -> "NewsChatbot":
-        """Huấn luyện classifier và dựng index truy hồi."""
+        """Huấn luyện classifier và dựng index truy hồi.
+
+        `use_cache=True` nạp lại index đã lưu nếu corpus chưa đổi — giảm thời
+        gian khởi động từ ~21 giây xuống dưới 1 giây.
+        """
         self.classifier.train_from_file(intents_path or INTENTS_PATH)
 
         if df is None:
             df = pd.read_csv(corpus_path or CORPUS_RAW_PATH)
         df = df.dropna(subset=["title", "text"]).reset_index(drop=True)
-        self.retriever.fit(df)
+
+        if use_cache:
+            self.retriever.fit_cached(df, verbose=verbose)
+        else:
+            self.retriever.fit(df)
 
         self._ready = True
         return self
@@ -132,6 +149,25 @@ class NewsChatbot:
         if self.normalizer is not None:
             normalizations = self.normalizer.explain(raw_text)
             user_text = self.normalizer.normalize(raw_text)
+
+            # Nếu người dùng gõ KHÔNG DẤU thì giữ kết quả cũng không dấu.
+            #
+            # Vì sao cần: từ điển teencode luôn trả về từ CÓ DẤU. Chỉ cần một
+            # token được chuẩn hóa là cả câu bỗng "có dấu", và `has_diacritics`
+            # sẽ định tuyến sang index CÓ DẤU — nơi những token còn lại (vẫn
+            # không dấu) đều là OOV. Kết quả: cả câu bị phán đoán dựa trên đúng
+            # một từ.
+            #
+            # Lỗi đo được: "thoi tiet sao hoa hom nay" (hỏi thời tiết) bị
+            # chuẩn hóa thành "thôi tiet sao hoa hom nay", rồi khớp intent
+            # tạm biệt (0.280) vì "thôi" nằm trong pattern "thôi nhé" —
+            # bot trả lời "Tạm biệt bạn!" cho một câu hỏi về thời tiết.
+            #
+            # Bỏ dấu lại vẫn GIỮ được lợi ích của chuẩn hóa (viết tắt đã được
+            # bung ra: "k" -> "không" -> "khong"), chỉ là giữ nguyên "hệ quy
+            # chiếu dấu" mà người dùng đang gõ.
+            if not has_diacritics(raw_text):
+                user_text = strip_accents(user_text)
         else:
             user_text = raw_text
 
