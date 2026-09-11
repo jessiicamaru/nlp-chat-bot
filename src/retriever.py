@@ -33,6 +33,7 @@ from underthesea import sent_tokenize
 from config import (
     CONFIG_RETRIEVAL,
     FRESHNESS_ALPHA,
+    FRESHNESS_HALFLIFE_DAYS,
     INDEX_CACHE_PATH,
     RETRIEVAL_THRESHOLD,
     TFIDF_MAX_DF,
@@ -90,6 +91,7 @@ class NewsRetriever:
         max_df=TFIDF_MAX_DF,
         threshold=RETRIEVAL_THRESHOLD,
         freshness_alpha: float = FRESHNESS_ALPHA,
+        freshness_halflife: float = FRESHNESS_HALFLIFE_DAYS,
     ):
         self.vectorizer = TfidfVectorizer(
             ngram_range=ngram_range,
@@ -108,6 +110,7 @@ class NewsRetriever:
 
         self.threshold = threshold
         self.freshness_alpha = freshness_alpha
+        self.freshness_halflife = freshness_halflife
         self.recency = None              # điểm độ mới (0, 1] cho từng bài
         self.published_dates: list = []
         self.df: pd.DataFrame | None = None
@@ -139,7 +142,8 @@ class NewsRetriever:
 
         # Độ mới: dùng để phá thế hòa khi hai bài liên quan xấp xỉ nhau.
         self.published_dates = [parse_vn_date(v) for v in self.df.get("published_at", [])]
-        self.recency = compute_recency(self.published_dates)
+        self.recency = compute_recency(self.published_dates,
+                                       half_life_days=self.freshness_halflife)
 
         self._sentence_cache.clear()
         return self
@@ -192,7 +196,12 @@ class NewsRetriever:
                     self.doc_matrix = blob["doc_matrix"]
                     self.folded_matrix = blob["folded_matrix"]
                     self.published_dates = blob["published_dates"]
-                    self.recency = blob["recency"]
+                    # KHÔNG nạp recency từ cache mà tính lại. Nửa chu kỳ độ mới
+                    # không nằm trong vân tay cache (nó không ảnh hưởng index),
+                    # nên nếu nạp recency đã lưu thì đổi FRESHNESS_HALFLIFE_DAYS
+                    # sẽ bị bỏ qua âm thầm — bot tiếp tục dùng điểm độ mới cũ.
+                    self.recency = compute_recency(
+                        self.published_dates, half_life_days=self.freshness_halflife)
                     self.df = df.reset_index(drop=True)
                     self._sentence_cache = blob.get("sentence_cache", {})
                     if verbose:
@@ -216,7 +225,6 @@ class NewsRetriever:
                     "doc_matrix": self.doc_matrix,
                     "folded_matrix": self.folded_matrix,
                     "published_dates": self.published_dates,
-                    "recency": self.recency,
                     "sentence_cache": self._sentence_cache,
                 },
                 cache_path,

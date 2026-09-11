@@ -1,0 +1,1479 @@
+{
+ "meta": {
+  "split": "test",
+  "purpose": "CHỈ ĐỂ BÁO CÁO. Không được dò hay chỉnh bất kỳ tham số nào dựa trên kết quả của tập này. Toàn bộ câu ở đây CHƯA TỪNG được dùng để dò tham số.",
+  "seed": 2026
+ },
+ "retrieval": [
+  {
+   "query": "đại học Mỹ gửi thư mời nhập học không cần hồ sơ",
+   "gold_urls": [
+    "https://vnexpress.net/nham-mat-cung-do-dai-hoc-my-5116675.html"
+   ],
+   "gold_titles": [
+    "'Nhắm mắt cũng đỗ' đại học Mỹ"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "chuẩn bị cho tuổi già từ năm 40 tuổi",
+   "gold_urls": [
+    "https://vnexpress.net/viet-nam-huong-dan-chuan-bi-tuoi-gia-tu-tuoi-40-5118562.html"
+   ],
+   "gold_titles": [
+    "Việt Nam hướng dẫn chuẩn bị tuổi già từ tuổi 40"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "cắt giảm hiệu trưởng hiệu phó ở TP HCM",
+   "gold_urls": [
+    "https://vnexpress.net/gan-2-750-hieu-truong-hieu-pho-o-tp-hcm-thuoc-dien-cat-giam-5116416.html"
+   ],
+   "gold_titles": [
+    "Gần 2.750 hiệu trưởng, hiệu phó ở TP HCM thuộc diện cắt giảm"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "Đình Bắc không dự ASIAD",
+   "gold_urls": [
+    "https://vnexpress.net/nguyen-dinh-bac-khong-du-asiad-2026-5118426.html"
+   ],
+   "gold_titles": [
+    "Nguyễn Đình Bắc không dự ASIAD 2026"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "phó tổng Vingroup từ chức",
+   "gold_urls": [
+    "https://vnexpress.net/mot-pho-tong-giam-doc-cua-vingroup-xin-tu-nhiem-5118590.html"
+   ],
+   "gold_titles": [
+    "Một phó tổng giám đốc của Vingroup xin từ nhiệm"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "học sinh Việt đọc hiểu kém theo OECD",
+   "gold_urls": [
+    "https://vnexpress.net/ket-qua-pisa-2025-cua-hoc-sinh-viet-nam-gan-60-khong-dat-muc-co-ban-o-ky-nang-doc-hieu-5118104.html"
+   ],
+   "gold_titles": [
+    "Gần 60% học sinh Việt chưa đạt mức đọc hiểu cơ bản"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "giá đô ở ngân hàng giảm r à",
+   "gold_urls": [
+    "https://vnexpress.net/gia-usd-ngan-hang-thap-nhat-nua-nam-5117829.html"
+   ],
+   "gold_titles": [
+    "Giá USD ngân hàng thấp nhất nửa năm"
+   ],
+   "style": "teencode"
+  },
+  {
+   "query": "giảm trừ thuế thu nhập cho học phí và viện phí",
+   "gold_urls": [
+    "https://vnexpress.net/dong-hoc-phi-chua-benh-duoc-giam-thue-thu-nhap-the-nao-5117417.html"
+   ],
+   "gold_titles": [
+    "Đóng học phí, chữa bệnh được giảm thuế thu nhập thế nào?"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "đấu giá băng tần 900 MHz",
+   "gold_urls": [
+    "https://vnexpress.net/ba-mang-di-dong-trung-dau-gia-bang-tan-nghin-ty-5118550.html"
+   ],
+   "gold_titles": [
+    "Ba mạng di động trúng đấu giá băng tần nghìn tỷ"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "ng thái lan thik nghỉ dài ngày ở tp nào của vn",
+   "gold_urls": [
+    "https://vnexpress.net/khach-thai-lan-tim-kiem-nhieu-nhat-ve-da-nang-5112671.html"
+   ],
+   "gold_titles": [
+    "Khách Thái Lan tìm kiếm nhiều nhất về Đà Nẵng"
+   ],
+   "style": "teencode"
+  },
+  {
+   "query": "lương CEO mới của Apple",
+   "gold_urls": [
+    "https://vnexpress.net/ceo-moi-cua-apple-nhan-luong-3-trieu-usd-moi-nam-5115791.html"
+   ],
+   "gold_titles": [
+    "CEO mới của Apple nhận lương 3 triệu USD mỗi năm"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "trường dạy đờn ca tài tử miễn phí",
+   "gold_urls": [
+    "https://vnexpress.net/truong-hoc-day-don-ca-tai-tu-mien-phi-5117874.html"
+   ],
+   "gold_titles": [
+    "Trường học dạy đờn ca tài tử miễn phí"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "Nvidia mua Hugging Face",
+   "gold_urls": [
+    "https://vnexpress.net/tai-sao-nvidia-chi-gan-13-ty-usd-mua-hugging-face-5116727.html",
+    "https://vnexpress.net/nvidia-chi-gan-13-ty-usd-mua-github-cua-gioi-ai-5116284.html"
+   ],
+   "gold_titles": [
+    "Tại sao Nvidia chi gần 13 tỷ USD mua Hugging Face?",
+    "Nvidia chi gần 13 tỷ USD mua 'GitHub của giới AI'"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "tỷ phú 98 tuổi sống tằn tiện",
+   "gold_urls": [
+    "https://vnexpress.net/cuoc-song-nhu-an-may-cua-ty-phu-98-tuoi-5117617.html"
+   ],
+   "gold_titles": [
+    "Cuộc sống 'như ăn mày' của tỷ phú 98 tuổi"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "metro Bến Thành Suối Tiên phải lãi bao nhiêu",
+   "gold_urls": [
+    "https://vnexpress.net/metro-ben-thanh-suoi-tien-can-lai-binh-quan-moi-nam-27-ty-dong-5118571.html"
+   ],
+   "gold_titles": [
+    "Metro Bến Thành - Suối Tiên cần lãi bình quân mỗi năm 27 tỷ đồng"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "Việt Nam hợp tác với Nga về công nghệ lượng tử",
+   "gold_urls": [
+    "https://vnexpress.net/viet-nam-de-nghi-nga-ho-tro-xay-dung-chien-luoc-luong-tu-5118134.html"
+   ],
+   "gold_titles": [
+    "Việt Nam đề nghị Nga hỗ trợ xây dựng chiến lược lượng tử"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "bài tập tốt cho người huyết áp cao",
+   "gold_urls": [
+    "https://vnexpress.net/ba-loai-bai-tap-ho-tro-kiem-soat-huyet-ap-cao-5117966.html"
+   ],
+   "gold_titles": [
+    "Ba loại bài tập hỗ trợ kiểm soát huyết áp cao"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "khi nào tắt sóng 2g v",
+   "gold_urls": [
+    "https://vnexpress.net/mang-2g-se-duoc-tat-hoan-toan-trong-thang-9-5115657.html"
+   ],
+   "gold_titles": [
+    "Mạng 2G sẽ được tắt hoàn toàn trong tháng 9"
+   ],
+   "style": "teencode"
+  },
+  {
+   "query": "trung quoc tim duoc mo vang 200 tan",
+   "gold_urls": [
+    "https://vnexpress.net/trung-quoc-phat-hien-mo-chua-200-tan-vang-5116247.html"
+   ],
+   "gold_titles": [
+    "Trung Quốc phát hiện mỏ chứa 200 tấn vàng"
+   ],
+   "style": "không dấu"
+  },
+  {
+   "query": "thủ khoa Bách khoa TP HCM",
+   "gold_urls": [
+    "https://vnexpress.net/thu-khoa-bach-khoa-tp-hcm-gianh-cu-dup-diem-toan-tuyet-doi-5117000.html"
+   ],
+   "gold_titles": [
+    "Thủ khoa Bách khoa TP HCM giành 'cú đúp' điểm Toán tuyệt đối"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "thịt gà nhập khẩu rẻ hơn rau",
+   "gold_urls": [
+    "https://vnexpress.net/thit-ga-phu-pham-nhap-khau-re-hon-nhieu-loai-rau-5117946.html"
+   ],
+   "gold_titles": [
+    "Thịt gà, phụ phẩm nhập khẩu rẻ hơn nhiều loại rau"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "gs le hong van nha toan hoc",
+   "gold_urls": [
+    "https://vnexpress.net/gs-le-hong-van-nha-toan-hoc-voi-nhung-ky-luc-vo-tien-khoang-hau-5117612.html"
+   ],
+   "gold_titles": [
+    "GS Lê Hồng Vân - hành trình trọn đời với toán học"
+   ],
+   "style": "không dấu"
+  },
+  {
+   "query": "truong tieu hoc hon 10.500 hoc sinh o nha trang",
+   "gold_urls": [
+    "https://vnexpress.net/hieu-truong-sieu-truong-hon-10-500-hoc-sinh-o-nha-trang-noi-gi-5117651.html",
+    "https://vnexpress.net/hieu-truong-xoay-xo-voi-sieu-truong-sau-sap-nhap-5113771.html",
+    "https://vnexpress.net/ky-luc-sieu-truong-co-10-500-hoc-sinh-13-hieu-pho-5117383.html"
+   ],
+   "gold_titles": [
+    "Hiệu trưởng 'siêu trường' hơn 10.500 học sinh: Chưa phát sinh khó khăn lớn",
+    "Hiệu trưởng xoay xở với 'siêu trường' sau sáp nhập",
+    "'Siêu trường' hơn 10.500 học sinh, 13 hiệu phó sau sáp nhập"
+   ],
+   "style": "không dấu"
+  },
+  {
+   "query": "quán nước sát mép vực trên đèo Lương Sơn",
+   "gold_urls": [
+    "https://vnexpress.net/hang-quan-tu-phat-nam-sat-vuc-tren-deo-o-nha-trang-5116678.html"
+   ],
+   "gold_titles": [
+    "Hàng quán tự phát nằm sát vực trên đèo ở Nha Trang"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "lồng đèn làm từ nan trúc giấy dó ở đình Sơn Trà",
+   "gold_urls": [
+    "https://vnexpress.net/long-den-coc-kien-troi-trong-ngoi-dinh-tram-tuoi-tai-tp-hcm-5112362.html"
+   ],
+   "gold_titles": [
+    "Lồng đèn 'Cóc kiện trời' trong ngôi đình trăm tuổi tại TP HCM"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "cô gái Nga lấy chồng thợ điện Vĩnh Long",
+   "gold_urls": [
+    "https://vnexpress.net/co-gai-nga-va-moi-tinh-voi-anh-tho-dien-vinh-long-5115497.html"
+   ],
+   "gold_titles": [
+    "Cô gái Nga và mối tình với anh thợ điện Vĩnh Long"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "chữ SBY trên vé máy bay là j z",
+   "gold_urls": [
+    "https://vnexpress.net/y-nghia-chu-sby-tren-ve-may-bay-5112094.html"
+   ],
+   "gold_titles": [
+    "Ý nghĩa chữ 'SBY' trên vé máy bay"
+   ],
+   "style": "teencode"
+  },
+  {
+   "query": "ưu đãi Sun World Hạ Long dịp lễ 2/9",
+   "gold_urls": [
+    "https://vnexpress.net/bo-ba-uu-dai-dip-2-9-tai-sun-world-ha-long-5112912.html"
+   ],
+   "gold_titles": [
+    "Bộ ba ưu đãi dịp 2/9 tại Sun World Ha Long"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "ép tim 15 phút cứu người ngừng tim",
+   "gold_urls": [
+    "https://vnexpress.net/nga-quy-khi-an-com-thoat-chet-nho-15-phut-ep-tim-cua-nguoi-nha-5118513.html"
+   ],
+   "gold_titles": [
+    "Ngã quỵ khi ăn cơm, thoát chết nhờ 15 phút ép tim của người nhà"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "iPhone 17 Pro giảm giá trước khi ra 18 Pro",
+   "gold_urls": [
+    "https://vnexpress.net/bo-doi-iphone-17-pro-giam-gia-truoc-le-ra-mat-18-pro-5118135.html"
+   ],
+   "gold_titles": [
+    "Bộ đôi iPhone 17 Pro giảm giá trước lễ ra mắt 18 Pro"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "đồ để lâu trong tủ lạnh có độc ko",
+   "gold_urls": [
+    "https://vnexpress.net/5-mon-tru-lau-trong-tu-lanh-de-sinh-doc-to-hai-noi-tang-5118211.html"
+   ],
+   "gold_titles": [
+    "5 món trữ lâu trong tủ lạnh dễ sinh độc tố, hại nội tạng"
+   ],
+   "style": "teencode"
+  },
+  {
+   "query": "năm Bính Ngọ Nhật Bản ít sinh con",
+   "gold_urls": [
+    "https://vnexpress.net/dinh-kien-con-gai-binh-ngo-khien-ty-le-sinh-lao-doc-5118584.html"
+   ],
+   "gold_titles": [
+    "Định kiến 'con gái Bính Ngọ' khiến tỷ lệ sinh lao dốc"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "xúc xích lạp xưởng gây ung thư",
+   "gold_urls": [
+    "https://vnexpress.net/vi-sao-an-nhieu-thit-che-bien-co-nguy-co-ung-thu-5118191.html"
+   ],
+   "gold_titles": [
+    "Vì sao ăn nhiều thịt chế biến có nguy cơ ung thư?"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "nhà nghiên cứu Anthropic nghỉ việc vì sợ AI",
+   "gold_urls": [
+    "https://vnexpress.net/nha-nghien-cuu-anthropic-tu-chuc-vi-lo-ai-vuot-kiem-soat-5118352.html"
+   ],
+   "gold_titles": [
+    "Nhà nghiên cứu Anthropic từ chức vì lo AI vượt kiểm soát"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "Thùy Linh thua ở Vietnam Open",
+   "gold_urls": [
+    "https://vnexpress.net/thuy-linh-bi-loai-ngay-vong-dau-vietnam-open-2026-5118512.html"
+   ],
+   "gold_titles": [
+    "Thùy Linh bị loại ngay vòng đầu Vietnam Open 2026"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "Casemiro ghi bàn cho Inter Miami",
+   "gold_urls": [
+    "https://vnexpress.net/messi-kien-tao-casemiro-ghi-ban-cuu-inter-miami-5118684.html"
+   ],
+   "gold_titles": [
+    "Messi kiến tạo, Casemiro ghi bàn cứu Inter Miami"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "rung dua do lien xo tai tro o quang ngai",
+   "gold_urls": [
+    "https://vnexpress.net/rung-dua-lien-xo-tai-tro-hon-40-nam-truoc-thanh-khu-nghi-duong-5117496.html"
+   ],
+   "gold_titles": [
+    "Rừng dừa Liên Xô tài trợ hơn 40 năm trước thành khu nghỉ dưỡng"
+   ],
+   "style": "không dấu"
+  },
+  {
+   "query": "sửa chương trình sách giáo khoa lớp 1 đến 12",
+   "gold_urls": [
+    "https://vnexpress.net/se-sua-dong-bo-chuong-trinh-sach-giao-khoa-lop-1-12-5117240.html"
+   ],
+   "gold_titles": [
+    "Sẽ sửa đồng bộ chương trình, sách giáo khoa lớp 1-12"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "CXMT lấy công nghệ DRAM của Samsung",
+   "gold_urls": [
+    "https://vnexpress.net/du-an-mat-co-the-giup-cxmt-nam-cong-nghe-dram-cua-samsung-5116817.html"
+   ],
+   "gold_titles": [
+    "Dự án mật có thể giúp CXMT nắm công nghệ DRAM của Samsung"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "Raphinha ghi bàn liên tiếp cho Barca",
+   "gold_urls": [
+    "https://vnexpress.net/raphinha-lap-cot-moc-hiem-trong-lich-su-barca-5118611.html",
+    "https://vnexpress.net/barca-dang-so-ma-khong-can-so-9-5117850.html"
+   ],
+   "gold_titles": [
+    "Raphinha lập cột mốc hiếm trong lịch sử Barca",
+    "Barca đáng sợ mà không cần 'số 9'"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "dap thuy dien cao nhat the gioi",
+   "gold_urls": [
+    "https://vnexpress.net/trung-quoc-van-hanh-dap-thuy-dien-cao-nhat-the-gioi-5116497.html"
+   ],
+   "gold_titles": [
+    "Trung Quốc vận hành đập thủy điện cao nhất thế giới"
+   ],
+   "style": "không dấu"
+  },
+  {
+   "query": "lừa đảo đặt phòng khách sạn Măng Đen",
+   "gold_urls": [
+    "https://vnexpress.net/nhieu-khach-bi-lua-khi-dat-khach-san-o-mang-den-dip-2-9-5116902.html"
+   ],
+   "gold_titles": [
+    "Nhiều khách bị lừa khi đặt khách sạn ở Măng Đen dịp 2/9"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "cồn cát cao 100 mét ở Italy và kỳ quan thiên nhiên châu Âu",
+   "gold_urls": [
+    "https://vnexpress.net/10-tuyet-tac-thien-nhien-chau-au-phai-toi-mot-lan-trong-doi-5112072.html"
+   ],
+   "gold_titles": [
+    "10 tuyệt tác thiên nhiên châu Âu phải tới một lần trong đời"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "uống mật ong có bị béo bụng ko",
+   "gold_urls": [
+    "https://vnexpress.net/dung-mat-ong-thuong-xuyen-co-lam-tang-mo-bung-5117986.html"
+   ],
+   "gold_titles": [
+    "Dùng mật ong thường xuyên có làm tăng mỡ bụng?"
+   ],
+   "style": "teencode"
+  },
+  {
+   "query": "sv mới ra trường khó kiếm vc vì AI hả",
+   "gold_urls": [
+    "https://vnexpress.net/viec-lam-cho-sinh-vien-moi-ra-truong-cham-day-vi-ai-5113615.html"
+   ],
+   "gold_titles": [
+    "Việc làm cho sinh viên mới ra trường 'chạm đáy' vì AI"
+   ],
+   "style": "teencode"
+  },
+  {
+   "query": "vợ chồng lâu năm có giống nhau không",
+   "gold_urls": [
+    "https://vnexpress.net/su-that-ve-tuong-phu-the-5118372.html"
+   ],
+   "gold_titles": [
+    "Sự thật về 'tướng phu thê'"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "xuất khẩu rau quả chế biến",
+   "gold_urls": [
+    "https://vnexpress.net/xuat-khau-rau-qua-che-bien-thu-gan-1-4-ty-usd-5116151.html"
+   ],
+   "gold_titles": [
+    "Xuất khẩu rau quả chế biến thu gần 1,4 tỷ USD"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "dấu hiệu vật chất tối dưới lòng đất South Dakota",
+   "gold_urls": [
+    "https://vnexpress.net/phat-hien-manh-moi-ve-vat-chat-toi-bi-an-5116606.html"
+   ],
+   "gold_titles": [
+    "Phát hiện manh mối về vật chất tối bí ẩn"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "thiet bi phat hien camera quay len",
+   "gold_urls": [
+    "https://vnexpress.net/thiet-bi-7-usd-phat-hien-camera-quay-len-trong-5-giay-5115865.html"
+   ],
+   "gold_titles": [
+    "Thiết bị 7 USD phát hiện camera quay lén trong 5 giây"
+   ],
+   "style": "không dấu"
+  },
+  {
+   "query": "Ariston mua lại Mutosi",
+   "gold_urls": [
+    "https://vnexpress.net/ariston-thau-tom-thuong-hieu-may-loc-nuoc-viet-5118217.html"
+   ],
+   "gold_titles": [
+    "Ariston thâu tóm thương hiệu máy lọc nước Việt"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "khách Pháp chết ở Thung lũng Chết vì nắng nóng",
+   "gold_urls": [
+    "https://vnexpress.net/khach-tu-vong-vi-ket-xe-giua-sa-mac-nong-gan-50-do-c-5112203.html"
+   ],
+   "gold_titles": [
+    "Khách tử vong vì kẹt xe giữa sa mạc nóng gần 50 độ C"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "sân bay Việt Nam cải thiện kết nối hàng không",
+   "gold_urls": [
+    "https://vnexpress.net/ba-san-bay-viet-nam-vao-top-cai-thien-ket-noi-hang-khong-noi-bat-5118198.html"
+   ],
+   "gold_titles": [
+    "Ba sân bay Việt Nam vào top cải thiện kết nối hàng không nổi bật"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "Vũng Tàu bắn pháo hoa lễ Quốc khánh",
+   "gold_urls": [
+    "https://vnexpress.net/vung-tau-se-ban-phao-hoa-trong-ba-ngay-dip-quoc-khanh-2-9-5113029.html"
+   ],
+   "gold_titles": [
+    "Vũng Tàu sẽ bắn pháo hoa trong ba ngày dịp Quốc khánh 2/9"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "đồ ăn giúp hấp thụ magie",
+   "gold_urls": [
+    "https://vnexpress.net/nhung-thuc-pham-giup-co-the-tang-hap-thu-magie-5118631.html"
+   ],
+   "gold_titles": [
+    "Những thực phẩm giúp cơ thể tăng hấp thụ magie"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "lịch đá asean cup ntn",
+   "gold_urls": [
+    "https://vnexpress.net/lich-thi-dau-fifa-asean-cup-2026-5118354.html"
+   ],
+   "gold_titles": [
+    "Lịch thi đấu FIFA ASEAN Cup 2026"
+   ],
+   "style": "teencode"
+  },
+  {
+   "query": "khóa 13 triệu SIM chưa xác thực",
+   "gold_urls": [
+    "https://vnexpress.net/khoa-thu-hoi-13-trieu-sim-di-dong-khong-xac-nhan-chinh-chu-5116179.html"
+   ],
+   "gold_titles": [
+    "Khóa, thu hồi 13 triệu SIM di động không xác nhận chính chủ"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "dao con co quang tri nhin tu tren cao",
+   "gold_urls": [
+    "https://vnexpress.net/con-co-dao-anh-hung-mot-thoi-nhin-tu-tren-cao-5117516.html"
+   ],
+   "gold_titles": [
+    "Cồn Cỏ - đảo anh hùng một thời nhìn từ trên cao"
+   ],
+   "style": "không dấu"
+  },
+  {
+   "query": "giấu hồ sơ xin việc trong hộp bánh donut",
+   "gold_urls": [
+    "https://vnexpress.net/giau-cv-trong-hop-banh-de-xin-viec-5116876.html"
+   ],
+   "gold_titles": [
+    "Giấu CV trong hộp bánh để xin việc"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "vườn mưa chống ngập đô thị",
+   "gold_urls": [
+    "https://vnexpress.net/vuon-mua-co-the-ngan-chan-ngap-lut-o-cac-thanh-pho-5117050.html"
+   ],
+   "gold_titles": [
+    "Vườn mưa có thể ngăn chặn ngập lụt ở các thành phố"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "nhập khẩu linh kiện điện tử tăng vì giá chip",
+   "gold_urls": [
+    "https://vnexpress.net/vi-sao-nhap-khau-san-pham-linh-kien-dien-tu-tang-manh-5118538.html",
+    "https://vnexpress.net/dien-tu-nhap-sieu-60-ty-usd-chinh-phu-yeu-cau-tim-giai-phap-thuc-day-xuat-khau-5118063.html"
+   ],
+   "gold_titles": [
+    "Vì sao nhập khẩu sản phẩm, linh kiện điện tử tăng mạnh?",
+    "Điện tử nhập siêu 60 tỷ USD, Chính phủ yêu cầu tìm giải pháp thúc đẩy xuất khẩu"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "alcaraz thua shelton",
+   "gold_urls": [
+    "https://vnexpress.net/alcaraz-bi-loai-trong-tran-dau-muon-nhat-lich-su-my-mo-rong-5118422.html"
+   ],
+   "gold_titles": [
+    "Alcaraz bị loại trong trận đấu muộn nhất lịch sử Mỹ Mở rộng"
+   ],
+   "style": "không dấu"
+  },
+  {
+   "query": "vi sao nguoi ta thich xem robot bi nga",
+   "gold_urls": [
+    "https://vnexpress.net/tai-sao-con-nguoi-thich-xem-robot-nga-5117414.html"
+   ],
+   "gold_titles": [
+    "Tại sao con người thích xem robot ngã?"
+   ],
+   "style": "không dấu"
+  },
+  {
+   "query": "cung đường chữ S ở Y Tý Lào Cai",
+   "gold_urls": [
+    "https://vnexpress.net/cung-duong-chu-s-o-y-ty-5117465.html"
+   ],
+   "gold_titles": [
+    "Cung đường chữ S ở Y Tý"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "cô gái bị dị ứng với nước",
+   "gold_urls": [
+    "https://vnexpress.net/noi-kho-cua-co-gai-mac-benh-di-ung-nuoc-5117898.html"
+   ],
+   "gold_titles": [
+    "Nỗi khổ của cô gái mắc bệnh dị ứng nước"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "anh em sinh doi vao thang hoc vien ky thuat quan su",
+   "gold_urls": [
+    "https://vnexpress.net/anh-em-song-sinh-do-thang-hoc-vien-ky-thuat-quan-su-5117294.html"
+   ],
+   "gold_titles": [
+    "Anh em song sinh đỗ thẳng Học viện Kỹ thuật quân sự"
+   ],
+   "style": "không dấu"
+  },
+  {
+   "query": "du học mỹ tốn bn 1 năm",
+   "gold_urls": [
+    "https://vnexpress.net/chi-phi-du-hoc-my-vuot-100-000-usd-nam-o-15-truong-5114638.html"
+   ],
+   "gold_titles": [
+    "Chi phí du học Mỹ vượt 100.000 USD/năm ở 15 trường"
+   ],
+   "style": "teencode"
+  },
+  {
+   "query": "Yamal vượt kỷ lục của Mbappe",
+   "gold_urls": [
+    "https://vnexpress.net/yamal-pha-ky-luc-cua-mbappe-o-champions-league-5118616.html"
+   ],
+   "gold_titles": [
+    "Yamal phá kỷ lục của Mbappe ở Champions League"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "leo núi nghe theo AI rồi bị lạc",
+   "gold_urls": [
+    "https://vnexpress.net/ket-dang-cua-du-khach-qua-tin-vao-ai-5117047.html"
+   ],
+   "gold_titles": [
+    "Kết đắng của du khách quá tin vào AI"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "giải thể công ty không doanh thu bị phạt gì",
+   "gold_urls": [
+    "https://vnexpress.net/giai-the-cong-ty-khong-co-doanh-thu-phai-nop-bao-nhieu-phi-phat-5117609.html"
+   ],
+   "gold_titles": [
+    "Giải thể công ty không có doanh thu phải nộp bao nhiêu phí, phạt?"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "hai ba cu ngoai 90 tuoi di du lich khap the gioi",
+   "gold_urls": [
+    "https://vnexpress.net/doi-ban-than-u90-tu-du-lich-vong-quanh-the-gioi-5112415.html"
+   ],
+   "gold_titles": [
+    "Đôi bạn thân U90 tự du lịch vòng quanh thế giới"
+   ],
+   "style": "không dấu"
+  },
+  {
+   "query": "iPhone 18 Pro Max có mấy màu",
+   "gold_urls": [
+    "https://vnexpress.net/anh-thuc-te-iphone-18-pro-max-voi-bon-mau-5118606.html",
+    "https://vnexpress.net/iphone-18-pro-max-lo-mau-do-dam-va-xanh-duong-5117622.html"
+   ],
+   "gold_titles": [
+    "Ảnh thực tế iPhone 18 Pro Max với bốn màu",
+    "iPhone 18 Pro Max lộ màu đỏ đậm và xanh dương"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "trường Việt Đức sửa sang 300 tỷ",
+   "gold_urls": [
+    "https://vnexpress.net/truong-top-dau-ha-noi-mang-net-chau-au-sau-cuoc-dai-tu-300-ty-dong-5116959.html"
+   ],
+   "gold_titles": [
+    "Trường top đầu Hà Nội mang nét châu Âu sau 'cuộc đại tu' 300 tỷ đồng"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "tập thể dục ăn ít mà không giảm cân",
+   "gold_urls": [
+    "https://vnexpress.net/tai-sao-tap-nhieu-an-it-nhung-can-nang-khong-giam-5118731.html"
+   ],
+   "gold_titles": [
+    "Tại sao tập nhiều, ăn ít nhưng cân nặng không giảm?"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "Tiktok đầu tư logistics ở TP HCM",
+   "gold_urls": [
+    "https://vnexpress.net/tp-hcm-se-co-du-an-logistics-gan-1-ty-usd-tu-he-sinh-thai-tiktok-5118378.html"
+   ],
+   "gold_titles": [
+    "TP HCM sẽ có dự án logistics gần 1 tỷ USD từ hệ sinh thái Tiktok"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "sốt xuất huyết phải chạy ECMO tốn gần tỷ",
+   "gold_urls": [
+    "https://vnexpress.net/ton-gan-ty-dong-gianh-giat-su-song-sau-con-sot-xuat-huyet-5118358.html"
+   ],
+   "gold_titles": [
+    "Tốn gần tỷ đồng giành giật sự sống sau cơn sốt xuất huyết"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "gia đình Úc sang Đà Nẵng sống để dành tiền mua nhà",
+   "gold_urls": [
+    "https://vnexpress.net/gia-dinh-australia-sang-viet-nam-song-de-tiet-kiem-tien-mua-nha-5117849.html"
+   ],
+   "gold_titles": [
+    "Gia đình Australia sang Việt Nam sống để tiết kiệm tiền mua nhà"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "vì sao đêm đầu ngủ ở khách sạn hay bị mất ngủ",
+   "gold_urls": [
+    "https://vnexpress.net/hien-tuong-dem-dau-tien-khien-ngu-kem-khi-o-khach-san-5112137.html"
+   ],
+   "gold_titles": [
+    "Hiện tượng 'đêm đầu tiên' khiến ngủ kém khi ở khách sạn"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "Xiaomi ra điện thoại gập trước Apple",
+   "gold_urls": [
+    "https://vnexpress.net/xiaomi-ra-smartphone-gap-ngay-truoc-su-kien-iphone-5117690.html"
+   ],
+   "gold_titles": [
+    "Xiaomi ra smartphone gập ngay trước sự kiện iPhone"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "robot Iron của Xpeng tự bước khỏi dây chuyền",
+   "gold_urls": [
+    "https://vnexpress.net/robot-hinh-nguoi-dau-tien-tu-buoc-ra-tu-day-chuyen-san-xuat-5118285.html"
+   ],
+   "gold_titles": [
+    "Robot hình người đầu tiên tự bước ra từ dây chuyền sản xuất"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "Shinjuku cấm cho thuê nhà ngắn hạn",
+   "gold_urls": [
+    "https://vnexpress.net/quan-du-lich-noi-tieng-tokyo-se-cam-cho-thue-nha-vi-khach-y-thuc-kem-5118335.html"
+   ],
+   "gold_titles": [
+    "Quận du lịch nổi tiếng Tokyo sẽ cấm cho thuê nhà vì khách ý thức kém"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "robot lau nhà có cánh tay",
+   "gold_urls": [
+    "https://vnexpress.net/x60-ultra-extreme-robot-lau-nha-dau-tien-co-canh-tay-khop-kep-5117001.html"
+   ],
+   "gold_titles": [
+    "X60 Ultra Extreme - robot lau nhà đầu tiên có cánh tay khớp kép"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "Haaland ngang kỷ lục của Aguero",
+   "gold_urls": [
+    "https://vnexpress.net/haaland-san-bang-ky-luc-cua-aguero-5118142.html",
+    "https://vnexpress.net/haaland-giup-man-city-thang-tran-ra-quan-champions-league-5118144.html",
+    "https://vnexpress.net/carragher-toi-khong-the-ngung-hinh-dung-chuyen-haaland-ghi-1-000-ban-5118552.html"
+   ],
+   "gold_titles": [
+    "Haaland san bằng kỷ lục của Aguero",
+    "Haaland giúp Man City thắng trận ra quân Champions League",
+    "Carragher: 'Tôi không thể ngừng hình dung chuyện Haaland ghi 1.000 bàn'"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "Đại học Chicago cấm dùng laptop và AI",
+   "gold_urls": [
+    "https://vnexpress.net/dai-hoc-top-dau-my-cam-sinh-vien-dung-ai-laptop-dien-thoai-5115237.html"
+   ],
+   "gold_titles": [
+    "Đại học top đầu Mỹ cấm sinh viên dùng AI, laptop, điện thoại"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "khách Việt kẹt ở sân bay Jakarta vì núi lửa",
+   "gold_urls": [
+    "https://vnexpress.net/khach-viet-vat-vo-3-ngay-o-san-bay-indonesia-vi-nui-lua-phun-trao-5117811.html",
+    "https://vnexpress.net/270-000-hanh-khach-mac-ket-o-san-bay-indonesia-vi-nui-lua-phun-trao-5117522.html"
+   ],
+   "gold_titles": [
+    "Khách Việt vật vờ 3 ngày ở sân bay Indonesia vì núi lửa phun trào",
+    "270.000 hành khách mắc kẹt ở sân bay Indonesia vì núi lửa phun trào"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "tre bi nhuoc thi co chua duoc khong",
+   "gold_urls": [
+    "https://vnexpress.net/tre-bi-nhuoc-thi-co-the-phuc-hoi-thi-luc-5118633.html"
+   ],
+   "gold_titles": [
+    "Trẻ bị nhược thị có thể phục hồi thị lực?"
+   ],
+   "style": "không dấu"
+  },
+  {
+   "query": "chiên khoai tây sao cho giòn z",
+   "gold_urls": [
+    "https://vnexpress.net/tuyet-chieu-lam-khoai-tay-chien-vo-gion-rum-5116076.html"
+   ],
+   "gold_titles": [
+    "Tuyệt chiêu làm khoai tây chiên vỏ giòn rụm"
+   ],
+   "style": "teencode"
+  },
+  {
+   "query": "bà cụ kiện con trai đòi tiền nuôi cháu",
+   "gold_urls": [
+    "https://vnexpress.net/kien-con-trai-doi-tien-nuoi-chau-5118130.html"
+   ],
+   "gold_titles": [
+    "Kiện con trai đòi tiền nuôi cháu"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "khối ngoại bán ròng trước nâng hạng",
+   "gold_urls": [
+    "https://vnexpress.net/nha-dau-tu-ngoai-lien-tuc-xa-hang-truoc-them-nang-hang-chung-khoan-5118466.html"
+   ],
+   "gold_titles": [
+    "Nhà đầu tư ngoại liên tục xả hàng trước thềm nâng hạng chứng khoán"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "Mỹ tập trận trên quỹ đạo Apollo Maneuvers",
+   "gold_urls": [
+    "https://vnexpress.net/my-dien-tap-thuc-chien-lan-dau-tren-quy-dao-5118775.html"
+   ],
+   "gold_titles": [
+    "Mỹ diễn tập thực chiến lần đầu trên quỹ đạo"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "YouTuber ăn nhiều đến mức dạ dày phình to",
+   "gold_urls": [
+    "https://vnexpress.net/anh-da-day-phinh-to-nhu-qua-bong-nuoc-cua-thanh-an-dai-loan-5118260.html",
+    "https://vnexpress.net/thanh-an-trieu-view-trung-quoc-qua-doi-o-tuoi-24-5118102.html",
+    "https://vnexpress.net/mat-trai-cua-nghe-thanh-an-5118438.html"
+   ],
+   "gold_titles": [
+    "Ảnh dạ dày phình to như quả bóng nước của 'thánh ăn' Đài Loan",
+    "'Thánh ăn' triệu view Trung Quốc qua đời ở tuổi 24",
+    "Mặt trái của nghề 'thánh ăn'"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "khu kinh tế đặc biệt được ưu đãi gì",
+   "gold_urls": [
+    "https://vnexpress.net/nhung-chinh-sach-dac-thu-phat-trien-khu-kinh-te-dac-biet-5113581.html"
+   ],
+   "gold_titles": [
+    "Những chính sách đặc thù phát triển khu kinh tế đặc biệt"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "thang may vach nui cho hoc sinh van nam",
+   "gold_urls": [
+    "https://vnexpress.net/thang-may-bam-vach-nui-cao-gan-300-met-dua-hoc-sinh-den-truong-5115973.html"
+   ],
+   "gold_titles": [
+    "Thang máy bám vách núi cao gần 300 mét đưa học sinh đến trường"
+   ],
+   "style": "không dấu"
+  },
+  {
+   "query": "ai giai bai toan navier-stokes",
+   "gold_urls": [
+    "https://vnexpress.net/tranh-cai-quanh-tuyen-bo-dung-ai-giai-bai-toan-thien-nien-ky-navier-stokes-tri-gia-1-trieu-usd-5118286.html"
+   ],
+   "gold_titles": [
+    "AI giải bài toán Thiên niên kỷ 1 triệu USD"
+   ],
+   "style": "không dấu"
+  },
+  {
+   "query": "khuyến khích kết hôn trước 30 tuổi sinh hai con",
+   "gold_urls": [
+    "https://vnexpress.net/khuyen-khich-nam-nu-ket-hon-truoc-30-tuoi-vo-chong-sinh-du-hai-con-5118193.html"
+   ],
+   "gold_titles": [
+    "Khuyến khích nam nữ kết hôn trước 30 tuổi, vợ chồng sinh đủ hai con"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "lien hop quoc dung ban do equal earth",
+   "gold_urls": [
+    "https://vnexpress.net/lien-hop-quoc-thong-qua-ban-do-the-gioi-moi-5117365.html"
+   ],
+   "gold_titles": [
+    "Liên Hợp Quốc thông qua bản đồ thế giới mới"
+   ],
+   "style": "không dấu"
+  },
+  {
+   "query": "kinh nghiệm săn mây ở miền Bắc",
+   "gold_urls": [
+    "https://vnexpress.net/kinh-nghiem-nhin-thoi-tiet-san-may-o-mien-bac-5116478.html"
+   ],
+   "gold_titles": [
+    "Kinh nghiệm nhìn thời tiết săn mây ở miền Bắc"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "lãi suất tiết kiệm có còn cao ko b",
+   "gold_urls": [
+    "https://vnexpress.net/lai-suat-tiet-kiem-co-the-van-neo-cao-5118122.html"
+   ],
+   "gold_titles": [
+    "Lãi suất tiết kiệm có thể vẫn neo cao"
+   ],
+   "style": "teencode"
+  },
+  {
+   "query": "co gai h'mong lam banh nuoi em",
+   "gold_urls": [
+    "https://vnexpress.net/co-gai-mong-lam-tho-banh-nuoi-7-dua-em-5112546.html"
+   ],
+   "gold_titles": [
+    "Cô gái Mông làm thợ bánh nuôi 7 đứa em"
+   ],
+   "style": "không dấu"
+  },
+  {
+   "query": "dạo này ng ta mở tk chứng khoán nhiều ko",
+   "gold_urls": [
+    "https://vnexpress.net/nguoi-viet-mo-them-2-trieu-tai-khoan-chung-khoan-sau-8-thang-5118477.html"
+   ],
+   "gold_titles": [
+    "Người Việt mở thêm 2 triệu tài khoản chứng khoán sau 8 tháng"
+   ],
+   "style": "teencode"
+  },
+  {
+   "query": "HDBank thu giữ đất của Hoàng Quân",
+   "gold_urls": [
+    "https://vnexpress.net/ngan-hang-siet-no-26-thua-dat-cua-dia-oc-hoang-quan-5117581.html"
+   ],
+   "gold_titles": [
+    "Ngân hàng siết nợ 26 thửa đất của Địa ốc Hoàng Quân"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "hàng bánh cuốn 15 nghìn trong ngõ Thụy Khuê",
+   "gold_urls": [
+    "https://vnexpress.net/hang-banh-cuon-vo-chong-ban-gia-15-000-dong-trong-ngo-o-ha-noi-5118028.html"
+   ],
+   "gold_titles": [
+    "Hàng bánh cuốn 'vợ chồng' bán giá 15.000 đồng trong ngõ ở Hà Nội"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "áp lực mua nhà mua xe trước khi cưới gây mất ngủ",
+   "gold_urls": [
+    "https://vnexpress.net/lo-au-mat-ngu-vi-ap-luc-phai-co-nha-xe-truoc-cuoi-5117108.html"
+   ],
+   "gold_titles": [
+    "Lo âu, mất ngủ vì áp lực phải có 'nhà, xe' trước cưới"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "nữ sinh chép bài thủ khoa bị trừ điểm",
+   "gold_urls": [
+    "https://vnexpress.net/nu-sinh-9-5-diem-toan-bi-tru-50-vi-chep-bai-thu-khoa-5117519.html"
+   ],
+   "gold_titles": [
+    "Nữ sinh 9,5 điểm Toán bị trừ 50% vì chép bài 'thủ khoa'"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "hay dậy giữa đêm có sao ko b",
+   "gold_urls": [
+    "https://vnexpress.net/nhung-kieu-thuc-giac-giua-dem-canh-bao-bat-thuong-5118393.html"
+   ],
+   "gold_titles": [
+    "Những kiểu thức giấc giữa đêm cảnh báo bất thường"
+   ],
+   "style": "teencode"
+  },
+  {
+   "query": "Huawei đưa mạng 5.5G về Việt Nam",
+   "gold_urls": [
+    "https://vnexpress.net/huawei-muon-dua-5-5g-vao-viet-nam-4874785.html"
+   ],
+   "gold_titles": [
+    "Huawei muốn đưa 5.5G vào Việt Nam"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "trung tâm tài chính quốc tế Đà Nẵng và TP HCM",
+   "gold_urls": [
+    "https://vnexpress.net/pho-thu-tuong-trung-tam-tai-chinh-quoc-te-phai-co-thuong-vu-cu-the-tu-thang-11-5117595.html"
+   ],
+   "gold_titles": [
+    "Phó thủ tướng: Trung tâm tài chính quốc tế phải có thương vụ cụ thể từ tháng 11"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "airpods 5 giá bn",
+   "gold_urls": [
+    "https://vnexpress.net/airpods-5-tai-nghe-chong-on-chu-dong-co-gia-3-8-trieu-dong-5118596.html"
+   ],
+   "gold_titles": [
+    "AirPods 5 - tai nghe chống ồn chủ động có giá 3,8 triệu đồng"
+   ],
+   "style": "teencode"
+  },
+  {
+   "query": "laptop lenovo yoga slim 7i",
+   "gold_urls": [
+    "https://vnexpress.net/laptop-ai-mong-nhe-gia-gan-60-trieu-dong-5116280.html"
+   ],
+   "gold_titles": [
+    "Laptop AI mỏng nhẹ giá gần 60 triệu đồng"
+   ],
+   "style": "không dấu"
+  },
+  {
+   "query": "hanh khach gay roi bi dan bang keo vao ghe",
+   "gold_urls": [
+    "https://vnexpress.net/hanh-khach-bi-troi-vao-ghe-may-bay-do-gay-roi-5116820.html"
+   ],
+   "gold_titles": [
+    "Hành khách bị trói vào ghế máy bay do gây rối"
+   ],
+   "style": "không dấu"
+  },
+  {
+   "query": "khiếu nại du lịch ở Hàn Quốc tăng kỷ lục",
+   "gold_urls": [
+    "https://vnexpress.net/khieu-nai-cua-du-khach-tai-han-quoc-tang-ky-luc-5117305.html"
+   ],
+   "gold_titles": [
+    "Khiếu nại của du khách tại Hàn Quốc tăng kỷ lục"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "trung quoc xu ly giao su gian lan hoc thuat",
+   "gold_urls": [
+    "https://vnexpress.net/loat-giao-su-trung-quoc-sup-do-vi-gian-lan-5116474.html"
+   ],
+   "gold_titles": [
+    "Loạt giáo sư Trung Quốc 'sụp đổ' vì gian lận"
+   ],
+   "style": "không dấu"
+  },
+  {
+   "query": "sâu máy tính WeWorm tấn công WeChat",
+   "gold_urls": [
+    "https://vnexpress.net/sau-may-tinh-ai-co-the-chiem-tai-khoan-wechat-chi-bang-mot-cuoc-goi-5118212.html"
+   ],
+   "gold_titles": [
+    "Sâu máy tính AI có thể chiếm tài khoản WeChat chỉ bằng một cuộc gọi"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "giao vien duoc day them mon khac",
+   "gold_urls": [
+    "https://vnexpress.net/giao-vien-duoc-day-them-cheo-mon-5117369.html"
+   ],
+   "gold_titles": [
+    "Giáo viên được dạy thêm 'chéo môn'"
+   ],
+   "style": "không dấu"
+  },
+  {
+   "query": "HLV Ikeuchi rời U20 Việt Nam",
+   "gold_urls": [
+    "https://vnexpress.net/u20-viet-nam-sap-chia-tay-hlv-nhat-ban-5118085.html"
+   ],
+   "gold_titles": [
+    "U20 Việt Nam sắp chia tay HLV Nhật Bản"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "máy bay Concorde vì sao ngừng bay",
+   "gold_urls": [
+    "https://vnexpress.net/vi-sao-may-bay-cho-khach-nhanh-nhat-the-gioi-bi-khai-tu-5117425.html"
+   ],
+   "gold_titles": [
+    "Vì sao máy bay chở khách nhanh nhất thế giới bị khai tử?"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "chinh sach qua canh 240 gio cua trung quoc",
+   "gold_urls": [
+    "https://vnexpress.net/khach-viet-huong-loi-the-nao-khi-trung-quoc-mien-visa-qua-canh-5112221.html"
+   ],
+   "gold_titles": [
+    "Khách Việt hưởng lợi thế nào khi Trung Quốc miễn visa quá cảnh?"
+   ],
+   "style": "không dấu"
+  },
+  {
+   "query": "openai lam robot hinh nguoi",
+   "gold_urls": [
+    "https://vnexpress.net/sam-altman-openai-se-che-tao-robot-hinh-nguoi-5116455.html"
+   ],
+   "gold_titles": [
+    "Sam Altman: OpenAI sẽ chế tạo robot hình người"
+   ],
+   "style": "không dấu"
+  },
+  {
+   "query": "vì sao máy bay mất tín hiệu radar trên biển",
+   "gold_urls": [
+    "https://vnexpress.net/tai-sao-may-bay-bien-mat-khoi-radar-khi-qua-dai-duong-5114689.html"
+   ],
+   "gold_titles": [
+    "Tại sao máy bay biến mất khỏi radar khi qua đại dương"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "bé 6 tuổi viễn thị 7 độ",
+   "gold_urls": [
+    "https://vnexpress.net/be-6-tuoi-vien-thi-7-do-5118243.html"
+   ],
+   "gold_titles": [
+    "Bé 6 tuổi viễn thị 7 độ"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "Apple Watch vỏ gốm quay lại",
+   "gold_urls": [
+    "https://vnexpress.net/chat-lieu-gom-quay-lai-tren-apple-watch-sau-7-nam-5118599.html"
+   ],
+   "gold_titles": [
+    "Chất liệu gốm quay lại trên Apple Watch sau 7 năm"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "Messi được đề cử Quả bóng vàng 2026",
+   "gold_urls": [
+    "https://vnexpress.net/messi-duoc-de-cu-qua-bong-vang-2026-5118095.html"
+   ],
+   "gold_titles": [
+    "Messi được đề cử Quả Bóng Vàng 2026"
+   ],
+   "style": "có dấu"
+  },
+  {
+   "query": "cách thắng nước màu caramel",
+   "gold_urls": [
+    "https://vnexpress.net/ky-thuat-thang-duong-lam-nuoc-hang-chuan-vi-5117845.html"
+   ],
+   "gold_titles": [
+    "Kỹ thuật thắng đường làm nước hàng chuẩn vị"
+   ],
+   "style": "có dấu"
+  }
+ ],
+ "out_of_scope": [
+  {
+   "text": "cách chơi cờ tướng cho người mới",
+   "style": "có dấu"
+  },
+  {
+   "text": "giá vé xem phim tối nay",
+   "style": "có dấu"
+  },
+  {
+   "text": "số điện thoại tổng đài điện lực",
+   "style": "có dấu"
+  },
+  {
+   "text": "làm sao để hết mụn trứng cá",
+   "style": "có dấu"
+  },
+  {
+   "text": "dự báo thời tiết Đà Lạt cuối tuần",
+   "style": "có dấu"
+  },
+  {
+   "text": "mẹo giảm cân nhanh trong 1 tuần",
+   "style": "có dấu"
+  },
+  {
+   "text": "cách làm hộ chiếu online",
+   "style": "có dấu"
+  },
+  {
+   "text": "chỉ t cách tải game liên quân ik",
+   "style": "teencode"
+  },
+  {
+   "text": "mẹo học tiếng Hàn nhanh",
+   "style": "có dấu"
+  },
+  {
+   "text": "địa chỉ tiệm sửa laptop gần đây",
+   "style": "có dấu"
+  },
+  {
+   "text": "hnay ăn j ngon b",
+   "style": "teencode"
+  },
+  {
+   "text": "lich chieu phim cuoi tuan",
+   "style": "không dấu"
+  },
+  {
+   "text": "kết quả xổ số miền bắc",
+   "style": "có dấu"
+  },
+  {
+   "text": "hướng dẫn làm bánh mì sandwich",
+   "style": "có dấu"
+  },
+  {
+   "text": "cách nuôi cá betta",
+   "style": "có dấu"
+  },
+  {
+   "text": "phim hoạt hình hay cho trẻ em",
+   "style": "có dấu"
+  },
+  {
+   "text": "viết code python sắp xếp mảng",
+   "style": "có dấu"
+  },
+  {
+   "text": "top 10 truyện tranh hay nhất",
+   "style": "có dấu"
+  },
+  {
+   "text": "cách trồng rau muống trên sân thượng",
+   "style": "có dấu"
+  },
+  {
+   "text": "lịch âm hôm nay là ngày bao nhiêu",
+   "style": "có dấu"
+  },
+  {
+   "text": "giờ mở cửa bảo tàng Louvre",
+   "style": "có dấu"
+  },
+  {
+   "text": "bài văn tả con mèo lớp 3",
+   "style": "có dấu"
+  },
+  {
+   "text": "tuyển lập trình viên Java ở Đà Nẵng",
+   "style": "có dấu"
+  },
+  {
+   "text": "cho t xin lời bài hát sơn tùng vs",
+   "style": "teencode"
+  }
+ ],
+ "intent": [
+  {
+   "text": "tóm tắt bài này đi",
+   "expected": "tom_tat_bai"
+  },
+  {
+   "text": "hướng dẫn mình với",
+   "expected": "huong_dan"
+  },
+  {
+   "text": "cho xin link bai",
+   "expected": "hoi_nguon"
+  },
+  {
+   "text": "Nvidia mua lại công ty nào",
+   "expected": "__retrieve__"
+  },
+  {
+   "text": "vụ lừa đảo khách sạn Măng Đen",
+   "expected": "__retrieve__"
+  },
+  {
+   "text": "ừm",
+   "expected": "dong_y"
+  },
+  {
+   "text": "sân bay Jakarta núi lửa",
+   "expected": "__retrieve__"
+  },
+  {
+   "text": "bot dở quá",
+   "expected": "che_bai"
+  },
+  {
+   "text": "bot làm được những gì",
+   "expected": "huong_dan"
+  },
+  {
+   "text": "tổng cộng có mấy bài",
+   "expected": "thong_ke_corpus"
+  },
+  {
+   "text": "tin về robot hình người",
+   "expected": "__retrieve__"
+  },
+  {
+   "text": "có gì mới về Messi không",
+   "expected": "__retrieve__"
+  },
+  {
+   "text": "mình có thể hỏi gì",
+   "expected": "huong_dan"
+  },
+  {
+   "text": "liệt kê các chủ đề đi",
+   "expected": "liet_ke_chuyen_muc"
+  },
+  {
+   "text": "trả lời như không",
+   "expected": "che_bai"
+  },
+  {
+   "text": "thanks nhé",
+   "expected": "cam_on"
+  },
+  {
+   "text": "hẹn gặp lại nhé",
+   "expected": "tam_biet"
+  },
+  {
+   "text": "tạm biệt bot",
+   "expected": "tam_biet"
+  },
+  {
+   "text": "tom tat giup minh",
+   "expected": "tom_tat_bai"
+  },
+  {
+   "text": "cam on ban",
+   "expected": "cam_on"
+  },
+  {
+   "text": "link đâu b",
+   "expected": "hoi_nguon"
+  },
+  {
+   "text": "tin ve iphone gap",
+   "expected": "__retrieve__"
+  },
+  {
+   "text": "dữ liệu của bạn lấy ở đâu",
+   "expected": "thong_ke_corpus"
+  },
+  {
+   "text": "co bao nhieu tin",
+   "expected": "thong_ke_corpus"
+  },
+  {
+   "text": "xin chao",
+   "expected": "chao_hoi"
+  },
+  {
+   "text": "ok luôn",
+   "expected": "dong_y"
+  },
+  {
+   "text": "huong dan su dung",
+   "expected": "huong_dan"
+  },
+  {
+   "text": "đúng vậy",
+   "expected": "dong_y"
+  },
+  {
+   "text": "ngu thế",
+   "expected": "che_bai"
+  },
+  {
+   "text": "ai làm ra bạn thế",
+   "expected": "hoi_ve_bot"
+  },
+  {
+   "text": "bài gốc ở đâu",
+   "expected": "hoi_nguon"
+  },
+  {
+   "text": "helo bot",
+   "expected": "chao_hoi"
+  }
+ ]
+}

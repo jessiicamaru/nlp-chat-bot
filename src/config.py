@@ -61,8 +61,13 @@ CONFIG_RETRIEVAL = {
 
 
 # ------------------------------------------------------------ SIÊU THAM SỐ --
-# ---- Các giá trị dưới đây được DÒ BẰNG THỰC NGHIỆM, không chọn cảm tính.
-# Chạy `python src/evaluate.py` để tái lập bảng dò ngưỡng.
+# ---- Các giá trị dưới đây được DÒ TRÊN TẬP DEV (data/eval/dev.json) bằng
+# `python src/evaluate.py`, rồi báo cáo MỘT LẦN trên tập TEST chưa từng dùng
+# để dò (data/eval/test.json). Kết quả dò mới nhất: data/eval/tuned_params.json.
+#
+# LƯU Ý LỊCH SỬ: các bảng số trong chú thích bên dưới là từ lần dò CŨ, khi
+# tham số còn được dò và báo cáo trên cùng một tập (rò rỉ tập test). Chúng giữ
+# lại để đối chiếu; giá trị hiện hành là giá trị gán ở mỗi dòng.
 
 # Ngưỡng để chấp nhận câu trả lời từ retriever.
 #
@@ -79,7 +84,7 @@ CONFIG_RETRIEVAL = {
 #
 # Điểm cao nhất của truy vấn NGOÀI phạm vi là 0.151, nên 0.155 là ngưỡng thấp
 # nhất còn chặn được 100% — tối đa hóa số câu trả lời được mà vẫn không đoán bừa.
-RETRIEVAL_THRESHOLD = 0.155
+RETRIEVAL_THRESHOLD = 0.175
 
 # Ngưỡng điểm ensemble để chấp nhận nhãn intent từ classifier.
 # Dò lưới (w_nb x threshold): w_nb=0.8, threshold=0.25 cho điểm cân bằng
@@ -88,7 +93,7 @@ INTENT_THRESHOLD = 0.25
 
 # Trọng số của Naive Bayes trong ensemble; phần còn lại (1 - w_nb) là tín hiệu
 # cosine tới pattern gần nhất. Xem giải thích trong intent_classifier.py.
-INTENT_W_NB = 0.8
+INTENT_W_NB = 1.0
 
 # Số document trả về tối đa cho một truy vấn.
 TOP_K = 3
@@ -154,7 +159,7 @@ FRESHNESS_ALPHA = 0.6
 # tin mới phủ định tin cũ), nhưng chưa ngắn tới mức vùi lấp bài liên quan hơn
 # chỉ vì nó cũ hơn một tuần. Với 30 ngày, hai bài cách nhau 9 ngày chỉ chênh
 # nhau 5% điểm thưởng — không đủ để lật thứ hạng.
-FRESHNESS_HALFLIFE_DAYS = 7.0
+FRESHNESS_HALFLIFE_DAYS = 3.0
 
 # Thư mục cache index đã dựng (tránh phải tách từ lại 381 bài mỗi lần khởi động).
 INDEX_CACHE_PATH = MODELS_DIR / "retriever_index.joblib"

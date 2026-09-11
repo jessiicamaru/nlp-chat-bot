@@ -47,9 +47,9 @@ from config import (
 )
 from dialogue import DialogueState, Turn
 from entities import extract, expand_query
-from preprocess import has_diacritics, strip_accents, tokenize
+from preprocess import tokenize
 from intent_classifier import IntentClassifier
-from normalizer import TeencodeNormalizer
+from normalizer import TeencodeNormalizer, prepare_user_text
 from retriever import NewsRetriever, RetrievalResult
 
 
@@ -91,7 +91,15 @@ class NewsChatbot:
         use_ner: bool = True,
         use_normalizer: bool = True,
         seed: int | None = RANDOM_SEED,
+        intent_w_nb: float | None = None,
+        freshness_alpha: float | None = None,
+        freshness_halflife: float | None = None,
     ):
+        """Các tham số None -> dùng giá trị mặc định trong config.py.
+
+        Cho phép truyền tham số trực tiếp để evaluate.py dựng bot với đúng bộ
+        tham số đã dò trên DEV rồi đo trên TEST.
+        """
         self.intent_threshold = intent_threshold
         self.use_ner = use_ner
         self.rng = random.Random(seed)
@@ -100,8 +108,14 @@ class NewsChatbot:
         # người dùng gõ — corpus báo chí vốn đã là văn viết chuẩn.
         self.normalizer = TeencodeNormalizer() if use_normalizer else None
 
-        self.classifier = IntentClassifier()
-        self.retriever = NewsRetriever(threshold=retrieval_threshold)
+        self.classifier = (IntentClassifier(w_nb=intent_w_nb)
+                           if intent_w_nb is not None else IntentClassifier())
+        retriever_kwargs = {"threshold": retrieval_threshold}
+        if freshness_alpha is not None:
+            retriever_kwargs["freshness_alpha"] = freshness_alpha
+        if freshness_halflife is not None:
+            retriever_kwargs["freshness_halflife"] = freshness_halflife
+        self.retriever = NewsRetriever(**retriever_kwargs)
         self.state = DialogueState()
         self._ready = False
 
@@ -145,31 +159,9 @@ class NewsChatbot:
         # [0] Chuẩn hóa teencode: "bt gì về vụ iphone k b"
         #                      -> "biết gì về vụ iphone không bạn"
         # Phải chạy trước tách từ, vì word_tokenize không biết "bt", "k", "đc".
-        normalizations = []
-        if self.normalizer is not None:
-            normalizations = self.normalizer.explain(raw_text)
-            user_text = self.normalizer.normalize(raw_text)
-
-            # Nếu người dùng gõ KHÔNG DẤU thì giữ kết quả cũng không dấu.
-            #
-            # Vì sao cần: từ điển teencode luôn trả về từ CÓ DẤU. Chỉ cần một
-            # token được chuẩn hóa là cả câu bỗng "có dấu", và `has_diacritics`
-            # sẽ định tuyến sang index CÓ DẤU — nơi những token còn lại (vẫn
-            # không dấu) đều là OOV. Kết quả: cả câu bị phán đoán dựa trên đúng
-            # một từ.
-            #
-            # Lỗi đo được: "thoi tiet sao hoa hom nay" (hỏi thời tiết) bị
-            # chuẩn hóa thành "thôi tiet sao hoa hom nay", rồi khớp intent
-            # tạm biệt (0.280) vì "thôi" nằm trong pattern "thôi nhé" —
-            # bot trả lời "Tạm biệt bạn!" cho một câu hỏi về thời tiết.
-            #
-            # Bỏ dấu lại vẫn GIỮ được lợi ích của chuẩn hóa (viết tắt đã được
-            # bung ra: "k" -> "không" -> "khong"), chỉ là giữ nguyên "hệ quy
-            # chiếu dấu" mà người dùng đang gõ.
-            if not has_diacritics(raw_text):
-                user_text = strip_accents(user_text)
-        else:
-            user_text = raw_text
+        # Dùng chung với evaluate.py — xem normalizer.prepare_user_text để biết
+        # vì sao phải giữ nguyên "hệ quy chiếu dấu" của người dùng.
+        user_text, normalizations = prepare_user_text(raw_text, self.normalizer)
 
         # [1] Trích xuất thực thể + chuyên mục.
         info = extract(user_text, use_ner=self.use_ner)
@@ -435,10 +427,7 @@ class NewsChatbot:
     def explain(self, user_text: str) -> dict:
         """Gộp chẩn đoán của cả intent classifier và retriever cho một câu."""
         raw = user_text
-        norm_pairs = []
-        if self.normalizer is not None:
-            norm_pairs = self.normalizer.explain(raw)
-            user_text = self.normalizer.normalize(raw)
+        user_text, norm_pairs = prepare_user_text(raw, self.normalizer)
         info = extract(user_text, use_ner=self.use_ner)
         return {
             "raw_input": raw,

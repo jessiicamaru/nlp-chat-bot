@@ -1,13 +1,29 @@
 """
-evaluate.py — Đánh giá định lượng và dò siêu tham số.
+evaluate.py — Dò tham số trên DEV, báo cáo MỘT LẦN trên TEST.
 
-Trả lời bốn câu hỏi bắt buộc phải có số liệu trong báo cáo:
+## Quy trình (thay thế cách làm cũ bị rò rỉ tập test)
 
-  1. Intent classifier chính xác bao nhiêu trên tập TEST viết riêng?
-  2. Trọng số ensemble `w_nb` và ngưỡng `INTENT_THRESHOLD` nên đặt bao nhiêu?
-  3. Retriever tìm đúng bài ở top-k với tỷ lệ nào (Recall@k, MRR)?
-  4. Ngưỡng `RETRIEVAL_THRESHOLD` nào cân bằng tốt nhất giữa "trả lời được câu
-     trong phạm vi" và "từ chối câu ngoài phạm vi"?
+Cách làm cũ: dò mọi tham số trên test_queries.json rồi báo cáo số liệu trên
+chính tập đó. Con số đo được vì thế là mức "khớp" với đúng những câu đã dùng
+để dò — không phải hiệu năng trên câu hỏi chưa thấy.
+
+Cách làm mới:
+
+  PHA 1 — DÒ TRÊN DEV (data/eval/dev.json)
+    1. Intent: quét lưới (w_nb x ngưỡng)
+    2. Độ mới: quét lưới (nửa chu kỳ x alpha), RÀNG BUỘC CỨNG là ca tin mâu
+       thuẫn (data/eval/conflict_case.json) phải trả bài mới ở mọi cách hỏi
+    3. Ngưỡng truy hồi: quét lưới với độ mới đã chốt
+
+  PHA 2 — BÁO CÁO TRÊN TEST (data/eval/test.json)
+    Dùng ĐÚNG bộ tham số chốt ở pha 1. Không quay lại chỉnh gì sau khi xem
+    kết quả test — nếu làm vậy thì test lại thành dev.
+
+Mọi truy vấn đi qua `prepare_user_text` giống hệt chatbot (chuẩn hóa teencode
++ giữ hệ quy chiếu dấu), nên điểm số phản ánh đúng thứ người dùng nhận được.
+
+Mỗi tỷ lệ đều kèm khoảng tin cậy 95% (Wilson): với vài chục câu hỏi, một câu
+sai đã làm con số dao động vài điểm phần trăm, nên chỉ báo số điểm là thiếu.
 
 Chạy:  .venv/Scripts/python.exe src/evaluate.py
 """
@@ -15,272 +31,423 @@ Chạy:  .venv/Scripts/python.exe src/evaluate.py
 from __future__ import annotations
 
 import json
+import math
 import sys
-from collections import defaultdict
+from collections import Counter, defaultdict
+from functools import lru_cache
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-from config import CORPUS_RAW_PATH, INTENTS_DIR
-from entities import expand_query
+from config import (
+    CORPUS_RAW_PATH,
+    DATA_DIR,
+    FRESHNESS_ALPHA,
+    FRESHNESS_HALFLIFE_DAYS,
+    INTENT_THRESHOLD,
+    INTENT_W_NB,
+    RETRIEVAL_THRESHOLD,
+)
+from dates import compute_recency
+from entities import expand_query, extract
 from intent_classifier import IntentClassifier
+from normalizer import TeencodeNormalizer, prepare_user_text
 from retriever import NewsRetriever
 
-TEST_PATH = INTENTS_DIR / "test_queries.json"
+EVAL_DIR = DATA_DIR / "eval"
+TUNED_PATH = EVAL_DIR / "tuned_params.json"
+
+INTENT_W_GRID = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+INTENT_TH_GRID = [0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50]
+HALFLIFE_GRID = [3.0, 7.0, 14.0, 30.0]
+ALPHA_GRID = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+RETR_TH_GRID = [round(x, 3) for x in np.arange(0.06, 0.305, 0.005)]
 
 
-def load_tests() -> dict:
-    return json.loads(TEST_PATH.read_text(encoding="utf-8"))
-
-
+# ---------------------------------------------------------------------------
+# Tiện ích
+# ---------------------------------------------------------------------------
 def hr(title: str) -> None:
     print("\n" + "=" * 78)
     print(title)
     print("=" * 78)
 
 
-# ---------------------------------------------------------------------------
-# 1. Dò siêu tham số cho intent classifier
-# ---------------------------------------------------------------------------
-def tune_intent(tests: dict) -> tuple[float, float]:
-    """Quét lưới (w_nb, threshold) và chọn cấu hình tốt nhất.
+def wilson(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
+    """Khoảng tin cậy Wilson cho tỷ lệ k/n. Ổn định hơn xấp xỉ chuẩn khi n nhỏ
+    hoặc tỷ lệ gần 0/1 — đúng tình huống của các tập test vài chục câu."""
+    if n == 0:
+        return 0.0, 0.0
+    p = k / n
+    denom = 1 + z * z / n
+    center = (p + z * z / (2 * n)) / denom
+    margin = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / denom
+    return max(0.0, center - margin), min(1.0, center + margin)
 
-    Ta tối ưu ĐỒNG THỜI hai mục tiêu ngược chiều nhau:
 
-      - accuracy: câu thuộc intent CỐ ĐỊNH phải được nhận đúng nhãn và vượt
-        ngưỡng, nếu không bot sẽ đi truy hồi thay vì trả lời trực tiếp.
+def fmt_rate(k: int, n: int) -> str:
+    lo, hi = wilson(k, n)
+    return f"{k / n:6.1%}  ({k}/{n}, KTC95% {lo:.0%}–{hi:.0%})" if n else "  n/a"
 
-      - safety: câu cần TRUY HỒI hoặc NGOÀI PHẠM VI không được gán nhầm thành
-        một intent cố định. Lưu ý: gán vào intent có action="retrieve", hoặc
-        rơi xuống dưới ngưỡng, ĐỀU dẫn tới module truy hồi nên đều được tính
-        là đúng — chỉ có việc trả lời bằng một câu soạn sẵn sai chỗ mới là lỗi.
 
-    Điểm chọn = trung bình cộng hai tỷ lệ.
-    """
-    intent_tests = tests["intent_tests"]
-    oos = tests["out_of_scope"]
-
-    fixed = [t for t in intent_tests if not t["expected"].startswith("__")]
-    to_retrieve = [t["text"] for t in intent_tests if t["expected"] == "__retrieve__"]
-    must_not_answer = to_retrieve + oos
-
-    hr("1. DÒ SIÊU THAM SỐ CHO INTENT CLASSIFIER")
-    print(f"Tập test: {len(fixed)} câu intent cố định, "
-          f"{len(to_retrieve)} câu cần truy hồi, {len(oos)} câu ngoài phạm vi\n")
-
-    print(f"{'w_nb':>6} {'ngưỡng':>8} {'accuracy':>10} {'safety':>9} {'điểm TB':>9}")
-    print("-" * 48)
-
-    best = (0.0, 0.0, -1.0)
-    rows = []
-
-    for w_nb in [0.0, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0]:
-        clf = IntentClassifier(w_nb=w_nb).train_from_file()
-
-        # Tính trước dự đoán để không phải train lại cho từng ngưỡng.
-        fixed_preds = [(clf.predict(t["text"]), t["expected"]) for t in fixed]
-        safe_preds = [clf.predict(q) for q in must_not_answer]
-
-        for threshold in [0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60]:
-            n_correct = sum(
-                1 for (tag, conf), exp in fixed_preds
-                if conf >= threshold and tag == exp
-            )
-            accuracy = n_correct / len(fixed)
-
-            # An toàn khi: dưới ngưỡng, HOẶC intent được gán vốn đã đi truy hồi.
-            n_safe = sum(
-                1 for tag, conf in safe_preds
-                if conf < threshold or clf.get_action(tag) == "retrieve"
-            )
-            safety = n_safe / len(safe_preds)
-
-            score = (accuracy + safety) / 2
-            rows.append((w_nb, threshold, accuracy, safety, score))
-            if score > best[2]:
-                best = (w_nb, threshold, score)
-
-    # In gọn: với mỗi w_nb chỉ hiện ngưỡng tốt nhất.
-    by_w = defaultdict(list)
-    for r in rows:
-        by_w[r[0]].append(r)
-    for w_nb in sorted(by_w):
-        r = max(by_w[w_nb], key=lambda x: x[4])
-        mark = "  <-- tốt nhất" if (r[0], r[1]) == (best[0], best[1]) else ""
-        print(f"{r[0]:>6.1f} {r[1]:>8.2f} {r[2]:>9.1%} {r[3]:>13.1%} {r[4]:>8.1%}{mark}")
-
-    print(f"\nChọn: w_nb={best[0]}, INTENT_THRESHOLD={best[1]}")
-    print("  w_nb=1.0 là Naive Bayes thuần, w_nb=0.0 là cosine thuần.")
-    return best[0], best[1]
+def load_split(name: str) -> dict:
+    return json.loads((EVAL_DIR / f"{name}.json").read_text(encoding="utf-8"))
 
 
 # ---------------------------------------------------------------------------
-# 2. Báo cáo chi tiết intent classifier
+# Chuẩn bị truy vấn — y hệt chatbot
 # ---------------------------------------------------------------------------
-def report_intent(tests: dict, w_nb: float, threshold: float) -> None:
-    hr("2. BÁO CÁO CHI TIẾT INTENT CLASSIFIER")
+_NORMALIZER = TeencodeNormalizer()
 
-    clf = IntentClassifier(w_nb=w_nb).train_from_file()
-    intent_tests = tests["intent_tests"]
-    fixed = [t for t in intent_tests if not t["expected"].startswith("__")]
 
-    per_class = defaultdict(lambda: {"tp": 0, "fp": 0, "fn": 0})
-    errors = []
+@lru_cache(maxsize=4096)
+def prepared(raw: str) -> str:
+    return prepare_user_text(raw, _NORMALIZER)[0]
 
-    for t in fixed:
-        tag, conf = clf.predict(t["text"])
-        pred = tag if conf >= threshold else "__reject__"
-        gold = t["expected"]
 
-        if pred == gold:
-            per_class[gold]["tp"] += 1
-        else:
-            per_class[gold]["fn"] += 1
-            if pred != "__reject__":
-                per_class[pred]["fp"] += 1
-            errors.append((t["text"], gold, pred, conf))
-
-    print(f"{'intent':<22} {'P':>7} {'R':>7} {'F1':>7} {'n':>4}")
-    print("-" * 50)
-    f1s = []
-    for tag in sorted(per_class):
-        m = per_class[tag]
-        p = m["tp"] / (m["tp"] + m["fp"]) if (m["tp"] + m["fp"]) else 0.0
-        r = m["tp"] / (m["tp"] + m["fn"]) if (m["tp"] + m["fn"]) else 0.0
-        f1 = 2 * p * r / (p + r) if (p + r) else 0.0
-        n = m["tp"] + m["fn"]
-        if n:
-            f1s.append(f1)
-        print(f"{tag:<22} {p:>7.2f} {r:>7.2f} {f1:>7.2f} {n:>4}")
-
-    acc = sum(m["tp"] for m in per_class.values()) / len(fixed)
-    print("-" * 50)
-    print(f"{'Accuracy':<22} {acc:>7.1%}   (macro-F1 = {np.mean(f1s):.2f})")
-
-    if errors:
-        print(f"\nCác câu dự đoán sai ({len(errors)}):")
-        for text, gold, pred, conf in errors:
-            print(f"  \"{text}\"\n     gold={gold}  pred={pred}  conf={conf:.3f}")
-
-    # Kiểm tra riêng khả năng không trả lời bừa.
-    print("\nCâu NGOÀI PHẠM VI (đúng = chuyển sang retrieval, không trả lời soạn sẵn):")
-    for q in tests["out_of_scope"]:
-        tag, conf = clf.predict(q)
-        safe = conf < threshold or clf.get_action(tag) == "retrieve"
-        print(f"  [{'OK  ' if safe else 'SAI '}] {conf:.3f} {tag or '(không có)':<20} <- {q}")
+@lru_cache(maxsize=4096)
+def retrieval_query(raw: str) -> str:
+    """Câu hỏi sau chuẩn hóa + nhân đôi thực thể, như chatbot._handle_retrieval."""
+    text = prepared(raw)
+    return expand_query(text, extract(text))
 
 
 # ---------------------------------------------------------------------------
-# 3. Đánh giá retriever
+# Intent
 # ---------------------------------------------------------------------------
-def evaluate_retrieval(tests: dict, retriever: NewsRetriever) -> None:
-    hr("3. ĐÁNH GIÁ RETRIEVER (Recall@k, MRR)")
+def intent_scores(clf: IntentClassifier, split: dict) -> tuple[list, list]:
+    """(dự đoán cho câu intent cố định, dự đoán cho câu phải đi truy hồi/ngoài phạm vi)."""
+    fixed = [(clf.predict(prepared(x["text"])), x["expected"])
+             for x in split["intent"] if not x["expected"].startswith("__")]
+    must_route = [x["text"] for x in split["intent"] if x["expected"] == "__retrieve__"]
+    must_route += [x["text"] for x in split["out_of_scope"]]
+    must_route += [x["query"] for x in split["retrieval"]]
+    routed = [clf.predict(prepared(t)) for t in must_route]
+    return fixed, routed
 
-    cases = tests["retrieval_tests"]
-    ranks: list[int | None] = []
 
-    for case in cases:
-        results = retriever.search(case["query"], top_k=10, min_score=0.0)
-        needle = case["expect_title_contains"].lower()
-        rank = None
-        for i, r in enumerate(results, 1):
-            if needle in r.title.lower():
-                rank = i
-                break
-        ranks.append(rank)
+def intent_metrics(clf, fixed, routed, threshold):
+    n_ok = sum(1 for (tag, c), exp in fixed if c >= threshold and tag == exp)
+    n_safe = sum(1 for tag, c in routed if c < threshold or clf.get_action(tag) == "retrieve")
+    return n_ok, len(fixed), n_safe, len(routed)
 
-    def recall_at(k: int) -> float:
-        return sum(1 for r in ranks if r is not None and r <= k) / len(ranks)
 
-    mrr = np.mean([1.0 / r if r else 0.0 for r in ranks])
+def tune_intent(dev: dict) -> tuple[float, float]:
+    hr("PHA 1.1 — DÒ INTENT TRÊN DEV (w_nb x ngưỡng)")
+    print("accuracy = câu intent cố định được nhận đúng nhãn và vượt ngưỡng")
+    print("safety   = câu cần truy hồi / ngoài phạm vi KHÔNG bị trả lời bằng câu soạn sẵn\n")
+    print(f"{'w_nb':>6} {'ngưỡng':>7} {'accuracy':>9} {'safety':>8} {'TB':>7}")
+    print("-" * 42)
 
-    print(f"Số truy vấn test: {len(cases)}")
-    print(f"  Recall@1  : {recall_at(1):.1%}")
-    print(f"  Recall@3  : {recall_at(3):.1%}")
-    print(f"  Recall@5  : {recall_at(5):.1%}")
-    print(f"  Recall@10 : {recall_at(10):.1%}")
-    print(f"  MRR       : {mrr:.3f}")
+    best = None
+    for w in INTENT_W_GRID:
+        clf = IntentClassifier(w_nb=w).train_from_file()
+        fixed, routed = intent_scores(clf, dev)
+        row_best = None
+        for th in INTENT_TH_GRID:
+            ok, n, safe, m = intent_metrics(clf, fixed, routed, th)
+            score = (ok / n + safe / m) / 2
+            cand = (score, -abs(th - 0.3), w, th, ok / n, safe / m)
+            if row_best is None or cand > row_best:
+                row_best = cand
+            if best is None or cand > best:
+                best = cand
+        _, _, w_, th_, acc, saf = row_best
+        print(f"{w_:>6.1f} {th_:>7.2f} {acc:>8.1%} {saf:>8.1%} {(acc + saf) / 2:>7.1%}")
 
-    misses = [(c, r) for c, r in zip(cases, ranks) if r is None or r > 3]
-    if misses:
-        print(f"\nTruy vấn KHÔNG vào được top-3 ({len(misses)}):")
-        for c, r in misses:
-            got = retriever.search(c["query"], top_k=1, min_score=0.0)
-            got_title = got[0].title[:55] if got else "(không có kết quả)"
-            print(f"  \"{c['query']}\"")
-            print(f"     cần: {c['expect_title_contains']}  | hạng: {r} | top-1: {got_title}")
+    _, _, w, th, acc, saf = best
+    print(f"\n-> chốt w_nb={w}, INTENT_THRESHOLD={th}  (dev: accuracy {acc:.1%}, safety {saf:.1%})")
+    return w, th
 
 
 # ---------------------------------------------------------------------------
-# 4. Dò ngưỡng cho retriever
+# Truy hồi
 # ---------------------------------------------------------------------------
-def tune_retrieval(tests: dict, retriever: NewsRetriever) -> float:
-    hr("4. DÒ NGƯỠNG CHẤP NHẬN CHO RETRIEVER")
+def ranks_for(retriever: NewsRetriever, cases: list[dict], k: int = 10) -> list[int | None]:
+    out = []
+    for c in cases:
+        gold = set(c["gold_urls"])
+        res = retriever.search(retrieval_query(c["query"]), top_k=k, min_score=0.0)
+        out.append(next((i for i, r in enumerate(res, 1) if r.url in gold), None))
+    return out
 
-    in_scope = tests["retrieval_tests"]
-    oos = tests["out_of_scope"]
 
-    # Điểm top-1 của truy vấn TRONG phạm vi (chỉ tính khi bài đúng đứng đầu).
-    in_scores = []
-    for case in in_scope:
-        res = retriever.search(case["query"], top_k=1, min_score=0.0)
-        if res and case["expect_title_contains"].lower() in res[0].title.lower():
-            in_scores.append(res[0].score)
+def mrr(ranks) -> float:
+    return float(np.mean([1.0 / r if r else 0.0 for r in ranks])) if ranks else 0.0
 
-    # Điểm top-1 của truy vấn NGOÀI phạm vi — đây là nhiễu cần chặn.
-    oos_scores = []
-    for q in oos:
-        res = retriever.search(expand_query(q), top_k=1, min_score=0.0)
-        oos_scores.append(res[0].score if res else 0.0)
 
-    print(f"Truy vấn trong phạm vi (n={len(in_scores)}): "
-          f"min={min(in_scores):.3f} p25={np.percentile(in_scores, 25):.3f} "
-          f"trung vị={np.median(in_scores):.3f}")
-    print(f"Truy vấn ngoài phạm vi (n={len(oos_scores)}): "
-          f"trung vị={np.median(oos_scores):.3f} p75={np.percentile(oos_scores, 75):.3f} "
-          f"max={max(oos_scores):.3f}")
+def conflict_ok(retriever: NewsRetriever, case: dict) -> bool:
+    for q in case["queries"]:
+        res = [r for r in retriever.search(q, top_k=10, min_score=0.0)
+               if "example.test" in r.url]
+        if not res or res[0].url != case["expected_url"]:
+            return False
+    return True
 
-    print(f"\n{'ngưỡng':>8} {'trả lời được':>14} {'chặn đúng':>12} {'điểm TB':>9}")
+
+def set_freshness(retriever: NewsRetriever, halflife: float, alpha: float) -> None:
+    retriever.freshness_halflife = halflife
+    retriever.freshness_alpha = alpha
+    retriever.recency = compute_recency(retriever.published_dates, half_life_days=halflife)
+
+
+def tune_freshness(dev: dict, retriever: NewsRetriever,
+                   conflict_retriever: NewsRetriever, case: dict) -> tuple[float, float]:
+    hr("PHA 1.2 — DÒ ĐỘ MỚI TRÊN DEV (nửa chu kỳ x alpha)")
+    print("Mục tiêu: MRR cao nhất trên dev. RÀNG BUỘC CỨNG: ca tin mâu thuẫn phải đúng.\n")
+    print(f"{'half-life':>9} {'alpha':>6} {'R@1':>7} {'MRR':>7}  ca mâu thuẫn")
     print("-" * 46)
 
-    best = (0.0, -1.0)
-    # Lưới mịn quanh vùng ranh giới: điểm cao nhất của truy vấn ngoài phạm vi
-    # thường nằm quanh 0.15, nên bước 0.01 ở đó mới tìm được ngưỡng tối ưu.
-    for th in [0.02, 0.04, 0.06, 0.08, 0.10, 0.12, 0.14, 0.15, 0.155,
-               0.16, 0.165, 0.17, 0.18, 0.20, 0.22, 0.26, 0.30]:
-        answered = sum(1 for s in in_scores if s >= th) / len(in_scores)
-        blocked = sum(1 for s in oos_scores if s < th) / len(oos_scores)
-        score = (answered + blocked) / 2
-        mark = ""
-        if score > best[1]:
-            best = (th, score)
-        print(f"{th:>8.3f} {answered:>13.1%} {blocked:>11.1%} {score:>8.1%}{mark}")
+    best = None
+    for hl in HALFLIFE_GRID:
+        for a in ALPHA_GRID:
+            set_freshness(retriever, hl, a)
+            set_freshness(conflict_retriever, hl, a)
+            ranks = ranks_for(retriever, dev["retrieval"])
+            r1 = sum(1 for r in ranks if r == 1) / len(ranks)
+            m = mrr(ranks)
+            ok = conflict_ok(conflict_retriever, case)
+            print(f"{hl:>9.0f} {a:>6.1f} {r1:>6.1%} {m:>7.3f}  {'ĐÚNG' if ok else 'sai'}")
+            if ok:
+                # Hòa điểm -> chọn alpha nhỏ hơn: thay đổi ít hơn so với TF-IDF thuần.
+                cand = (round(m, 6), -a, -abs(hl - 7), hl, a)
+                if best is None or cand > best:
+                    best = cand
 
-    print(f"\nChọn: RETRIEVAL_THRESHOLD = {best[0]:.3f}")
-    print("  Ngưỡng cao -> bot im lặng nhiều (bỏ sót câu trả lời đúng).")
-    print("  Ngưỡng thấp -> bot trả lời bừa cho cả câu ngoài phạm vi.")
-    return best[0]
+    if best is None:
+        print("\nKHÔNG có cấu hình nào vừa đúng ca mâu thuẫn -> giữ giá trị trong config.")
+        return FRESHNESS_HALFLIFE_DAYS, FRESHNESS_ALPHA
+    _, _, _, hl, a = best
+    print(f"\n-> chốt nửa chu kỳ = {hl:g} ngày, alpha = {a}")
+    return hl, a
+
+
+def top1_scores(retriever, cases, key):
+    out = []
+    for c in cases:
+        res = retriever.search(retrieval_query(c[key]), top_k=1, min_score=0.0)
+        out.append(res[0] if res else None)
+    return out
+
+
+def tune_retrieval_threshold(dev: dict, retriever: NewsRetriever) -> float:
+    hr("PHA 1.3 — DÒ NGƯỠNG TRUY HỒI TRÊN DEV")
+    ins = top1_scores(retriever, dev["retrieval"], "query")
+    in_scores = [r.score for r, c in zip(ins, dev["retrieval"])
+                 if r is not None and r.url in set(c["gold_urls"])]
+    oos = top1_scores(retriever, dev["out_of_scope"], "text")
+    oos_scores = [r.score if r else 0.0 for r in oos]
+
+    print(f"Trúng bài (n={len(in_scores)}): min={min(in_scores):.3f} "
+          f"p10={np.percentile(in_scores, 10):.3f} trung vị={np.median(in_scores):.3f}")
+    print(f"Ngoài phạm vi (n={len(oos_scores)}): trung vị={np.median(oos_scores):.3f} "
+          f"p90={np.percentile(oos_scores, 90):.3f} max={max(oos_scores):.3f}\n")
+
+    best = None
+    rows = []
+    for th in RETR_TH_GRID:
+        ans = sum(1 for s in in_scores if s >= th) / len(in_scores)
+        blk = sum(1 for s in oos_scores if s < th) / len(oos_scores)
+        score = (ans + blk) / 2
+        rows.append((th, ans, blk, score))
+        cand = (round(score, 6), -th, th)
+        if best is None or cand > best:
+            best = cand
+
+    print(f"{'ngưỡng':>7} {'trả lời được':>13} {'chặn đúng':>10} {'TB':>7}")
+    print("-" * 42)
+    for th, ans, blk, score in rows[::4]:
+        print(f"{th:>7.3f} {ans:>12.1%} {blk:>10.1%} {score:>7.1%}")
+    th = best[2]
+    row = next(r for r in rows if r[0] == th)
+    print(f"\n-> chốt RETRIEVAL_THRESHOLD = {th:.3f}  "
+          f"(dev: trả lời được {row[1]:.1%}, chặn đúng {row[2]:.1%})")
+    return th
+
+
+# ---------------------------------------------------------------------------
+# PHA 2 — báo cáo trên TEST
+# ---------------------------------------------------------------------------
+def report_test(test: dict, params: dict, retriever: NewsRetriever) -> dict:
+    hr("PHA 2 — BÁO CÁO TRÊN TEST (tham số đã chốt trên dev, KHÔNG chỉnh thêm)")
+    print(json.dumps(params, ensure_ascii=False))
+    results: dict = {}
+
+    # ---- Intent
+    clf = IntentClassifier(w_nb=params["intent_w_nb"]).train_from_file()
+    th = params["intent_threshold"]
+    fixed_cases = [x for x in test["intent"] if not x["expected"].startswith("__")]
+    per_class = defaultdict(lambda: {"tp": 0, "fp": 0, "fn": 0})
+    errors = []
+    for x in fixed_cases:
+        tag, c = clf.predict(prepared(x["text"]))
+        pred = tag if c >= th else "__reject__"
+        if pred == x["expected"]:
+            per_class[x["expected"]]["tp"] += 1
+        else:
+            per_class[x["expected"]]["fn"] += 1
+            if pred != "__reject__":
+                per_class[pred]["fp"] += 1
+            errors.append((x["text"], x["expected"], pred, c))
+    n_ok = sum(v["tp"] for v in per_class.values())
+    f1s = []
+    for tag, v in per_class.items():
+        if v["tp"] + v["fn"] == 0:
+            continue
+        p = v["tp"] / (v["tp"] + v["fp"]) if v["tp"] + v["fp"] else 0.0
+        r = v["tp"] / (v["tp"] + v["fn"])
+        f1s.append(2 * p * r / (p + r) if p + r else 0.0)
+
+    print("\n[Intent]")
+    print(f"  Accuracy      : {fmt_rate(n_ok, len(fixed_cases))}")
+    print(f"  Macro-F1      : {np.mean(f1s):.3f}")
+    if errors:
+        print(f"  Câu sai ({len(errors)}):")
+        for t, g, p, c in errors:
+            print(f"     {t!r:36} gold={g:<20} pred={p:<20} conf={c:.2f}")
+    results["intent_accuracy"] = (n_ok, len(fixed_cases))
+    results["intent_macro_f1"] = float(np.mean(f1s))
+
+    # ---- Truy hồi (thành phần)
+    ranks = ranks_for(retriever, test["retrieval"])
+    n = len(ranks)
+    r1 = sum(1 for r in ranks if r == 1)
+    r3 = sum(1 for r in ranks if r and r <= 3)
+    print("\n[Truy hồi — thành phần]")
+    print(f"  Recall@1      : {fmt_rate(r1, n)}")
+    print(f"  Recall@3      : {fmt_rate(r3, n)}")
+    print(f"  MRR           : {mrr(ranks):.3f}")
+    by_style = defaultdict(list)
+    for c, r in zip(test["retrieval"], ranks):
+        by_style[c["style"]].append(r)
+    for style, rs in sorted(by_style.items()):
+        k1 = sum(1 for r in rs if r == 1)
+        print(f"     {style:<10} R@1 {fmt_rate(k1, len(rs))}   MRR {mrr(rs):.3f}")
+    misses = [(c, r) for c, r in zip(test["retrieval"], ranks) if r != 1]
+    if misses:
+        print(f"  Không đứng đầu ({len(misses)}):")
+        for c, r in misses:
+            top = retriever.search(retrieval_query(c["query"]), top_k=1, min_score=0.0)
+            got = top[0].title[:44] if top else "(không có)"
+            print(f"     [{c['style'][:4]}] {c['query'][:38]:38} hạng={r}  top1: {got}")
+    results["recall_at_1"] = (r1, n)
+    results["recall_at_3"] = (r3, n)
+    results["mrr"] = mrr(ranks)
+    results["by_style"] = {s: {"r1": sum(1 for r in rs if r == 1), "n": len(rs), "mrr": mrr(rs)}
+                           for s, rs in by_style.items()}
+
+    # ---- Ngoài phạm vi
+    oos = top1_scores(retriever, test["out_of_scope"], "text")
+    blocked = sum(1 for r in oos if r is None or r.score < params["retrieval_threshold"])
+    print("\n[Ngoài phạm vi — thành phần truy hồi]")
+    print(f"  Chặn đúng     : {fmt_rate(blocked, len(oos))}")
+    for x, r in zip(test["out_of_scope"], oos):
+        if r is not None and r.score >= params["retrieval_threshold"]:
+            print(f"     LỌT: {x['text']!r} -> {r.score:.3f} {r.title[:44]}")
+    results["oos_blocked"] = (blocked, len(oos))
+    return results
+
+
+def report_end_to_end(test: dict, params: dict) -> dict:
+    """Đo HỆ THỐNG hoàn chỉnh: gọi bot.respond() như người dùng thật.
+
+    Khác với số liệu thành phần ở trên, phần này tính cả việc intent classifier
+    định tuyến sai (ví dụ câu hỏi tin tức bị hiểu thành "duyệt chuyên mục").
+    """
+    from chatbot import NewsChatbot
+
+    hr("PHA 2b — ĐÁNH GIÁ ĐẦU-CUỐI TRÊN TEST (gọi bot.respond như người dùng)")
+    bot = NewsChatbot(
+        intent_threshold=params["intent_threshold"],
+        retrieval_threshold=params["retrieval_threshold"],
+        intent_w_nb=params["intent_w_nb"],
+        freshness_alpha=params["freshness_alpha"],
+        freshness_halflife=params["freshness_halflife"],
+    ).train()
+
+    ok = 0
+    wrong_route = Counter()
+    for c in test["retrieval"]:
+        bot.reset()
+        r = bot.respond(c["query"])
+        if r.results and r.results[0].url in set(c["gold_urls"]):
+            ok += 1
+        else:
+            wrong_route[r.route] += 1
+    n = len(test["retrieval"])
+
+    refused = 0
+    leaked = []
+    for x in test["out_of_scope"]:
+        bot.reset()
+        r = bot.respond(x["text"])
+        if r.route == "fallback":
+            refused += 1
+        else:
+            leaked.append((x["text"], r.route, r.intent))
+
+    print(f"  Câu hỏi tin tức -> bài đứng đầu là bài đúng : {fmt_rate(ok, n)}")
+    print(f"     phân bố các câu KHÔNG đạt theo đường đi: {dict(wrong_route)}")
+    print(f"  Câu ngoài phạm vi -> bot từ chối           : {fmt_rate(refused, len(test['out_of_scope']))}")
+    for t, route, intent in leaked:
+        print(f"     KHÔNG từ chối: {t!r} -> route={route} intent={intent}")
+    return {"e2e_answer": (ok, n), "e2e_refuse": (refused, len(test["out_of_scope"]))}
 
 
 # ---------------------------------------------------------------------------
 def main() -> int:
-    tests = load_tests()
+    dev, test = load_split("dev"), load_split("test")
+    case = json.loads((EVAL_DIR / "conflict_case.json").read_text(encoding="utf-8"))
+    print(f"DEV : {len(dev['retrieval'])} truy hồi, {len(dev['out_of_scope'])} ngoài phạm vi, "
+          f"{len(dev['intent'])} intent")
+    print(f"TEST: {len(test['retrieval'])} truy hồi, {len(test['out_of_scope'])} ngoài phạm vi, "
+          f"{len(test['intent'])} intent")
 
-    w_nb, intent_th = tune_intent(tests)
-    report_intent(tests, w_nb, intent_th)
-
-    print("\nĐang dựng index truy hồi...")
     df = pd.read_csv(CORPUS_RAW_PATH).dropna(subset=["title", "text"]).reset_index(drop=True)
-    retriever = NewsRetriever().fit(df)
-    print(f"  {len(df)} bài, {len(retriever.vectorizer.vocabulary_):,} term")
+    retriever = NewsRetriever().fit_cached(df)
+    df_c = pd.concat([df, pd.DataFrame(case["articles"])], ignore_index=True)
+    conflict_retriever = NewsRetriever().fit(df_c)
 
-    evaluate_retrieval(tests, retriever)
-    retr_th = tune_retrieval(tests, retriever)
+    # ---------------- PHA 1: DEV
+    w_nb, intent_th = tune_intent(dev)
+    halflife, alpha = tune_freshness(dev, retriever, conflict_retriever, case)
+    set_freshness(retriever, halflife, alpha)
+    retr_th = tune_retrieval_threshold(dev, retriever)
+    retriever.threshold = retr_th
 
-    hr("TÓM TẮT — CẬP NHẬT VÀO config.py")
-    print(f"  IntentClassifier(w_nb={w_nb})")
-    print(f"  INTENT_THRESHOLD    = {intent_th}")
-    print(f"  RETRIEVAL_THRESHOLD = {retr_th:.3f}")
+    params = {
+        "intent_w_nb": w_nb,
+        "intent_threshold": intent_th,
+        "freshness_halflife": halflife,
+        "freshness_alpha": alpha,
+        "retrieval_threshold": retr_th,
+    }
+    TUNED_PATH.write_text(json.dumps(params, ensure_ascii=False, indent=1), encoding="utf-8")
+
+    current = {
+        "intent_w_nb": INTENT_W_NB, "intent_threshold": INTENT_THRESHOLD,
+        "freshness_halflife": FRESHNESS_HALFLIFE_DAYS, "freshness_alpha": FRESHNESS_ALPHA,
+        "retrieval_threshold": RETRIEVAL_THRESHOLD,
+    }
+    diffs = {k: (current[k], v) for k, v in params.items() if abs(current[k] - v) > 1e-9}
+
+    # ---------------- PHA 2: TEST
+    results = report_test(test, params, retriever)
+    results.update(report_end_to_end(test, params))
+
+    hr("TÓM TẮT")
+    print("Tham số chốt trên DEV:", json.dumps(params, ensure_ascii=False))
+    if diffs:
+        print("\nCẢNH BÁO: config.py đang KHÁC tham số vừa dò trên dev:")
+        for k, (cur, new) in diffs.items():
+            print(f"   {k}: config={cur}  dev={new}")
+        print("   -> cập nhật config.py để bot chạy đúng bộ tham số đã báo cáo.")
+    else:
+        print("config.py khớp với tham số đã dò trên dev.")
+
+    (EVAL_DIR / "test_results.json").write_text(
+        json.dumps(results, ensure_ascii=False, indent=1), encoding="utf-8")
     return 0
 
 

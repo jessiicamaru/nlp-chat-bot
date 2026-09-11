@@ -1,0 +1,32 @@
+{
+ "description": "Ca kiểm tra tin mâu thuẫn theo thời gian: bài ngày 10 phủ định bài ngày 1. Bot PHẢI trả về bài mới (ngay-2) cho mọi cách hỏi. Đây là ràng buộc cứng khi dò tham số độ mới, và là một regression test.",
+ "articles": [
+  {
+   "url": "https://example.test/ngay-1",
+   "source": "VnExpress",
+   "category": "Công nghệ",
+   "title": "Giá vé tàu Cát Linh tăng lên 15.000 đồng từ tháng 10",
+   "description": "Tổng công ty đường sắt thông báo giá vé mới áp dụng từ đầu tháng 10.",
+   "text": "Tổng công ty đường sắt Hà Nội cho biết giá vé tàu Cát Linh sẽ tăng lên 15.000 đồng mỗi lượt kể từ ngày 1 tháng 10. Mức giá cũ là 8.000 đồng. Đại diện đơn vị cho biết việc điều chỉnh nhằm bù đắp chi phí vận hành. Hành khách đi vé tháng vẫn giữ nguyên mức ưu đãi hiện tại.",
+   "published_at": "2026-09-01",
+   "crawled_at": "2026-09-01"
+  },
+  {
+   "url": "https://example.test/ngay-2",
+   "source": "VnExpress",
+   "category": "Công nghệ",
+   "title": "Hoãn tăng giá vé tàu Cát Linh, giữ nguyên 8.000 đồng",
+   "description": "Quyết định tăng giá vé bị hoãn vô thời hạn sau phản hồi của hành khách.",
+   "text": "Tổng công ty đường sắt Hà Nội vừa thông báo hoãn kế hoạch tăng giá vé tàu Cát Linh. Giá vé giữ nguyên ở mức 8.000 đồng mỗi lượt thay vì tăng lên 15.000 đồng như thông báo trước đó. Quyết định được đưa ra sau khi tiếp thu ý kiến phản hồi từ hành khách và các chuyên gia giao thông.",
+   "published_at": "2026-09-10",
+   "crawled_at": "2026-09-10"
+  }
+ ],
+ "expected_url": "https://example.test/ngay-2",
+ "queries": [
+  "giá vé tàu cát linh bao nhiêu",
+  "vé tàu cát linh có tăng giá không",
+  "tàu cát linh 15.000 đồng",
+  "hoãn tăng giá vé tàu"
+ ]
+}

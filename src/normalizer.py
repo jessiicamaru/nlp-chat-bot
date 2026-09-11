@@ -57,7 +57,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 from config import RESOURCES_DIR
-from preprocess import normalize_basic
+from preprocess import has_diacritics, normalize_basic, strip_accents
 
 LEXICON_PATH = RESOURCES_DIR / "teencode_lexicon.json"
 VILEXNORM_DIR = RESOURCES_DIR / "vilexnorm"
@@ -194,6 +194,32 @@ class TeencodeNormalizer:
             if fixed != token:
                 out.append((token, fixed))
         return out
+
+
+# ---------------------------------------------------------------------------
+# Chuẩn bị câu người dùng — dùng chung cho chatbot VÀ evaluate
+# ---------------------------------------------------------------------------
+def prepare_user_text(raw: str, normalizer: "TeencodeNormalizer | None"
+                      ) -> tuple[str, list[tuple[str, str]]]:
+    """Chuẩn hóa teencode rồi giữ nguyên "hệ quy chiếu dấu" của người dùng.
+
+    Tách thành một hàm riêng để chatbot và evaluate.py đi qua ĐÚNG MỘT đường
+    xử lý. Trước đây evaluate.py gọi thẳng retriever mà bỏ qua bước chuẩn hóa
+    teencode, nên điểm số của truy vấn teencode trong báo cáo không phản ánh
+    thứ người dùng thực sự nhận được.
+
+    Bước giữ hệ quy chiếu dấu: từ điển teencode luôn trả từ CÓ DẤU. Nếu câu gốc
+    không dấu mà ta để nguyên kết quả, chỉ một token được sửa ("thoi"->"thôi")
+    là cả câu bị định tuyến sang index có dấu, nơi các token còn lại đều OOV.
+    """
+    raw = normalize_basic(raw)
+    if normalizer is None or not raw:
+        return raw, []
+    pairs = normalizer.explain(raw)
+    text = normalizer.normalize(raw)
+    if not has_diacritics(raw):
+        text = strip_accents(text)
+    return text, pairs
 
 
 # ---------------------------------------------------------------------------
