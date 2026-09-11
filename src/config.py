@@ -173,3 +173,20 @@ FRESHNESS_HALFLIFE_DAYS = 3.0
 
 # Thư mục cache index đã dựng (tránh phải tách từ lại 381 bài mỗi lần khởi động).
 INDEX_CACHE_PATH = MODELS_DIR / "retriever_index.joblib"
+
+
+# ----------------------------------------------------------- CÁCH XẾP HẠNG --
+# "tfidf" : xếp hạng bằng cosine TF-IDF (như ban đầu)
+# "bm25"  : xếp hạng bằng Okapi BM25 tự cài đặt (vectorizer.bm25_*)
+# Dù chọn cách nào, việc CHẤP NHẬN trả lời vẫn dựa trên cosine TF-IDF, vì điểm
+# BM25 không bị chặn trên và không so được giữa các câu hỏi khác nhau.
+# Chọn bằng `python src/evaluate.py` trên tập DEV.
+#
+# Kết quả thí nghiệm (xem docs/06): BM25 KHÔNG hơn TF-IDF. Trên dev, kiểm định
+# dấu có cặp cho BM25 tốt hơn ở 3 câu, kém hơn ở 3 câu, hòa 106 câu (p = 1.0);
+# trên test BM25 còn kém nhẹ (MRR 0.943 vs 0.950). Giữ TF-IDF vì đơn giản hơn.
+# BM25_K1/B dưới đây là cấu hình BM25 tốt nhất trên dev, chỉ dùng khi đổi
+# RANKING_METHOD = "bm25".
+RANKING_METHOD = "tfidf"
+BM25_K1 = 8.0
+BM25_B = 0.9

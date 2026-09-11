@@ -31,10 +31,13 @@ import pandas as pd
 from underthesea import sent_tokenize
 
 from config import (
+    BM25_B,
+    BM25_K1,
     CONFIG_RETRIEVAL,
     FRESHNESS_ALPHA,
     FRESHNESS_HALFLIFE_DAYS,
     INDEX_CACHE_PATH,
+    RANKING_METHOD,
     RETRIEVAL_THRESHOLD,
     TFIDF_MAX_DF,
     TFIDF_MIN_DF,
@@ -51,7 +54,7 @@ from preprocess import (
     tokenize,
 )
 from dates import compute_recency, format_vn_date, parse_vn_date
-from vectorizer import TfidfVectorizer, cosine_similarity
+from vectorizer import TfidfVectorizer, bm25_idf, bm25_scores, bm25_weights, cosine_similarity
 
 # Số lần lặp lại title/description khi dựng document index.
 TITLE_WEIGHT = 3
@@ -92,7 +95,21 @@ class NewsRetriever:
         threshold=RETRIEVAL_THRESHOLD,
         freshness_alpha: float = FRESHNESS_ALPHA,
         freshness_halflife: float = FRESHNESS_HALFLIFE_DAYS,
+        ranking: str = RANKING_METHOD,
+        bm25_k1: float = BM25_K1,
+        bm25_b: float = BM25_B,
     ):
+        if ranking not in ("tfidf", "bm25"):
+            raise ValueError(f"ranking phai la 'tfidf' hoac 'bm25', nhan duoc {ranking!r}")
+        self.ranking = ranking
+        self.bm25_k1 = bm25_k1
+        self.bm25_b = bm25_b
+        # Ma trận ĐẾM term (đầu vào của BM25) và ma trận trọng số BM25 tính sẵn.
+        self.doc_counts = None
+        self.folded_counts = None
+        self._bm25_main = None
+        self._bm25_folded = None
+
         self.vectorizer = TfidfVectorizer(
             ngram_range=ngram_range,
             min_df=min_df,
@@ -139,6 +156,12 @@ class NewsRetriever:
         # (chính xác), rồi mới hạ xuống âm tiết — xem preprocess.fold_tokens.
         folded = [fold_tokens(doc) for doc in tokenized]
         self.folded_matrix = self.folded_vectorizer.fit_transform(folded)
+
+        # Ma trận đếm dùng chung vocabulary với TF-IDF -> BM25 không cần tách
+        # từ lại, và đổi k1/b chỉ cần tính lại trọng số (set_bm25).
+        self.doc_counts = self.vectorizer.counter.transform(tokenized)
+        self.folded_counts = self.folded_vectorizer.counter.transform(folded)
+        self._rebuild_bm25()
 
         # Độ mới: dùng để phá thế hòa khi hai bài liên quan xấp xỉ nhau.
         self.published_dates = [parse_vn_date(v) for v in self.df.get("published_at", [])]
@@ -195,6 +218,9 @@ class NewsRetriever:
                     self.folded_vectorizer = blob["folded_vectorizer"]
                     self.doc_matrix = blob["doc_matrix"]
                     self.folded_matrix = blob["folded_matrix"]
+                    self.doc_counts = blob["doc_counts"]
+                    self.folded_counts = blob["folded_counts"]
+                    self._rebuild_bm25()
                     self.published_dates = blob["published_dates"]
                     # KHÔNG nạp recency từ cache mà tính lại. Nửa chu kỳ độ mới
                     # không nằm trong vân tay cache (nó không ảnh hưởng index),
@@ -224,6 +250,8 @@ class NewsRetriever:
                     "folded_vectorizer": self.folded_vectorizer,
                     "doc_matrix": self.doc_matrix,
                     "folded_matrix": self.folded_matrix,
+                    "doc_counts": self.doc_counts,
+                    "folded_counts": self.folded_counts,
                     "published_dates": self.published_dates,
                     "sentence_cache": self._sentence_cache,
                 },
@@ -237,6 +265,32 @@ class NewsRetriever:
             if verbose:
                 print(f"Không lưu được cache: {exc}")
         return self
+
+    # -- BM25 ----------------------------------------------------------------
+    def _rebuild_bm25(self) -> None:
+        if self.doc_counts is None:
+            return
+        c = self.vectorizer.counter
+        fc = self.folded_vectorizer.counter
+        self._bm25_main = bm25_weights(
+            self.doc_counts, bm25_idf(c.document_frequency_, c.n_docs_),
+            k1=self.bm25_k1, b=self.bm25_b)
+        self._bm25_folded = bm25_weights(
+            self.folded_counts, bm25_idf(fc.document_frequency_, fc.n_docs_),
+            k1=self.bm25_k1, b=self.bm25_b)
+
+    def set_bm25(self, k1: float, b: float, ranking: str | None = None) -> None:
+        """Đổi tham số BM25 mà không phải dựng lại index (dùng khi dò trên dev)."""
+        self.bm25_k1, self.bm25_b = k1, b
+        if ranking is not None:
+            self.ranking = ranking
+        self._rebuild_bm25()
+
+    def _query_tokens(self, query: str) -> tuple[list[str], bool]:
+        """(token của câu hỏi, có dùng index bỏ dấu không)."""
+        if has_diacritics(query):
+            return strip_frame_words(tokenize(query, CONFIG_RETRIEVAL)), False
+        return strip_frame_words(fold_query(query)), True
 
     # -- truy hồi ------------------------------------------------------------
     def _query_vector(self, query: str):
@@ -277,15 +331,26 @@ class NewsRetriever:
             # Không term nào của query có trong vocabulary -> không có căn cứ.
             return []
 
+        # Cosine TF-IDF: luôn tính, vì đây là thước đo CHẤP NHẬN câu trả lời.
         base_scores = cosine_similarity(q_vec, doc_matrix)[0]
 
-        # Thưởng độ mới: score' = cosine * (1 + alpha * recency).
-        # Nhân chứ không cộng, để bài không liên quan (cosine ~ 0) vẫn ở lại 0
-        # dù mới tinh — nếu cộng thì tin mới nhất sẽ nổi lên với mọi câu hỏi.
-        if self.freshness_alpha and self.recency is not None:
-            scores = base_scores * (1.0 + self.freshness_alpha * self.recency)
+        # Điểm XẾP HẠNG: cosine hoặc BM25 tùy cấu hình.
+        if self.ranking == "bm25" and self._bm25_main is not None:
+            tokens, use_folded = self._query_tokens(query)
+            counter = (self.folded_vectorizer if use_folded else self.vectorizer).counter
+            W = self._bm25_folded if use_folded else self._bm25_main
+            rank_scores = bm25_scores(W, counter.transform([tokens]))
         else:
-            scores = base_scores
+            rank_scores = base_scores
+
+        # Thưởng độ mới: score' = rank_score * (1 + alpha * recency).
+        # Nhân chứ không cộng, để bài không liên quan (điểm ~ 0) vẫn ở lại 0
+        # dù mới tinh — nếu cộng thì tin mới nhất sẽ nổi lên với mọi câu hỏi.
+        # Phép nhân cũng không phụ thuộc thang đo, nên dùng được cho cả BM25.
+        if self.freshness_alpha and self.recency is not None:
+            scores = rank_scores * (1.0 + self.freshness_alpha * self.recency)
+        else:
+            scores = rank_scores
 
         # Lọc theo chuyên mục bằng cách triệt tiêu điểm của bài ngoài mục.
         if category:

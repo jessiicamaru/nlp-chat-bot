@@ -257,3 +257,61 @@ def cosine_similarity(A, B) -> np.ndarray:
     A = normalize_l2(sparse.csr_matrix(A))
     B = normalize_l2(sparse.csr_matrix(B))
     return np.asarray((A @ B.T).todense())
+
+
+# ---------------------------------------------------------------------------
+# BM25 (Okapi) — tự cài đặt
+# ---------------------------------------------------------------------------
+# BM25 là bước tiếp theo tự nhiên sau TF-IDF, sửa hai điểm yếu của nó:
+#
+#   1. TẦN SUẤT BÃO HÒA. TF-IDF (kể cả sublinear 1+log tf) vẫn tăng mãi theo
+#      số lần xuất hiện. BM25 cho tf tiến dần tới trần (k1 + 1): lần xuất hiện
+#      thứ 20 của "iphone" gần như không thêm bằng chứng so với lần thứ 5.
+#
+#   2. CHUẨN HÓA ĐỘ DÀI CÓ THAM SỐ. TF-IDF chuẩn hóa L2 cả vector — bài dài bị
+#      "pha loãng" theo một cách cố định. BM25 so độ dài bài với độ dài trung
+#      bình của corpus, và tham số b quyết định phạt bài dài mạnh hay nhẹ.
+#
+#   score(q, d) = Σ_{t ∈ q}  idf(t) · tf(t,d)·(k1 + 1)
+#                                   ─────────────────────────────────────
+#                                   tf(t,d) + k1·(1 − b + b·|d| / avgdl)
+#
+#   idf(t)      = ln( (N − df(t) + 0.5) / (df(t) + 0.5) + 1 )
+#
+# Dạng idf có "+1" trong log (biến thể của Lucene) để idf luôn dương: dạng gốc
+# của Robertson cho idf ÂM với term xuất hiện ở hơn nửa corpus, khiến việc
+# khớp thêm một từ phổ biến lại làm GIẢM điểm — trái trực giác.
+#
+# Điểm BM25 KHÔNG bị chặn trên và không so được giữa hai câu hỏi khác nhau,
+# nên chỉ dùng để XẾP HẠNG. Việc "có đủ căn cứ trả lời không" vẫn quyết định
+# bằng cosine TF-IDF, vốn nằm trong [0, 1] và có ngưỡng dò được.
+
+def bm25_idf(document_frequency: np.ndarray, n_docs: int) -> np.ndarray:
+    df = np.asarray(document_frequency, dtype=np.float64)
+    return np.log((n_docs - df + 0.5) / (df + 0.5) + 1.0)
+
+
+def bm25_weights(counts: sparse.csr_matrix, idf: np.ndarray,
+                 k1: float = 1.2, b: float = 0.75) -> sparse.csr_matrix:
+    """Ma trận trọng số W (n_docs x n_terms) sao cho score(q, d) = W[d] · q.
+
+    Tính sẵn một lần cho cả corpus; mỗi truy vấn chỉ còn một phép nhân ma trận
+    thưa với vector đếm term của câu hỏi.
+    """
+    W = sparse.csr_matrix(counts, dtype=np.float64, copy=True)
+    doc_len = np.asarray(W.sum(axis=1)).ravel()
+    avgdl = doc_len.mean() if doc_len.size and doc_len.mean() > 0 else 1.0
+
+    # Mẫu số phụ thuộc độ dài bài: lặp cho từng phần tử khác 0 của hàng đó.
+    row_len = np.diff(W.indptr)
+    norm = np.repeat(k1 * (1.0 - b + b * doc_len / avgdl), row_len)
+
+    tf = W.data
+    W.data = idf[W.indices] * tf * (k1 + 1.0) / (tf + norm)
+    return W
+
+
+def bm25_scores(W: sparse.csr_matrix, query_counts: sparse.csr_matrix) -> np.ndarray:
+    """Điểm BM25 của một câu hỏi với mọi bài: W · q (q là vector ĐẾM term)."""
+    q = sparse.csr_matrix(query_counts)
+    return np.asarray((W @ q.T).todense()).ravel()

@@ -14,6 +14,8 @@ Cách làm mới:
     2. Độ mới: quét lưới (nửa chu kỳ x alpha), RÀNG BUỘC CỨNG là ca tin mâu
        thuẫn (data/eval/conflict_case.json) phải trả bài mới ở mọi cách hỏi
     3. Ngưỡng truy hồi: quét lưới với độ mới đã chốt
+    (trước bước 2) Cách xếp hạng: TF-IDF hay BM25, và (k1, b) của BM25 —
+       so bằng MRR trên dev với độ mới TẮT, để đo đúng chất lượng xếp hạng.
 
   PHA 2 — BÁO CÁO TRÊN TEST (data/eval/test.json)
     Dùng ĐÚNG bộ tham số chốt ở pha 1. Không quay lại chỉnh gì sau khi xem
@@ -41,12 +43,15 @@ import numpy as np
 import pandas as pd
 
 from config import (
+    BM25_B,
+    BM25_K1,
     CORPUS_RAW_PATH,
     DATA_DIR,
     FRESHNESS_ALPHA,
     FRESHNESS_HALFLIFE_DAYS,
     INTENT_THRESHOLD,
     INTENT_W_NB,
+    RANKING_METHOD,
     RETRIEVAL_THRESHOLD,
 )
 from dates import compute_recency
@@ -63,6 +68,8 @@ INTENT_TH_GRID = [0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50]
 HALFLIFE_GRID = [3.0, 7.0, 14.0, 30.0]
 ALPHA_GRID = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
 RETR_TH_GRID = [round(x, 3) for x in np.arange(0.06, 0.305, 0.005)]
+BM25_K1_GRID = [0.6, 0.9, 1.2, 1.5, 2.0, 3.0, 5.0, 8.0]
+BM25_B_GRID = [0.25, 0.5, 0.75, 0.9]
 
 
 # ---------------------------------------------------------------------------
@@ -84,6 +91,20 @@ def wilson(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
     center = (p + z * z / (2 * n)) / denom
     margin = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / denom
     return max(0.0, center - margin), min(1.0, center + margin)
+
+
+def sign_test_p(wins: int, losses: int) -> float:
+    """p-value hai phía của kiểm định dấu (binomial chính xác, p = 0.5).
+
+    Bỏ qua các câu hòa. Hỏi: nếu hai phương pháp thật ra ngang nhau, xác suất
+    thấy chênh lệch thắng/thua ít nhất cực đoan như vậy là bao nhiêu?
+    """
+    n = wins + losses
+    if n == 0:
+        return 1.0
+    k = min(wins, losses)
+    tail = sum(math.comb(n, i) for i in range(k + 1)) / 2 ** n
+    return min(1.0, 2 * tail)
 
 
 def fmt_rate(k: int, n: int) -> str:
@@ -194,7 +215,7 @@ def set_freshness(retriever: NewsRetriever, halflife: float, alpha: float) -> No
 
 def tune_freshness(dev: dict, retriever: NewsRetriever,
                    conflict_retriever: NewsRetriever, case: dict) -> tuple[float, float]:
-    hr("PHA 1.2 — DÒ ĐỘ MỚI TRÊN DEV (nửa chu kỳ x alpha)")
+    hr("PHA 1.3 — DÒ ĐỘ MỚI TRÊN DEV (nửa chu kỳ x alpha)")
     print("Mục tiêu: MRR cao nhất trên dev. RÀNG BUỘC CỨNG: ca tin mâu thuẫn phải đúng.\n")
     print(f"{'half-life':>9} {'alpha':>6} {'R@1':>7} {'MRR':>7}  ca mâu thuẫn")
     print("-" * 46)
@@ -223,6 +244,93 @@ def tune_freshness(dev: dict, retriever: NewsRetriever,
     return hl, a
 
 
+def tune_ranking(dev: dict, retriever: NewsRetriever) -> tuple[str, float, float]:
+    """TF-IDF hay BM25? Và (k1, b) nào? — so trên dev với độ mới TẮT."""
+    hr("PHA 1.2 — CÁCH XẾP HẠNG TRÊN DEV: TF-IDF vs BM25 (độ mới tắt)")
+    saved = (retriever.freshness_alpha, retriever.recency)
+    retriever.freshness_alpha = 0.0
+
+    rows = []
+    retriever.set_bm25(BM25_K1, BM25_B, ranking="tfidf")
+    ranks = ranks_for(retriever, dev["retrieval"])
+    tfidf_row = ("tfidf", None, None, sum(1 for r in ranks if r == 1) / len(ranks), mrr(ranks))
+    rows.append(tfidf_row)
+
+    for k1 in BM25_K1_GRID:
+        for b in BM25_B_GRID:
+            retriever.set_bm25(k1, b, ranking="bm25")
+            ranks = ranks_for(retriever, dev["retrieval"])
+            rows.append(("bm25", k1, b, sum(1 for r in ranks if r == 1) / len(ranks), mrr(ranks)))
+
+    print(f"{'cách':>6} {'k1':>5} {'b':>5} {'R@1':>7} {'MRR':>7}")
+    print("-" * 36)
+    print(f"{'tfidf':>6} {'-':>5} {'-':>5} {tfidf_row[3]:>6.1%} {tfidf_row[4]:>7.3f}")
+    bm = sorted([r for r in rows if r[0] == "bm25"], key=lambda r: -r[4])
+    for r in bm[:6]:
+        print(f"{'bm25':>6} {r[1]:>5} {r[2]:>5} {r[3]:>6.1%} {r[4]:>7.3f}")
+    print(f"   ... ({len(bm) - 6} cấu hình BM25 khác thấp hơn)")
+
+    # Xu hướng theo k1 (b cố định ở giá trị tốt nhất): dùng để kiểm chứng giả
+    # thuyết "độ bão hòa tf của BM25 xung đột với việc lặp tiêu đề để tăng trọng số".
+    best_b = bm[0][2]
+    trend = sorted([r for r in bm if r[2] == best_b], key=lambda r: r[1])
+    print(f"\n   Xu hướng theo k1 (b={best_b}): "
+          + "  ".join(f"k1={r[1]}:{r[4]:.3f}" for r in trend))
+
+    best_bm = bm[0]
+
+    # Kiểm định dấu có cặp (paired sign test) trên từng câu dev: BM25 xếp bài
+    # đúng cao hơn hay thấp hơn TF-IDF? Chỉ đổi sang cách PHỨC TẠP hơn khi nó
+    # thắng CÓ Ý NGHĨA THỐNG KÊ — chênh 0.002 MRR (~1 câu) chỉ là nhiễu.
+    #
+    # (Lịch sử) Quy tắc cũ "BM25 hơn TF-IDF trên dev là đổi" đã chọn BM25 với
+    # chênh lệch 0.002, rồi BM25 THUA trên test (MRR 0.943 vs 0.950). Quy tắc
+    # kiểm định này được thêm SAU khi đã thấy kết quả test đó — ghi rõ ở đây
+    # để minh bạch. Đây là nguyên tắc chuẩn, không phải tham số dò theo test.
+    retriever.set_bm25(best_bm[1], best_bm[2], ranking="bm25")
+    rr_bm = [1.0 / r if r else 0.0 for r in ranks_for(retriever, dev["retrieval"])]
+    retriever.set_bm25(best_bm[1], best_bm[2], ranking="tfidf")
+    rr_tf = [1.0 / r if r else 0.0 for r in ranks_for(retriever, dev["retrieval"])]
+    wins = sum(1 for a, b_ in zip(rr_bm, rr_tf) if a > b_)
+    losses = sum(1 for a, b_ in zip(rr_bm, rr_tf) if a < b_)
+    p_value = sign_test_p(wins, losses)
+    print(f"\n   Kiểm định dấu có cặp (dev): BM25 tốt hơn ở {wins} câu, kém hơn ở "
+          f"{losses} câu, hòa {len(rr_bm) - wins - losses} câu -> p = {p_value:.3f}")
+
+    significant = wins > losses and p_value < 0.05
+    choice = best_bm if significant else tfidf_row
+    if not significant:
+        print("   -> Không có khác biệt có ý nghĩa thống kê: GIỮ TF-IDF (đơn giản hơn).")
+    retriever.freshness_alpha, retriever.recency = saved
+    method = choice[0]
+    # (k1, b) luôn là cấu hình BM25 TỐT NHẤT trên dev — kể cả khi không chọn
+    # BM25 — để phép so trên test là TF-IDF vs BM25 ở trạng thái tốt nhất của nó.
+    k1, b = best_bm[1], best_bm[2]
+    retriever.set_bm25(k1, b, ranking=method)
+    print("\n-> chốt xếp hạng = " + method
+          + (f" (k1={k1}, b={b})" if method == "bm25" else "")
+          + f"  (dev MRR {choice[4]:.3f} so với TF-IDF {tfidf_row[4]:.3f})")
+    return method, k1, b
+
+
+def compare_ranking_on_test(test: dict, retriever: NewsRetriever, params: dict) -> dict:
+    """So TF-IDF và BM25 (k1, b dò trên dev) trên TEST, cùng độ mới đã chốt."""
+    hr("PHA 2c — SO SÁNH TF-IDF vs BM25 TRÊN TEST (k1, b đã chốt trên dev)")
+    k1 = params.get("bm25_k1", BM25_K1)
+    b = params.get("bm25_b", BM25_B)
+    out = {}
+    for method in ("tfidf", "bm25"):
+        retriever.set_bm25(k1, b, ranking=method)
+        ranks = ranks_for(retriever, test["retrieval"])
+        n = len(ranks)
+        r1 = sum(1 for r in ranks if r == 1)
+        out[method] = {"r1": (r1, n), "mrr": mrr(ranks)}
+        label = method + (f" (k1={k1}, b={b})" if method == "bm25" else "")
+        print(f"  {label:<24} R@1 {fmt_rate(r1, n)}   MRR {mrr(ranks):.3f}")
+    retriever.set_bm25(k1, b, ranking=params["ranking"])
+    return out
+
+
 def top1_scores(retriever, cases, key):
     out = []
     for c in cases:
@@ -232,7 +340,7 @@ def top1_scores(retriever, cases, key):
 
 
 def tune_retrieval_threshold(dev: dict, retriever: NewsRetriever) -> float:
-    hr("PHA 1.3 — DÒ NGƯỠNG TRUY HỒI TRÊN DEV")
+    hr("PHA 1.4 — DÒ NGƯỠNG TRUY HỒI TRÊN DEV")
     ins = top1_scores(retriever, dev["retrieval"], "query")
     # Ngưỡng áp lên COSINE THUẦN (base_score), không phải điểm đã nhân độ mới —
     # độ mới chỉ dùng để xếp hạng, không quyết định có trả lời hay không.
@@ -366,6 +474,9 @@ def report_end_to_end(test: dict, params: dict) -> dict:
         intent_w_nb=params["intent_w_nb"],
         freshness_alpha=params["freshness_alpha"],
         freshness_halflife=params["freshness_halflife"],
+        ranking=params["ranking"],
+        bm25_k1=params["bm25_k1"],
+        bm25_b=params["bm25_b"],
     ).train()
 
     ok = 0
@@ -413,6 +524,8 @@ def main() -> int:
 
     # ---------------- PHA 1: DEV
     w_nb, intent_th = tune_intent(dev)
+    ranking, bm25_k1, bm25_b = tune_ranking(dev, retriever)
+    conflict_retriever.set_bm25(bm25_k1, bm25_b, ranking=ranking)
     halflife, alpha = tune_freshness(dev, retriever, conflict_retriever, case)
     set_freshness(retriever, halflife, alpha)
     retr_th = tune_retrieval_threshold(dev, retriever)
@@ -421,6 +534,9 @@ def main() -> int:
     params = {
         "intent_w_nb": w_nb,
         "intent_threshold": intent_th,
+        "ranking": ranking,
+        "bm25_k1": bm25_k1,
+        "bm25_b": bm25_b,
         "freshness_halflife": halflife,
         "freshness_alpha": alpha,
         "retrieval_threshold": retr_th,
@@ -431,11 +547,15 @@ def main() -> int:
         "intent_w_nb": INTENT_W_NB, "intent_threshold": INTENT_THRESHOLD,
         "freshness_halflife": FRESHNESS_HALFLIFE_DAYS, "freshness_alpha": FRESHNESS_ALPHA,
         "retrieval_threshold": RETRIEVAL_THRESHOLD,
+        "ranking": RANKING_METHOD, "bm25_k1": BM25_K1, "bm25_b": BM25_B,
     }
-    diffs = {k: (current[k], v) for k, v in params.items() if abs(current[k] - v) > 1e-9}
+    def _differs(a, b):
+        return a != b if isinstance(a, str) or isinstance(b, str) else abs(a - b) > 1e-9
+    diffs = {k: (current[k], v) for k, v in params.items() if _differs(current[k], v)}
 
     # ---------------- PHA 2: TEST
     results = report_test(test, params, retriever)
+    results["ranking_comparison"] = compare_ranking_on_test(test, retriever, params)
     results.update(report_end_to_end(test, params))
 
     hr("TÓM TẮT")

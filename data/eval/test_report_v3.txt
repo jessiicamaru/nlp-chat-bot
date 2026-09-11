@@ -1,0 +1,170 @@
+DEV : 112 truy hồi, 28 ngoài phạm vi, 55 intent
+TEST: 122 truy hồi, 24 ngoài phạm vi, 32 intent
+
+==============================================================================
+PHA 1.1 — DÒ INTENT TRÊN DEV (w_nb x ngưỡng)
+==============================================================================
+accuracy = câu intent cố định được nhận đúng nhãn và vượt ngưỡng
+safety   = câu cần truy hồi / ngoài phạm vi KHÔNG bị trả lời bằng câu soạn sẵn
+
+  w_nb  ngưỡng  accuracy   safety      TB
+------------------------------------------
+   0.0    0.35    91.1%    61.3%   76.2%
+   0.2    0.40    80.0%    76.0%   78.0%
+   0.4    0.35    84.4%    80.7%   82.6%
+   0.6    0.30    86.7%    82.0%   84.3%
+   0.8    0.30    82.2%    91.3%   86.8%
+   1.0    0.25    82.2%    92.7%   87.4%
+
+-> chốt w_nb=1.0, INTENT_THRESHOLD=0.25  (dev: accuracy 82.2%, safety 92.7%)
+
+==============================================================================
+PHA 1.2 — CÁCH XẾP HẠNG TRÊN DEV: TF-IDF vs BM25 (độ mới tắt)
+==============================================================================
+  cách    k1     b     R@1     MRR
+------------------------------------
+ tfidf     -     -  94.6%   0.965
+  bm25   8.0   0.9  95.5%   0.967
+  bm25   8.0  0.75  94.6%   0.963
+  bm25   8.0   0.5  94.6%   0.963
+  bm25   3.0  0.75  93.8%   0.960
+  bm25   5.0   0.9  93.8%   0.960
+  bm25   5.0  0.75  93.8%   0.959
+   ... (26 cấu hình BM25 khác thấp hơn)
+
+   Xu hướng theo k1 (b=0.9): k1=0.6:0.942  k1=0.9:0.942  k1=1.2:0.944  k1=1.5:0.946  k1=2.0:0.954  k1=3.0:0.959  k1=5.0:0.960  k1=8.0:0.967
+
+   Kiểm định dấu có cặp (dev): BM25 tốt hơn ở 3 câu, kém hơn ở 3 câu, hòa 106 câu -> p = 1.000
+   -> Không có khác biệt có ý nghĩa thống kê: GIỮ TF-IDF (đơn giản hơn).
+
+-> chốt xếp hạng = tfidf  (dev MRR 0.965 so với TF-IDF 0.965)
+
+==============================================================================
+PHA 1.3 — DÒ ĐỘ MỚI TRÊN DEV (nửa chu kỳ x alpha)
+==============================================================================
+Mục tiêu: MRR cao nhất trên dev. RÀNG BUỘC CỨNG: ca tin mâu thuẫn phải đúng.
+
+half-life  alpha     R@1     MRR  ca mâu thuẫn
+----------------------------------------------
+        3    0.0  94.6%   0.965  sai
+        3    0.2  93.8%   0.959  sai
+        3    0.4  93.8%   0.960  ĐÚNG
+        3    0.6  94.6%   0.964  ĐÚNG
+        3    0.8  94.6%   0.963  ĐÚNG
+        3    1.0  93.8%   0.957  ĐÚNG
+        7    0.0  94.6%   0.965  sai
+        7    0.2  93.8%   0.958  sai
+        7    0.4  93.8%   0.959  sai
+        7    0.6  93.8%   0.960  ĐÚNG
+        7    0.8  93.8%   0.960  ĐÚNG
+        7    1.0  93.8%   0.959  ĐÚNG
+       14    0.0  94.6%   0.965  sai
+       14    0.2  93.8%   0.959  sai
+       14    0.4  93.8%   0.958  sai
+       14    0.6  93.8%   0.958  sai
+       14    0.8  93.8%   0.958  sai
+       14    1.0  93.8%   0.958  ĐÚNG
+       30    0.0  94.6%   0.965  sai
+       30    0.2  95.5%   0.969  sai
+       30    0.4  94.6%   0.963  sai
+       30    0.6  93.8%   0.959  sai
+       30    0.8  93.8%   0.958  sai
+       30    1.0  93.8%   0.958  sai
+
+-> chốt nửa chu kỳ = 3 ngày, alpha = 0.6
+
+==============================================================================
+PHA 1.4 — DÒ NGƯỠNG TRUY HỒI TRÊN DEV
+==============================================================================
+Trúng bài (n=106): min=0.064 p10=0.128 trung vị=0.218
+Ngoài phạm vi (n=28): trung vị=0.072 p90=0.109 max=0.125
+
+ ngưỡng  trả lời được  chặn đúng      TB
+------------------------------------------
+  0.060       100.0%      42.9%   71.4%
+  0.080        98.1%      64.3%   81.2%
+  0.100        96.2%      82.1%   89.2%
+  0.120        92.5%      92.9%   92.7%
+  0.140        85.8%     100.0%   92.9%
+  0.160        76.4%     100.0%   88.2%
+  0.180        65.1%     100.0%   82.5%
+  0.200        58.5%     100.0%   79.2%
+  0.220        48.1%     100.0%   74.1%
+  0.240        43.4%     100.0%   71.7%
+  0.260        30.2%     100.0%   65.1%
+  0.280        20.8%     100.0%   60.4%
+  0.300        15.1%     100.0%   57.5%
+
+-> chốt RETRIEVAL_THRESHOLD = 0.130  (dev: trả lời được 88.7%, chặn đúng 100.0%)
+
+==============================================================================
+PHA 2 — BÁO CÁO TRÊN TEST (tham số đã chốt trên dev, KHÔNG chỉnh thêm)
+==============================================================================
+{"intent_w_nb": 1.0, "intent_threshold": 0.25, "ranking": "tfidf", "bm25_k1": 8.0, "bm25_b": 0.9, "freshness_halflife": 3.0, "freshness_alpha": 0.6, "retrieval_threshold": 0.13}
+
+[Intent]
+  Accuracy      :  61.5%  (16/26, KTC95% 43%–78%)
+  Macro-F1      : 0.712
+  Câu sai (10):
+     'ừm'                                 gold=dong_y               pred=__reject__           conf=0.00
+     'bot làm được những gì'              gold=huong_dan            pred=__reject__           conf=0.24
+     'tổng cộng có mấy bài'               gold=thong_ke_corpus      pred=__reject__           conf=0.18
+     'mình có thể hỏi gì'                 gold=huong_dan            pred=__reject__           conf=0.25
+     'liệt kê các chủ đề đi'              gold=liet_ke_chuyen_muc   pred=__reject__           conf=0.21
+     'trả lời như không'                  gold=che_bai              pred=__reject__           conf=0.17
+     'thanks nhé'                         gold=cam_on               pred=__reject__           conf=0.18
+     'dữ liệu của bạn lấy ở đâu'          gold=thong_ke_corpus      pred=__reject__           conf=0.25
+     'đúng vậy'                           gold=dong_y               pred=__reject__           conf=0.16
+     'ngu thế'                            gold=che_bai              pred=__reject__           conf=0.14
+
+[Truy hồi — thành phần]
+  Recall@1      :  93.4%  (114/122, KTC95% 88%–97%)
+  Recall@3      :  95.9%  (117/122, KTC95% 91%–98%)
+  MRR           : 0.950
+     có dấu     R@1  95.3%  (82/86, KTC95% 89%–98%)   MRR 0.967
+     không dấu  R@1  95.5%  (21/22, KTC95% 78%–99%)   MRR 0.960
+     teencode   R@1  78.6%  (11/14, KTC95% 52%–92%)   MRR 0.832
+  Không đứng đầu (8):
+     [có d] phó tổng Vingroup từ chức              hạng=2  top1: Nhà nghiên cứu Anthropic từ chức vì lo AI vư
+     [có d] học sinh Việt đọc hiểu kém theo OECD   hạng=2  top1: Gần 20% học sinh Việt bị bắt nạt 'vài lần mỗ
+     [teen] khi nào tắt sóng 2g v                  hạng=7  top1: Ba mạng di động trúng đấu giá băng tần nghìn
+     [có d] ưu đãi Sun World Hạ Long dịp lễ 2/9    hạng=None  top1: Nhiều khách bị lừa khi đặt khách sạn ở Măng 
+     [teen] sv mới ra trường khó kiếm vc vì AI hả  hạng=None  top1: 'Nhắm mắt cũng đỗ' đại học Mỹ
+     [teen] lịch đá asean cup ntn                  hạng=2  top1: Chelsea ngược dòng khó tin ở Cup Liên đoàn
+     [có d] cô gái bị dị ứng với nước              hạng=6  top1: Dậy thì muộn có phải do bệnh?
+     [khôn] hai ba cu ngoai 90 tuoi di du lich kha hạng=9  top1: Dành 33 năm và 1,5 triệu USD du lịch qua 233
+
+[Ngoài phạm vi — thành phần truy hồi]
+  Chặn đúng     :  87.5%  (21/24, KTC95% 69%–96%)
+     LỌT: 'kết quả xổ số miền bắc' -> 0.142 Kinh nghiệm nhìn thời tiết săn mây ở miền Bắ
+     LỌT: 'top 10 truyện tranh hay nhất' -> 0.148 Internet Việt Nam lần đầu vào top 10 thế giớ
+     LỌT: 'bài văn tả con mèo lớp 3' -> 0.137 Bức xúc vì bị hàng xóm dụ dỗ mèo bỏ chủ
+
+==============================================================================
+PHA 2c — SO SÁNH TF-IDF vs BM25 TRÊN TEST (k1, b đã chốt trên dev)
+==============================================================================
+  tfidf                    R@1  93.4%  (114/122, KTC95% 88%–97%)   MRR 0.950
+  bm25 (k1=8.0, b=0.9)     R@1  91.8%  (112/122, KTC95% 86%–95%)   MRR 0.943
+
+==============================================================================
+PHA 2b — ĐÁNH GIÁ ĐẦU-CUỐI TRÊN TEST (gọi bot.respond như người dùng)
+==============================================================================
+  Câu hỏi tin tức -> bài đứng đầu là bài đúng :  77.0%  (94/122, KTC95% 69%–84%)
+     phân bố các câu KHÔNG đạt theo đường đi: {'intent': 7, 'fallback': 18, 'retrieval': 3}
+  Câu ngoài phạm vi -> bot từ chối           :  75.0%  (18/24, KTC95% 55%–88%)
+     KHÔNG từ chối: 'chỉ t cách tải game liên quân ik' -> route=intent intent=huong_dan
+     KHÔNG từ chối: 'địa chỉ tiệm sửa laptop gần đây' -> route=intent intent=tam_biet
+     KHÔNG từ chối: 'hnay ăn j ngon b' -> route=intent intent=hoi_ve_bot
+     KHÔNG từ chối: 'kết quả xổ số miền bắc' -> route=retrieval intent=
+     KHÔNG từ chối: 'top 10 truyện tranh hay nhất' -> route=retrieval intent=tin_theo_chuyen_muc
+     KHÔNG từ chối: 'bài văn tả con mèo lớp 3' -> route=retrieval intent=tim_tin
+
+==============================================================================
+TÓM TẮT
+==============================================================================
+Tham số chốt trên DEV: {"intent_w_nb": 1.0, "intent_threshold": 0.25, "ranking": "tfidf", "bm25_k1": 8.0, "bm25_b": 0.9, "freshness_halflife": 3.0, "freshness_alpha": 0.6, "retrieval_threshold": 0.13}
+
+CẢNH BÁO: config.py đang KHÁC tham số vừa dò trên dev:
+   bm25_k1: config=1.2  dev=8.0
+   bm25_b: config=0.75  dev=0.9
+   -> cập nhật config.py để bot chạy đúng bộ tham số đã báo cáo.

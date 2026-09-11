@@ -1,6 +1,9 @@
 {
  "intent_w_nb": 1.0,
  "intent_threshold": 0.25,
+ "ranking": "tfidf",
+ "bm25_k1": 8.0,
+ "bm25_b": 0.9,
  "freshness_halflife": 3.0,
  "freshness_alpha": 0.6,
  "retrieval_threshold": 0.13

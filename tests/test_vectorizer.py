@@ -143,6 +143,63 @@ def test_edge_cases():
         FAIL += 1
 
 
+def test_bm25():
+    """Đối chiếu BM25 vector hóa với cài đặt NGÂY THƠ viết thẳng từ công thức.
+
+    sklearn không có BM25, nên tham chiếu ở đây là một bản vòng lặp viết theo
+    đúng định nghĩa, dễ đọc tới mức kiểm được bằng mắt. Nếu bản vector hóa
+    (dùng ma trận thưa) khớp bản này trên nhiều (k1, b) thì phép biến đổi sang
+    ma trận là đúng.
+    """
+    import math
+    from collections import Counter as _C
+
+    from vectorizer import CountVectorizer, bm25_idf, bm25_scores, bm25_weights
+
+    print("\n--- BM25: vector hóa vs cài đặt ngây thơ theo công thức ---")
+    global PASS, FAIL
+
+    cv = CountVectorizer(ngram_range=(1, 1)).fit(TOKENIZED)
+    counts = cv.transform(TOKENIZED)
+    idf = bm25_idf(cv.document_frequency_, cv.n_docs_)
+
+    n = len(TOKENIZED)
+    df = _C(t for doc in TOKENIZED for t in set(doc))
+    avgdl = sum(len(d) for d in TOKENIZED) / n
+
+    def naive(query, doc, k1, b):
+        tf = _C(doc)
+        s = 0.0
+        for t in query:
+            if t not in df:
+                continue
+            idf_t = math.log((n - df[t] + 0.5) / (df[t] + 0.5) + 1)
+            f = tf[t]
+            s += idf_t * f * (k1 + 1) / (f + k1 * (1 - b + b * len(doc) / avgdl))
+        return s
+
+    for k1, b in [(1.2, 0.75), (0.5, 0.0), (2.0, 1.0), (1.5, 0.3)]:
+        W = bm25_weights(counts, idf, k1=k1, b=b)
+        for q in Q_TOKENIZED + [["trí_tuệ", "trí_tuệ", "nhân_tạo"]]:
+            ours = bm25_scores(W, cv.transform([q]))
+            ref = np.array([naive(q, d, k1, b) for d in TOKENIZED])
+            check(f"k1={k1} b={b} q={' '.join(q)[:22]}", ours, ref, atol=1e-12)
+
+    # Tính chất: tf bão hòa — lặp một term nhiều lần không tăng điểm mãi mãi.
+    W = bm25_weights(counts, idf, k1=1.2, b=0.75)
+    long_doc = [["python"] * k for k in (1, 5, 50)]
+    cv2 = CountVectorizer().fit(long_doc)
+    W2 = bm25_weights(cv2.transform(long_doc), bm25_idf(cv2.document_frequency_, 3), k1=1.2, b=0.0)
+    s = bm25_scores(W2, cv2.transform([["python"]]))
+    idf_py = bm25_idf(cv2.document_frequency_, 3)[0]
+    if s[0] < s[1] < s[2] < idf_py * 2.2 + 1e-9:
+        print(f"  [PASS] tf bão hòa: {s.round(4)} < trần idf*(k1+1) = {idf_py * 2.2:.4f}")
+        PASS += 1
+    else:
+        print(f"  [FAIL] tf không bão hòa: {s}")
+        FAIL += 1
+
+
 if __name__ == "__main__":
     print("=" * 74)
     print("ĐỐI CHIẾU TF-IDF TỰ CÀI ĐẶT  vs  scikit-learn")
@@ -155,6 +212,7 @@ if __name__ == "__main__":
     run_case((1, 1), False, max_df=0.6)
 
     test_edge_cases()
+    test_bm25()
 
     print("\n" + "=" * 74)
     print(f"KẾT QUẢ: {PASS} pass / {FAIL} fail")

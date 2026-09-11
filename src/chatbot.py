@@ -95,6 +95,9 @@ class NewsChatbot:
         intent_w_nb: float | None = None,
         freshness_alpha: float | None = None,
         freshness_halflife: float | None = None,
+        ranking: str | None = None,
+        bm25_k1: float | None = None,
+        bm25_b: float | None = None,
     ):
         """Các tham số None -> dùng giá trị mặc định trong config.py.
 
@@ -116,6 +119,9 @@ class NewsChatbot:
             retriever_kwargs["freshness_alpha"] = freshness_alpha
         if freshness_halflife is not None:
             retriever_kwargs["freshness_halflife"] = freshness_halflife
+        for key, val in (("ranking", ranking), ("bm25_k1", bm25_k1), ("bm25_b", bm25_b)):
+            if val is not None:
+                retriever_kwargs[key] = val
         self.retriever = NewsRetriever(**retriever_kwargs)
         self.state = DialogueState()
         self._ready = False
