@@ -291,13 +291,25 @@ class NewsRetriever:
         if category:
             mask = (self.df["category"].astype(str).str.lower() == category.lower()).to_numpy()
             scores = np.where(mask, scores, 0.0)
+            base_scores = np.where(mask, base_scores, 0.0)
 
+        # XẾP HẠNG theo điểm đã nhân độ mới, nhưng CHẤP NHẬN theo cosine thuần.
+        #
+        # Hai câu hỏi khác nhau thì phải dùng hai thước đo khác nhau:
+        #   - "bài nào nên đứng trước?"      -> độ liên quan + độ mới
+        #   - "có đủ căn cứ để trả lời không?" -> CHỈ độ liên quan
+        #
+        # Lỗi cũ: ngưỡng áp lên điểm đã nhân độ mới. Với nửa chu kỳ 3 ngày, bài
+        # 16 ngày tuổi gần như không được thưởng, nên phải liên quan hơn hẳn mới
+        # vượt được ngưỡng — độ mới đã âm thầm biến thành bộ lọc loại bài cũ.
+        # "tin ve dao hai nam" từ trả lời đúng chuyển sang "không tìm thấy".
+        # Kiểm thử hồi quy (tests/test_chatbot.py) bắt được lỗi này.
         order = np.argsort(-scores)[:top_k]
 
         results: list[RetrievalResult] = []
         for doc_id in order:
             score = float(scores[doc_id])
-            if score < threshold:
+            if float(base_scores[doc_id]) < threshold:
                 continue
             row = self.df.iloc[doc_id]
             results.append(

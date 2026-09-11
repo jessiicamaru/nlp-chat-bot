@@ -234,10 +234,12 @@ def top1_scores(retriever, cases, key):
 def tune_retrieval_threshold(dev: dict, retriever: NewsRetriever) -> float:
     hr("PHA 1.3 — DÒ NGƯỠNG TRUY HỒI TRÊN DEV")
     ins = top1_scores(retriever, dev["retrieval"], "query")
-    in_scores = [r.score for r, c in zip(ins, dev["retrieval"])
+    # Ngưỡng áp lên COSINE THUẦN (base_score), không phải điểm đã nhân độ mới —
+    # độ mới chỉ dùng để xếp hạng, không quyết định có trả lời hay không.
+    in_scores = [r.base_score for r, c in zip(ins, dev["retrieval"])
                  if r is not None and r.url in set(c["gold_urls"])]
     oos = top1_scores(retriever, dev["out_of_scope"], "text")
-    oos_scores = [r.score if r else 0.0 for r in oos]
+    oos_scores = [r.base_score if r else 0.0 for r in oos]
 
     print(f"Trúng bài (n={len(in_scores)}): min={min(in_scores):.3f} "
           f"p10={np.percentile(in_scores, 10):.3f} trung vị={np.median(in_scores):.3f}")
@@ -339,12 +341,12 @@ def report_test(test: dict, params: dict, retriever: NewsRetriever) -> dict:
 
     # ---- Ngoài phạm vi
     oos = top1_scores(retriever, test["out_of_scope"], "text")
-    blocked = sum(1 for r in oos if r is None or r.score < params["retrieval_threshold"])
+    blocked = sum(1 for r in oos if r is None or r.base_score < params["retrieval_threshold"])
     print("\n[Ngoài phạm vi — thành phần truy hồi]")
     print(f"  Chặn đúng     : {fmt_rate(blocked, len(oos))}")
     for x, r in zip(test["out_of_scope"], oos):
-        if r is not None and r.score >= params["retrieval_threshold"]:
-            print(f"     LỌT: {x['text']!r} -> {r.score:.3f} {r.title[:44]}")
+        if r is not None and r.base_score >= params["retrieval_threshold"]:
+            print(f"     LỌT: {x['text']!r} -> {r.base_score:.3f} {r.title[:44]}")
     results["oos_blocked"] = (blocked, len(oos))
     return results
 

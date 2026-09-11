@@ -69,9 +69,13 @@ CONFIG_RETRIEVAL = {
 # tham số còn được dò và báo cáo trên cùng một tập (rò rỉ tập test). Chúng giữ
 # lại để đối chiếu; giá trị hiện hành là giá trị gán ở mỗi dòng.
 
-# Ngưỡng để chấp nhận câu trả lời từ retriever.
+# Ngưỡng để chấp nhận câu trả lời từ retriever — áp lên COSINE THUẦN.
 #
-# LƯU Ý: đây là ngưỡng trên điểm ĐÃ NHÂN hệ số độ mới, không phải cosine thuần.
+# Độ mới chỉ dùng để XẾP HẠNG, không quyết định có trả lời hay không (xem
+# retriever.search). Giá trị hiện hành 0.13 dò trên dev: trả lời được 88.7%,
+# chặn đúng 100% câu ngoài phạm vi.
+#
+# (Lịch sử) Trước đây ngưỡng áp lên điểm ĐÃ NHÂN hệ số độ mới, không phải cosine thuần.
 # Hệ số (1 + FRESHNESS_ALPHA * recency) thổi mọi điểm lên tối đa 1,6 lần, nên
 # ngưỡng phải được dò LẠI sau khi bật độ mới: 0.12 -> 0.18.
 #
@@ -84,12 +88,18 @@ CONFIG_RETRIEVAL = {
 #
 # Điểm cao nhất của truy vấn NGOÀI phạm vi là 0.151, nên 0.155 là ngưỡng thấp
 # nhất còn chặn được 100% — tối đa hóa số câu trả lời được mà vẫn không đoán bừa.
-RETRIEVAL_THRESHOLD = 0.175
+RETRIEVAL_THRESHOLD = 0.13
 
 # Ngưỡng điểm ensemble để chấp nhận nhãn intent từ classifier.
 # Dò lưới (w_nb x threshold): w_nb=0.8, threshold=0.25 cho điểm cân bằng
 # tốt nhất — accuracy 88.5%, safety 87.5%.
 INTENT_THRESHOLD = 0.25
+
+# Khi người dùng đã tự nêu chuyên mục ("tin du lịch ninh bình"), tập ứng viên
+# co lại còn vài chục bài cùng chủ đề, nên một cosine thấp hơn vẫn là bằng
+# chứng đủ mạnh. Ngưỡng trong trường hợp này = RETRIEVAL_THRESHOLD x hệ số này.
+# Hằng số đặt tay (chưa dò trên dev vì dev có quá ít câu nêu chuyên mục).
+CATEGORY_SCOPED_THRESHOLD_FACTOR = 0.6
 
 # Trọng số của Naive Bayes trong ensemble; phần còn lại (1 - w_nb) là tín hiệu
 # cosine tới pattern gần nhất. Xem giải thích trong intent_classifier.py.

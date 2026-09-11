@@ -36,6 +36,7 @@ from pathlib import Path
 import pandas as pd
 
 from config import (
+    CATEGORY_SCOPED_THRESHOLD_FACTOR,
     CONFIG_RETRIEVAL,
     QUERY_FRAME_WORDS,
     CORPUS_RAW_PATH,
@@ -291,7 +292,7 @@ class NewsChatbot:
                 expand_query(user_text, info),
                 top_k=TOP_K,
                 category=category,
-                min_score=self.retriever.threshold * 0.6,
+                min_score=self.retriever.threshold * CATEGORY_SCOPED_THRESHOLD_FACTOR,
             )
             if scoped:
                 self.state.remember_results(scoped, user_text)
@@ -411,8 +412,15 @@ class NewsChatbot:
         # Nhân đôi thực thể để tăng trọng số tên riêng trong vector query.
         query = expand_query(user_text, info)
 
-        # Nếu người dùng nêu rõ chuyên mục, thu hẹp phạm vi tìm kiếm trước.
-        results = self.retriever.search(query, top_k=TOP_K, category=info.category)
+        # Nếu người dùng nêu rõ chuyên mục, thu hẹp phạm vi tìm kiếm trước — và
+        # dùng CÙNG ngưỡng nới lỏng như nhánh duyệt mục (_act_browse). Trước đây
+        # chỉ nhánh duyệt mục có ngưỡng nới, nên cùng một câu "tin du lịch ninh
+        # bình" cho kết quả khác nhau tùy độ tin cậy intent rơi trên hay dưới
+        # ngưỡng 0.25 một chút (0.246 -> nhánh này -> không tìm thấy).
+        scoped_min = (self.retriever.threshold * CATEGORY_SCOPED_THRESHOLD_FACTOR
+                      if info.category else None)
+        results = self.retriever.search(query, top_k=TOP_K, category=info.category,
+                                        min_score=scoped_min)
         if not results and info.category:
             # Không có gì trong chuyên mục đó -> nới ra toàn corpus.
             results = self.retriever.search(query, top_k=TOP_K)
