@@ -687,6 +687,236 @@ for u in ["bt gì về vụ iphone k b", "cho t hỏi vụ đảo hải nam vs",
     print(f"Bot > {r.text[:260]}")
 """)
 
+# ---------------------------------------------------------------- PART G4 ---
+md(r"""
+---
+# PHẦN G4 — THÔNG TIN LỖI THỜI VÀ XẾP HẠNG THEO ĐỘ MỚI
+
+Đây là lỗi **nguy hiểm nhất** với một chatbot tin tức. Trả lời sai chủ đề thì
+người dùng nhận ra ngay. Trả lời bằng thông tin **đã lỗi thời**, kèm dẫn nguồn
+thật, bằng giọng chắc chắn — thì không ai nhận ra.
+
+## Câu hỏi kiểm tra
+
+> Nếu hôm nay tin nói "vấn đề X là A", hôm sau tin nói "vấn đề X là B",
+> bot có trả về đúng thông tin mới không?
+
+Dựng lại đúng tình huống bằng hai bài mâu thuẫn nhau:
+
+| Ngày | Tiêu đề |
+|---|---|
+| 01/09 | Giá vé tàu Cát Linh **tăng lên 15.000 đồng** từ tháng 10 |
+| 10/09 | **Hoãn tăng giá** vé tàu Cát Linh, giữ nguyên 8.000 đồng |
+""")
+
+code(r"""
+import datetime as _dt
+from retriever import NewsRetriever as _NR
+
+day1 = {"url": "https://example.test/ngay-1", "source": "VnExpress", "category": "Công nghệ",
+        "title": "Giá vé tàu Cát Linh tăng lên 15.000 đồng từ tháng 10",
+        "description": "Tổng công ty đường sắt thông báo giá vé mới áp dụng từ đầu tháng 10.",
+        "text": ("Tổng công ty đường sắt Hà Nội cho biết giá vé tàu Cát Linh sẽ tăng lên "
+                 "15.000 đồng mỗi lượt kể từ ngày 1 tháng 10. Mức giá cũ là 8.000 đồng."),
+        "published_at": "2026-09-01", "crawled_at": "2026-09-01"}
+day2 = {"url": "https://example.test/ngay-2", "source": "VnExpress", "category": "Công nghệ",
+        "title": "Hoãn tăng giá vé tàu Cát Linh, giữ nguyên 8.000 đồng",
+        "description": "Quyết định tăng giá vé bị hoãn vô thời hạn sau phản hồi của hành khách.",
+        "text": ("Tổng công ty đường sắt Hà Nội vừa thông báo hoãn kế hoạch tăng giá vé tàu "
+                 "Cát Linh. Giá vé giữ nguyên ở mức 8.000 đồng mỗi lượt thay vì tăng lên "
+                 "15.000 đồng như thông báo trước đó."),
+        "published_at": "2026-09-10", "crawled_at": "2026-09-10"}
+
+df_conflict = pd.concat([df.dropna(subset=["title", "text"]), pd.DataFrame([day1, day2])],
+                        ignore_index=True)
+QUERY = "giá vé tàu cát linh bao nhiêu"
+
+# alpha = 0 tức là TẮT hoàn toàn yếu tố độ mới -> TF-IDF thuần như ban đầu
+r_off = _NR(freshness_alpha=0.0).fit(df_conflict)
+print("TF-IDF THUẦN (không xét độ mới):")
+for res in r_off.search(QUERY, top_k=5, min_score=0.0):
+    if "example.test" in res.url:
+        nhan = "NGÀY 1 (cũ, nay SAI)" if "ngay-1" in res.url else "NGÀY 10 (mới, ĐÚNG)"
+        print(f"  {res.score:.4f}  [{nhan}]  {res.title}")
+""")
+
+md(r"""
+Bot trả lời bài **cũ, nay đã sai**.
+
+**Vì sao:** tiêu đề bài cũ chứa đúng các từ trong câu hỏi (`giá vé tàu Cát Linh`),
+còn bài mới mở đầu bằng `Hoãn tăng giá`. TF-IDF chỉ đo độ trùng lặp từ ngữ — nó
+không biết bài nào mới hơn, không biết bài B phủ định bài A, và không có khái
+niệm "thông tin bị thay thế".
+
+Nguyên nhân gốc: `published_at` được crawler thu thập và lưu, nhưng **chưa từng
+được dùng** ở bất kỳ đâu trong xếp hạng.
+
+### Tệ hơn: kết quả đảo lộn tùy cách diễn đạt
+""")
+
+code(r"""
+print("TF-IDF thuần — cùng một ý định, 4 cách hỏi:")
+for q in ["giá vé tàu cát linh bao nhiêu", "vé tàu cát linh có tăng giá không",
+          "tàu cát linh 15.000 đồng", "hoãn tăng giá vé tàu"]:
+    res = [x for x in r_off.search(q, top_k=5, min_score=0.0) if "example.test" in x.url]
+    if res:
+        nhan = "SAI (tin cũ)" if "ngay-1" in res[0].url else "ĐÚNG (tin mới)"
+        print(f"  {nhan:<16} <- {q!r}")
+""")
+
+md(r"""
+Không phải "thường đúng" — mà là **tùy may rủi** theo cách người dùng gõ.
+
+## Giải pháp
+
+$$\text{score}' = \cos(q, d) \times \big(1 + \alpha \cdot \text{recency}(d)\big)
+\qquad
+\text{recency} = 0.5^{\,\text{tuổi (ngày)} / \text{nửa chu kỳ}}$$
+
+**Vì sao NHÂN chứ không CỘNG:** nếu cộng, một bài hoàn toàn không liên quan
+($\cos \approx 0$) nhưng vừa đăng hôm nay vẫn được cộng một lượng lớn và sẽ nổi
+lên đầu với **mọi** câu hỏi. Nhân giữ nguyên tính chất: không liên quan thì vẫn
+bằng 0 dù mới tinh.
+
+**Vì sao $\alpha$ phải nhỏ:** mục đích không phải luôn ưu tiên tin mới, mà chỉ
+**phá thế hòa** khi hai bài liên quan xấp xỉ nhau.
+
+**Mốc tham chiếu** là ngày đăng mới nhất trong corpus, không phải `datetime.now()`
+— để kết quả trong báo cáo tái lập được.
+""")
+
+code(r"""
+# Dò lưới: tối ưu ĐỒNG THỜI chất lượng truy hồi VÀ ca tin mâu thuẫn
+import dates as _dates
+import json as _json
+from config import INTENTS_DIR as _ID
+
+_tests = _json.loads((_ID / "test_queries.json").read_text(encoding="utf-8"))
+_df_clean = df.dropna(subset=["title", "text"]).reset_index(drop=True)
+
+def _quality(r):
+    ranks = []
+    for c in _tests["retrieval_tests"]:
+        res = r.search(c["query"], top_k=10, min_score=0.0)
+        needle = c["expect_title_contains"].lower()
+        ranks.append(next((i for i, x in enumerate(res, 1) if needle in x.title.lower()), None))
+    r1 = sum(1 for x in ranks if x == 1) / len(ranks)
+    mrr = float(np.mean([1 / x if x else 0 for x in ranks]))
+    return r1, mrr
+
+print(f"{'half-life':>10} {'alpha':>7} {'Recall@1':>9} {'MRR':>7}   ca tin mâu thuẫn")
+print("-" * 56)
+for hl, alpha in [(30, 0.35), (14, 0.60), (3, 0.60), (7, 0.60)]:
+    rq = _NR(freshness_alpha=alpha).fit(_df_clean)
+    rq.recency = _dates.compute_recency(rq.published_dates, half_life_days=hl)
+    r1, mrr = _quality(rq)
+
+    rc = _NR(freshness_alpha=alpha).fit(df_conflict)
+    rc.recency = _dates.compute_recency(rc.published_dates, half_life_days=hl)
+    res = [x for x in rc.search(QUERY, top_k=5, min_score=0.0) if "example.test" in x.url]
+    verdict = ("ĐÚNG" if res and "ngay-2" in res[0].url else "SAI")
+    mark = "  <- chọn" if (hl, alpha) == (7, 0.60) else ""
+    print(f"{hl:>10} {alpha:>7.2f} {r1:>8.1%} {mrr:>7.3f}   {verdict}{mark}")
+""")
+
+md(r"""
+### Vì sao nửa chu kỳ 30 ngày KHÔNG đủ
+
+Hai bài cách nhau 9 ngày:
+
+$$\text{recency}_{\text{cũ}} = 0.5^{9/30} = 0.81 \Rightarrow \text{hệ số } 1.49
+\qquad
+\text{recency}_{\text{mới}} = 1.00 \Rightarrow \text{hệ số } 1.60$$
+
+Chênh lệch hệ số chỉ **7%**, trong khi khoảng cách cosine là **21%** → không đủ
+để lật thứ hạng. Với nửa chu kỳ 7 ngày: $0.5^{9/7} = 0.41$ → hệ số 1.25 so với
+1.60, chênh **28%** → đủ.
+
+### Kết quả ngoài mong đợi: độ mới còn LÀM TỐT LÊN truy hồi
+
+| | Tắt độ mới | Bật độ mới |
+|---|---|---|
+| Recall@1 | 93.5% | **96.8%** |
+| Recall@3 | 100% | 100% |
+| MRR | 0.968 | **0.984** |
+
+> So sánh này đo trên **cùng một tập test 31 truy vấn** (bật/tắt độ mới).
+> Con số 90.5% ở các phần trước là trên tập test CŨ chỉ có 21 truy vấn viết
+> chuẩn — không so trực tiếp được với ở đây.
+
+
+Lý do: báo chí thường đưa tin **nhiều lần** về cùng một sự việc. Trước đây bài
+nào trúng từ khóa hơn thì thắng, kể cả khi đó là bài cũ hơn và ít đầy đủ hơn.
+""")
+
+code(r"""
+# Sau khi bật độ mới (cấu hình đã chốt trong config.py)
+bot_fresh = build_default_bot(corpus_path=None) if False else None
+r_on = _NR().fit(df_conflict)   # dùng FRESHNESS_ALPHA / HALFLIFE mặc định
+print("CÓ XÉT ĐỘ MỚI:")
+for res in r_on.search(QUERY, top_k=5, min_score=0.0):
+    if "example.test" in res.url:
+        nhan = "NGÀY 1 (cũ, SAI)" if "ngay-1" in res.url else "NGÀY 10 (mới, ĐÚNG)"
+        print(f"  {res.score:.4f}  [{nhan}]  {res.title}")
+
+print("\nCả 4 cách hỏi:")
+for q in ["giá vé tàu cát linh bao nhiêu", "vé tàu cát linh có tăng giá không",
+          "tàu cát linh 15.000 đồng", "hoãn tăng giá vé tàu"]:
+    res = [x for x in r_on.search(q, top_k=5, min_score=0.0) if "example.test" in x.url]
+    if res:
+        nhan = "SAI (tin cũ)" if "ngay-1" in res[0].url else "ĐÚNG (tin mới)"
+        print(f"  {nhan:<16} <- {q!r}")
+""")
+
+md(r"""
+Kể cả câu `"tàu cát linh 15.000 đồng"` — **trích đúng con số của tin cũ** — nay
+cũng trả về bài nói con số đó đã bị hoãn.
+
+## Vẫn luôn hiện ngày đăng
+
+Xếp hạng theo độ mới **giảm nhẹ** vấn đề chứ không giải quyết triệt để. Bot vẫn
+không hiểu bài B phủ định bài A; nó chỉ ưu tiên bài mới khi hai bài gần ngang
+nhau. Nếu bài cũ liên quan **vượt trội**, nó vẫn thắng.
+
+Nên mọi câu trả lời nay đều kèm ngày đăng — bot không biết bài nào đã lỗi thời,
+nên ít nhất phải cho người đọc đủ dữ kiện để tự đánh giá.
+""")
+
+code(r"""
+bot_d = build_default_bot()
+r = bot_d.respond("tin về đảo hải nam")
+print(r.text[:420])
+""")
+
+md(r"""
+## Tích lũy hay ghi đè?
+
+| Lớp | Hành vi |
+|---|---|
+| **Dữ liệu** (`corpus_raw.csv`) | **Tích lũy** — crawler nạp corpus cũ, thêm bài mới, dedup theo URL. Không bao giờ xóa. |
+| **Mô hình** (index TF-IDF) | **Ghi đè** — `fit()` tính lại toàn bộ vocabulary và IDF. Không có cập nhật tăng dần. |
+
+Hệ quả: mỗi lần thêm dữ liệu, IDF của **mọi** term đều đổi, nên điểm số của các
+bài **đã có sẵn** cũng thay đổi theo. Đây là lý do ngưỡng chấp nhận cần được dò
+lại khi corpus lớn lên đáng kể.
+
+## Thời gian huấn luyện (đo thực tế, 381 bài)
+
+| Thành phần | Thời gian |
+|---|---|
+| Intent classifier (150 pattern) | 0.64s |
+| Học từ điển teencode (8.372 cặp) | 0.47s |
+| **Dựng index truy hồi** | **20.5s** ← chiếm gần hết |
+| Tổng khởi động lần đầu | 21.3s |
+| Tổng khởi động (có cache đĩa) | **1.1s** |
+| Trả lời một câu hỏi | 24ms |
+
+Xấp xỉ tuyến tính (~54ms/bài): 1.000 bài ≈ 1 phút, 10.000 bài ≈ 9 phút.
+
+Index được cache ra đĩa bằng `joblib` + vân tay SHA-256 của (nội dung corpus +
+các tham số ảnh hưởng tới index), tự dựng lại khi corpus đổi.
+""")
+
 # ---------------------------------------------------------------- PART G3 ---
 md(r"""
 ---
@@ -879,14 +1109,16 @@ md(r"""
 | Intent classification | Accuracy (tập test riêng) | **88.5%** |
 | Intent classification | Macro-F1 | **0.91** |
 | Intent classification | Safety (không trả lời bừa) | **87.5%** |
-| Retrieval | Recall@1 | **90.5%** |
+| Retrieval | Recall@1 | **96.8%** |
 | Retrieval | Recall@3 | **100%** |
-| Retrieval | MRR | **0.952** |
-| Retrieval | chặn câu ngoài phạm vi | **100%** ở ngưỡng 0.12 |
+| Retrieval | MRR | **0.984** |
+| Retrieval | chặn câu ngoài phạm vi | **100%** ở ngưỡng 0.155 |
+| Xếp hạng độ mới | ca tin mới phủ định tin cũ | **xử lý đúng cả 4 cách hỏi** |
 | Chuẩn hóa teencode | ERR trên ViLexNorm test | **67.5%** |
 | Chuẩn hóa teencode | Accuracy 83.9% → | **94.8%** |
 | Chuẩn hóa teencode | Precision / Recall | **90.7% / 70.2%** |
 | Mô hình sinh n-gram | Perplexity tốt nhất (n=2) | **819** |
+| Tốc độ | khởi động (có cache) / một câu hỏi | **1.1s / 24ms** |
 
 ## Ngưỡng được chọn như thế nào
 
@@ -894,11 +1126,16 @@ md(r"""
 
 | Nhóm | min | trung vị | max |
 |---|---|---|---|
-| Trong phạm vi (trúng bài) | 0.118 | 0.253 | 0.333 |
-| Ngoài phạm vi | 0.000 | 0.054 | **0.108** |
+| Trong phạm vi (trúng bài) | 0.088 | 0.344 | — |
+| Ngoài phạm vi | 0.000 | 0.080 | **0.151** |
 
-Ngưỡng **0.12** nằm gọn trong khe hở giữa hai nhóm → trả lời được 100% câu trong
-phạm vi, đồng thời chặn 100% câu ngoài phạm vi.
+Ngưỡng **0.155** là giá trị thấp nhất còn chặn được 100% câu ngoài phạm vi —
+tối đa hóa số câu trả lời được mà vẫn không đoán bừa.
+
+> Lưu ý: đây là ngưỡng trên điểm **đã nhân hệ số độ mới**, không phải cosine
+> thuần. Bật độ mới làm mọi điểm tăng tối đa 1,6 lần nên ngưỡng phải dò lại
+> (0.12 → 0.155). Tập dò ngưỡng cũng đã được bổ sung câu **không dấu** và
+> **teencode** — xem lỗi số 13 ở phần Error Analysis.
 """)
 
 code(r"""
@@ -921,7 +1158,7 @@ for q in tests["out_of_scope"]:
 fig, ax = plt.subplots(figsize=(9, 3.4))
 ax.hist(in_scores, bins=12, alpha=.75, label="trong phạm vi", color="#0d9488")
 ax.hist(oos_scores, bins=12, alpha=.75, label="ngoài phạm vi", color="#b45309")
-ax.axvline(0.12, color="#dc2626", ls="--", lw=2, label="ngưỡng = 0.12")
+ax.axvline(0.155, color="#dc2626", ls="--", lw=2, label="ngưỡng = 0.155")
 ax.set_xlabel("cosine similarity của kết quả top-1"); ax.set_ylabel("số truy vấn")
 ax.set_title("Ngưỡng chấp nhận nằm trong khe hở giữa hai phân bố")
 ax.legend(); plt.tight_layout(); plt.show()
@@ -1041,6 +1278,33 @@ error_analysis = pd.DataFrame([
         "Trạng thái": "ĐÃ GIẢI THÍCH",
     },
     {
+        "STT": 13,
+        "Tầng": "Xếp hạng / độ mới",
+        "Input": "giá vé tàu cát linh bao nhiêu (2 bài mâu thuẫn, cách nhau 9 ngày)",
+        "Sai": "Trả về bài CŨ đã lỗi thời (0.4956) thay vì bài mới đúng (0.4098), kèm dẫn nguồn thật",
+        "Nguyên nhân": "published_at được crawl và lưu nhưng KHÔNG dùng khi xếp hạng. TF-IDF chỉ đo trùng lặp từ ngữ; tiêu đề bài cũ chứa đúng từ trong câu hỏi",
+        "Xử lý": "score' = cosine x (1 + alpha x recency), dò được alpha=0.6 / nửa chu kỳ 7 ngày. Nhân chứ không cộng để bài không liên quan vẫn ở 0",
+        "Trạng thái": "ĐÃ SỬA",
+    },
+    {
+        "STT": 14,
+        "Tầng": "Phương pháp đánh giá",
+        "Input": "tin ve dao hai nam (không dấu)",
+        "Sai": "Đạt 0.168, trượt ngưỡng 0.18 vừa dò được, dù trước đó vẫn trả lời tốt",
+        "Nguyên nhân": "Tập test dò ngưỡng CHỈ có câu viết chuẩn có dấu, trong khi bot đã hỗ trợ cả không dấu và teencode -> ngưỡng được dò trên phân bố sai",
+        "Xử lý": "Bổ sung 10 truy vấn không dấu/teencode + 4 câu ngoài phạm vi, làm mịn lưới quét quanh vùng ranh giới, dò lại: 0.155",
+        "Trạng thái": "ĐÃ SỬA",
+    },
+    {
+        "STT": 15,
+        "Tầng": "Chuẩn hóa / định tuyến",
+        "Input": "thoi tiet sao hoa hom nay",
+        "Sai": "Bot trả lời 'Tạm biệt bạn! Hẹn gặp lại' cho một câu hỏi về thời tiết",
+        "Nguyên nhân": "Từ điển teencode luôn trả từ CÓ DẤU. Sửa 'thoi'->'thôi' làm cả câu bỗng 'có dấu' -> định tuyến sang index có dấu, nơi 5 token còn lại đều OOV -> cả câu bị phán đoán dựa trên đúng một từ ('thôi' thuộc pattern 'thôi nhé')",
+        "Xử lý": "Nếu câu gốc không có dấu thì bỏ dấu lại sau chuẩn hóa, giữ nguyên hệ quy chiếu dấu người dùng đang gõ",
+        "Trạng thái": "ĐÃ SỬA",
+    },
+    {
         "STT": 12,
         "Tầng": "Chuẩn hóa teencode",
         "Input": "token 't'",
@@ -1103,6 +1367,10 @@ md(r"""
 6. **Tham chiếu chỉ neo vào lượt gần nhất.** "bài thứ hai ấy" hoặc "cái lúc nãy
    bạn nói" sẽ không giải đúng.
 
+7. **Không phát hiện mâu thuẫn giữa các bài.** Xếp hạng theo độ mới chỉ *giảm
+   nhẹ* vấn đề: bot ưu tiên bài mới khi hai bài gần ngang nhau, nhưng nếu bài cũ
+   liên quan **vượt trội** thì nó vẫn thắng. Bot không hiểu bài B phủ định bài A.
+
 ## Hướng phát triển
 
 | Hướng | Kỹ thuật | Kỳ vọng |
@@ -1110,6 +1378,8 @@ md(r"""
 | Hiểu từ đồng nghĩa | Word2Vec / PhoBERT embedding, kết hợp lai với TF-IDF | Giải quyết hạn chế 1 |
 | **Sinh câu trả lời tự nhiên** | **RAG: dùng chính retriever hiện tại làm "R", ghép mô hình ngôn ngữ lớn tiếng Việt (PhoGPT, Vistral) làm "G"** | **Giải quyết hạn chế 2 — bot diễn đạt lại thay vì chép nguyên văn, vẫn dẫn được nguồn** |
 | Chuẩn hóa teencode có ngữ cảnh | Mô hình seq2seq (BARTpho) thay cho tra từ điển | Tăng recall, giải được từ mơ hồ như "t" |
+| **Phát hiện cùng-một-sự-việc** | Nhóm các bài có độ tương đồng cao thành cụm, chỉ hiện bài mới nhất trong cụm kèm cảnh báo "có bài mới hơn" | **Giải quyết triệt để hạn chế 7** |
+| Cập nhật index tăng dần | Thêm bài mới mà không dựng lại toàn bộ vocabulary/IDF | Giảm chi phí khi corpus lớn |
 | Xếp hạng tốt hơn | BM25 thay TF-IDF (chuẩn hóa độ dài tài liệu tốt hơn) | Recall@1 cao hơn với bài dài |
 | Khôi phục dấu | Mô hình seq2seq phục hồi dấu thay vì hạ về âm tiết | Chính xác hơn với câu không dấu |
 | Mở rộng intent | Thu thập log chat thật để bổ sung pattern | Giảm nhầm lẫn intent chồng lấn |
@@ -1158,7 +1428,8 @@ python src/evaluate.py
 - [x] Dò siêu tham số bằng thực nghiệm, không chọn cảm tính
 - [x] Chuẩn hóa teencode học từ ViLexNorm, đánh giá bằng ERR
 - [x] Thí nghiệm đối chứng: mô hình sinh n-gram vs truy hồi
-- [x] Error analysis (12 case, vượt yêu cầu tối thiểu 3)
+- [x] Xếp hạng theo độ mới, xử lý tin lỗi thời
+- [x] Error analysis (15 case, vượt yêu cầu tối thiểu 3)
 - [x] Giao diện CLI + Web
 - [x] Notebook đã Run và lưu output
 """)

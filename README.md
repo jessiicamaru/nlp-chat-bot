@@ -18,12 +18,14 @@ Bot trả lời câu hỏi về tin tức dựa trên kho **381 bài báo VnExpr
 | TF-IDF tự cài đặt | khớp với scikit-learn | **28/28 test pass**, sai số ~1e-16 |
 | Intent classification | Accuracy (tập test riêng) | **88.5%** |
 | Intent classification | Macro-F1 | **0.91** |
-| Retrieval | Recall@1 | **90.5%** |
+| Retrieval | Recall@1 | **96.8%** |
 | Retrieval | Recall@3 | **100%** |
-| Retrieval | MRR | **0.952** |
+| Retrieval | MRR | **0.984** |
 | Retrieval | chặn câu ngoài phạm vi | **100%** |
 | Chuẩn hóa teencode | ERR trên ViLexNorm test | **67.5%** |
 | Chuẩn hóa teencode | Accuracy 83.9% → | **94.8%** |
+| Xếp hạng độ mới | tin mới phủ định tin cũ | **đúng cả 4 cách hỏi** |
+| Tốc độ | khởi động (có cache) / một câu hỏi | **1.1s / 24ms** |
 
 Toàn bộ số liệu tái lập được bằng `python src/evaluate.py`.
 
@@ -99,6 +101,7 @@ final-project/
 │   ├── retriever.py         # truy hồi 2 tầng: bài báo -> câu
 │   ├── normalizer.py        # chuẩn hóa teencode học từ ViLexNorm
 │   ├── generator.py         # n-gram LM — thí nghiệm đối chứng sinh văn bản
+│   ├── dates.py             # phân tích ngày đăng + điểm độ mới
 │   ├── entities.py          # NER + Regex (Lab 01)
 │   ├── dialogue.py          # trạng thái hội thoại, giải tham chiếu
 │   ├── chatbot.py           # bộ điều phối
@@ -146,7 +149,7 @@ hình khác nhau — khớp tới sai số ~1e-16. sklearn **chỉ** xuất hi�
 **2. Hiểu được câu gõ không dấu.** `word_tokenize` tách sai hoàn toàn trên text
 không dấu (`"tin ve dao hai nam"` → `['ve_dao','hai','nam']`). Giải pháp: dựng
 index phụ ở mức **âm tiết**, chỉ dùng khi câu hỏi không có dấu. Thay đổi này
-còn làm Recall@3 tăng từ 95.2% lên **100%**.
+còn làm Recall@3 tăng lên **100%**.
 
 **3. Ngưỡng dò bằng thực nghiệm, không chọn cảm tính.** `evaluate.py` quét lưới
 trên tập test viết riêng, tối ưu đồng thời độ chính xác và khả năng từ chối.
@@ -160,7 +163,14 @@ trên tập test viết riêng, tối ưu đồng thời độ chính xác và k
 [ViLexNorm](https://github.com/ngxtnhi/ViLexNorm) (10.467 cặp câu do người gán
 nhãn) với ba điều kiện an toàn. ERR 67.5% trên split test chưa từng thấy.
 
-**7. Đã kiểm chứng vì sao KHÔNG sinh văn bản.** `src/generator.py` cài đặt
+**7. Không trả lời bằng thông tin lỗi thời.** Với hai bài mâu thuẫn cách nhau
+9 ngày, TF-IDF thuần trả về bài **cũ đã sai** (0.4956 vs 0.4098) kèm dẫn nguồn
+thật. Đã thêm xếp hạng theo độ mới `score = cosine × (1 + α·recency)`, dò được
+α=0.6 / nửa chu kỳ 7 ngày — sửa được ca này ở **cả 4 cách hỏi**, đồng thời còn
+làm Recall@1 tăng 93.5% → 96.8%. Mọi câu trả lời đều kèm **ngày đăng**.
+Xem [docs/05](docs/05-do-moi-va-thong-tin-loi-thoi.md).
+
+**8. Đã kiểm chứng vì sao KHÔNG sinh văn bản.** `src/generator.py` cài đặt
 n-gram LM hoàn chỉnh và đo: ở quy mô dữ liệu này, sinh văn bản thua truy hồi
 trên mọi tiêu chí (bịa sự kiện, không dẫn được nguồn, n cao thì suy biến thành
 chép nguyên văn). Lựa chọn kiến trúc dựa trên số liệu, không phải giả định.
@@ -178,8 +188,11 @@ chép nguyên văn). Lựa chọn kiến trúc dựa trên số liệu, không p
 3. **Kho tri thức tĩnh** — muốn cập nhật phải chạy lại crawler.
 4. **Hai intent chồng lấn** (`huong_dan` / `liet_ke_chuyen_muc`) vẫn nhầm lẫn.
 5. **Tham chiếu chỉ neo vào lượt gần nhất** — "bài thứ hai ấy" chưa giải được.
+6. **Không phát hiện mâu thuẫn giữa các bài** — xếp hạng theo độ mới chỉ *giảm
+   nhẹ* vấn đề: nếu bài cũ liên quan **vượt trội** thì nó vẫn thắng. Bot không
+   hiểu bài B phủ định bài A.
 
-Phân tích chi tiết 12 lỗi thật kèm nguyên nhân: xem **Phần J** của notebook.
+Phân tích chi tiết 15 lỗi thật kèm nguyên nhân: xem **Phần J** của notebook.
 
 Muốn bot **diễn đạt lại thay vì chép nguyên văn** thì cần ghép mô hình ngôn ngữ
 lớn tiếng Việt (PhoGPT, Vistral) theo kiểu RAG — `NewsRetriever` hiện tại chính

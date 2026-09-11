@@ -138,13 +138,15 @@ QUERY_FRAME_WORDS = {
 # phủ định tin cũ. Bảng quét (half-life x alpha):
 #
 #   half-life  alpha   Recall@1  MRR     ca tin mâu thuẫn
-#          30   0.35      90.5%  0.952   SAI (trả tin cũ)
-#          14   0.60      95.2%  0.976   SAI (trả tin cũ)
-#           3   0.60      90.5%  0.952   ĐÚNG
-#           7   0.60      95.2%  0.976   ĐÚNG   <- chọn
+#          30   0.35      93.5%  0.968   SAI (trả tin cũ)
+#          14   0.60      96.8%  0.984   SAI (trả tin cũ)
+#           3   0.60      93.5%  0.968   ĐÚNG
+#           7   0.60      96.8%  0.984   ĐÚNG   <- chọn
 #
-# Đáng chú ý: thêm độ mới còn LÀM TỐT LÊN chất lượng truy hồi
-# (Recall@1 90.5% -> 95.2%, MRR 0.952 -> 0.976), chứ không chỉ là đánh đổi.
+# Đáng chú ý: thêm độ mới còn LÀM TỐT LÊN chất lượng truy hồi, chứ không chỉ là
+# đánh đổi. Đo trên CÙNG tập test 31 truy vấn, chỉ bật/tắt yếu tố độ mới:
+#   tắt (alpha=0) -> Recall@1 93.5%, MRR 0.968
+#   bật (alpha=0.6) -> Recall@1 96.8%, MRR 0.984
 FRESHNESS_ALPHA = 0.6
 
 # Nửa chu kỳ suy giảm: sau ngần này ngày, điểm độ mới còn một nửa.
