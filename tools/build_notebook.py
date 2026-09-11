@@ -529,6 +529,288 @@ Lý do ngoài dự kiến: các truy vấn chứa tên riêng nước ngoài nh�
 sai; nay chúng đi qua index âm tiết và khớp đúng.
 """)
 
+# ---------------------------------------------------------------- PART G2 ---
+md(r"""
+---
+# PHẦN G2 — XỬ LÝ TEENCODE
+
+Không dấu mới chỉ là mức lệch chuẩn nhẹ. Người dùng thật còn gõ **teencode**:
+
+```text
+"bt gì về vụ iphone k b"   ->  "biết gì về vụ iphone không bạn"
+```
+
+Đây là lỗi **nặng hơn hẳn** trường hợp không dấu: `k` và `không` không có ký tự
+nào chung, nên không mẹo so khớp bề mặt nào cứu được. Bắt buộc phải có bảng ánh xạ.
+
+## Vì sao HỌC bảng ánh xạ thay vì tự liệt kê
+
+Tự ngồi liệt kê vài trăm từ teencode thì vừa thiếu, vừa mang thiên kiến cá nhân,
+và **không đo được**. Thay vào đó ta học từ **ViLexNorm** — 10.467 cặp câu
+(teencode → chuẩn) do con người gán nhãn, lấy từ bình luận mạng xã hội thật.
+
+Thuật toán: căn token theo vị trí trên các cặp cùng độ dài (79,5% số cặp), đếm
+mọi ánh xạ `a → b`, rồi chỉ giữ lại khi thỏa **cả ba** điều kiện an toàn:
+
+| Điều kiện | Ngưỡng | Vì sao cần |
+|---|---|---|
+| `a` xuất hiện đủ nhiều | `>= 4` | Tránh học từ nhiễu gán nhãn |
+| `a` **thường** bị đổi | `>= 0.5` | **Chốt chặn quan trọng nhất** |
+| `b` chiếm ưu thế | `>= 0.5` | Tránh chọn bừa khi `a` mơ hồ |
+
+Thiếu điều kiện thứ hai thì các từ thường như "cả", "mà" sẽ bị thay bừa chỉ vì
+đôi khi chúng tình cờ đứng ở vị trí có thay đổi — lỗi âm thầm, rất khó phát hiện.
+""")
+
+code(r"""
+from normalizer import TeencodeNormalizer, learn_lexicon, load_vilexnorm, evaluate
+
+pairs = load_vilexnorm("train")
+print(f"Số cặp câu huấn luyện: {len(pairs):,}")
+
+lexicon = learn_lexicon(pairs)
+print(f"Số ánh xạ học được  : {len(lexicon):,}")
+print()
+for k in ["k", "ko", "t", "đc", "bt", "vs", "lun", "j", "cx", "nhìu"]:
+    if k in lexicon:
+        print(f"    {k:<8} -> {lexicon[k]}")
+""")
+
+code(r"""
+normalizer = TeencodeNormalizer(lexicon)
+
+demos = [
+    "bt gì về vụ iphone k b",
+    "cho t hỏi vụ đảo hải nam vs",
+    "ko bt là gì lun",
+    "đẹppppp quá trờiii",
+]
+rows = []
+for d in demos:
+    rows.append({
+        "gõ vào": d,
+        "sau chuẩn hóa": normalizer.normalize(d),
+        "đã sửa": normalizer.explain(d),
+    })
+pd.DataFrame(rows)
+""")
+
+md(r"""
+## Đánh giá trên split test (chưa từng thấy khi học)
+
+**Vì sao báo cáo ERR chứ không chỉ accuracy:** khoảng 84% token vốn đã đúng sẵn,
+nên accuracy thô bị thổi phồng. **ERR (Error Reduction Rate)** chỉ đo phần lỗi
+thực sự được sửa, và là chỉ số chuẩn của bài toán lexical normalization:
+
+$$\text{ERR} = \frac{\text{acc}_{sau} - \text{acc}_{trước}}{1 - \text{acc}_{trước}}$$
+""")
+
+code(r"""
+rows = []
+for split in ["dev", "test"]:
+    m = evaluate(normalizer, split)
+    rows.append({
+        "split": split,
+        "số token": f"{m['n_tokens']:,}",
+        "acc trước": f"{m['acc_before']:.2%}",
+        "acc sau": f"{m['acc_after']:.2%}",
+        "ERR": f"{m['ERR']:.2%}",
+        "precision": f"{m['precision']:.2%}",
+        "recall": f"{m['recall']:.2%}",
+    })
+pd.DataFrame(rows)
+""")
+
+md(r"""
+### ✍️ Nhận xét
+
+**Precision (90.7%) cao hơn hẳn Recall (70.2%)** — đây là đánh đổi có chủ đích.
+Ba điều kiện an toàn khiến từ điển thận trọng: nó bỏ sót một số từ teencode hiếm,
+nhưng gần như không sửa hỏng từ vốn đã đúng. Với chatbot, sửa hỏng một từ đúng
+gây hại nhiều hơn bỏ sót một từ lạ.
+
+**Nhập nhằng được ghi nhận, không giấu:** dữ liệu có mâu thuẫn thật —
+`t → tôi` (889 lần) và `t → tao` (132 lần). Ta chọn "tôi" vì chiếm ưu thế, và
+**chấp nhận sai** ở những câu vốn nói "tao". Đây là giới hạn cố hữu của chuẩn
+hóa ở mức từ đơn lẻ, không xét ngữ cảnh.
+
+**Giới hạn của con số:** ERR chỉ tính trên các cặp căn được theo vị trí (79,5%).
+Các cặp mà chuẩn hóa làm thay đổi số token bị loại khỏi cả huấn luyện lẫn đánh
+giá, nên con số thật trên toàn bộ dữ liệu sẽ **thấp hơn**.
+""")
+
+md(r"""
+## Hệ quả không lường trước: chuẩn hóa làm LOÃNG vector truy hồi
+
+Sau khi bật chuẩn hóa, một số câu **vẫn** trượt — dù đã được chuẩn hóa đúng
+hoàn toàn. Nguyên nhân: chuẩn hóa **bung** từ viết tắt thành từ đầy đủ, tức là
+thêm token khung vào câu. Vector query đã chuẩn hóa L2 nên mỗi token thừa đều
+chia bớt trọng số của token quan trọng.
+""")
+
+code(r"""
+# Đo trực tiếp hiện tượng pha loãng
+for q in ["giá iphone", "biết gì về vụ iphone không bạn"]:
+    res = retriever.search(q, top_k=1, min_score=0.0)
+    print(f"{res[0].score:.3f}   {q!r}")
+print("\nNgưỡng chấp nhận = 0.12 -> câu thứ hai TRƯỢT dù cùng ý định.")
+""")
+
+md(r"""
+**Giải pháp — `QUERY_FRAME_WORDS`:** lọc các từ chỉ đóng vai trò *khung câu hỏi*
+(`tin`, `biết`, `vụ`, `xem`, `bạn`...) trước khi dựng vector truy hồi.
+
+Các từ này **không** nằm trong stopword list chuẩn, vì trong văn bản thường
+chúng vẫn là từ nội dung ("tin" trong *bản tin*). Nên đây là danh sách riêng,
+chỉ áp dụng cho **query**, không áp dụng khi index document.
+
+**Chốt an toàn:** nếu lọc hết sạch thì trả lại nguyên bản — câu như
+"có tin gì mới không" toàn từ khung, bỏ hết sẽ thành vector rỗng.
+""")
+
+code(r"""
+# Chatbot hoàn chỉnh với teencode
+from chatbot import build_default_bot
+
+bot_tc = build_default_bot()
+
+for u in ["bt gì về vụ iphone k b", "cho t hỏi vụ đảo hải nam vs",
+          "ko bt tin sức khỏe gì lun", "cảm ơn nhìu nha"]:
+    bot_tc.reset()
+    r = bot_tc.respond(u)
+    print("=" * 78)
+    print(f"Bạn > {u}")
+    if r.normalizations:
+        print(f"      chuẩn hóa: {r.normalizations}")
+        print(f"      -> {r.normalized_input}")
+    print(f"      [route={r.route} | intent={r.intent or '-'} | conf={r.confidence:.2f}]")
+    print(f"Bot > {r.text[:260]}")
+""")
+
+# ---------------------------------------------------------------- PART G3 ---
+md(r"""
+---
+# PHẦN G3 — THÍ NGHIỆM ĐỐI CHỨNG: TRÍCH XUẤT HAY SINH VĂN BẢN?
+
+Chatbot hiện tại **trích xuất**: chỉ trả về câu đã có sẵn trong corpus. Một câu
+hỏi hợp lý: *sao không để mô hình tự SINH câu trả lời cho tự nhiên hơn?*
+
+Phần này trả lời bằng **thực nghiệm**, không bằng lời khẳng định.
+
+## Cần nói rõ trước
+
+TF-IDF + cosine similarity là hàm **đo độ giống nhau**. Nó không có bất kỳ cơ
+chế nào để tạo ra từ mới — đây là giới hạn **kiến trúc**, không phải giới hạn
+cấu hình. Nên để trả lời câu hỏi trên, phải cài đặt một mô hình sinh thật sự:
+**n-gram language model** (`src/generator.py`), vẫn hoàn toàn from scratch.
+
+$$P(w_i \mid w_1...w_{i-1}) \approx P(w_i \mid w_{i-n+1}...w_{i-1})
+= \frac{\text{count}(\text{context} + w_i)}{\text{count}(\text{context})}$$
+
+Làm mịn bằng nội suy đệ quy, vì ước lượng thô gán xác suất 0 cho mọi n-gram chưa thấy:
+
+$$P_{interp}(w \mid c) = \lambda P_{ML}(w \mid c) + (1-\lambda) P_{interp}(w \mid c_{[1:]})$$
+
+Đo bằng **perplexity** — số lựa chọn trung bình mô hình còn phân vân mỗi bước:
+
+$$PP = \exp\left(-\frac{1}{N}\sum_i \log P(w_i \mid c_i)\right)$$
+""")
+
+code(r"""
+from generator import NgramLanguageModel, corpus_to_sentences
+
+sentences = corpus_to_sentences(df.dropna(subset=["text"]))
+split = int(len(sentences) * 0.9)
+train_s, test_s = sentences[:split], sentences[split:]
+print(f"Câu huấn luyện: {len(train_s):,}  |  kiểm thử: {len(test_s):,}")
+print(f"Tổng token    : {sum(len(s) for s in train_s):,}")
+""")
+
+code(r"""
+results = {}
+for n in [1, 2, 3, 4]:
+    lm = NgramLanguageModel(n=n).fit(train_s)
+    pp = lm.perplexity(test_s)
+    results[n] = pp
+    print("=" * 78)
+    print(f"n = {n}   perplexity = {pp:,.1f}")
+    print("-" * 78)
+    for i in range(2):
+        print(f"  [{i+1}] {lm.generate(max_tokens=26, seed_text='du lịch')}")
+""")
+
+md(r"""
+## Kết quả 1 — Perplexity TĂNG theo bậc n (ngược trực giác)
+
+Trực giác "n lớn hơn thì mô hình mạnh hơn" **không đúng** ở quy mô dữ liệu này.
+
+**Giả thuyết:** dữ liệu quá thưa (~217k token), nên hầu hết 4-gram trong tập
+test chưa từng xuất hiện. Khi đó thành phần bậc cao bằng 0, và công thức nội suy
+nhân thêm hệ số $(1-\lambda)$ ở **mỗi** lần lùi bậc. Với $\lambda=0.7$ và phải
+lùi hai bậc, xác suất bị nhân với $0{,}3 \times 0{,}3 = 0{,}09$ — phạt rất nặng.
+
+**Kiểm chứng bằng cách quét $\lambda$** thay vì chỉ suy đoán:
+""")
+
+code(r"""
+print(f"{'lambda':>7}" + "".join(f"{'n=' + str(n):>12}" for n in (2, 3, 4)))
+print("-" * 43)
+for lam in (0.3, 0.5, 0.7, 0.9):
+    row = f"{lam:>7.1f}"
+    for n in (2, 3, 4):
+        lm = NgramLanguageModel(n=n, lambda_=lam).fit(train_s)
+        row += f"{lm.perplexity(test_s):>12,.0f}"
+    print(row)
+""")
+
+md(r"""
+Hạ $\lambda$ từ 0,9 xuống 0,3 làm perplexity của n=4 giảm **54 lần**
+(63.318 → 1.173). Điều này xác nhận đúng cơ chế đã nêu.
+
+Nhưng ở **mọi** $\lambda$, `n=2` vẫn tốt nhất → với lượng dữ liệu này, bigram là
+điểm dừng hợp lý. Muốn dùng bậc cao hơn thì phải đổi sang làm mịn tốt hơn
+(Kneser-Ney, backoff Katz), **không phải** chỉ tăng n.
+
+## Kết quả 2 — n càng lớn, "sinh" càng biến thành "chép"
+
+Với n=4, phần lớn ngữ cảnh chỉ xuất hiện **đúng một lần** trong corpus nên chỉ
+có duy nhất một từ kế tiếp khả dĩ. Quan sát được ở output phía trên: các mẫu n=4
+đều mở đầu bằng cùng một chuỗi dài giống hệt nhau.
+
+Tức là mô hình chép nguyên văn — **không thêm giá trị gì** so với truy hồi, mà
+lại **mất khả năng dẫn nguồn**.
+
+## Kết quả 3 — Văn bản sinh ra SAI SỰ THẬT ở mọi bậc n
+
+Trích nguyên văn từ output đã chạy:
+
+> *"du lịch phú quốc còn đang xây dựng các **trung tâm điều trị ebola**"*
+>
+> *"du lịch phú quốc thành lập năm 2014, **cô đã 12 lần vô địch médoc**"*
+
+Mô hình nối từ theo thống kê, **không có khái niệm về sự kiện**. Với một bot
+tin tức, đây là lỗi không thể chấp nhận.
+
+## Kết luận
+
+| Tiêu chí | Trích xuất (đang dùng) | Sinh bằng n-gram |
+|---|---|---|
+| Mạch lạc | Hoàn hảo (câu do người viết) | Trôi dạt sau 5–8 từ |
+| Đúng sự thật | Luôn đúng (chép từ nguồn) | **Bịa sự kiện** |
+| Dẫn nguồn được | Có | **Không** |
+| Ở n cao | — | Suy biến thành chép |
+
+Ở quy mô dữ liệu này, sinh văn bản bằng n-gram **thua truy hồi trên mọi tiêu chí
+quan trọng**. Đây là căn cứ thực nghiệm cho lựa chọn kiến trúc trích xuất, chứ
+không phải giả định ban đầu.
+
+**Muốn vừa sinh tự nhiên vừa đúng sự thật** thì cần mô hình ngôn ngữ lớn đã tiền
+huấn luyện (PhoGPT, Vistral) kết hợp truy hồi kiểu **RAG**. Kiến trúc hiện tại
+đã sẵn sàng cho hướng đó — `NewsRetriever` chính là thành phần "R"; phần còn
+thiếu là "G", nằm ngoài phạm vi from scratch của đồ án.
+""")
+
+
 # ---------------------------------------------------------------- PART H ----
 md(r"""
 ---
@@ -601,6 +883,10 @@ md(r"""
 | Retrieval | Recall@3 | **100%** |
 | Retrieval | MRR | **0.952** |
 | Retrieval | chặn câu ngoài phạm vi | **100%** ở ngưỡng 0.12 |
+| Chuẩn hóa teencode | ERR trên ViLexNorm test | **67.5%** |
+| Chuẩn hóa teencode | Accuracy 83.9% → | **94.8%** |
+| Chuẩn hóa teencode | Precision / Recall | **90.7% / 70.2%** |
+| Mô hình sinh n-gram | Perplexity tốt nhất (n=2) | **819** |
 
 ## Ngưỡng được chọn như thế nào
 
@@ -718,6 +1004,51 @@ error_analysis = pd.DataFrame([
         "Xử lý": "Chưa xử lý. Cần thêm pattern phân biệt hoặc gộp hai intent",
         "Trạng thái": "TỒN TẠI",
     },
+    {
+        "STT": 8,
+        "Tầng": "Truy hồi / teencode",
+        "Input": "bt gì về vụ iphone k b",
+        "Sai": "Đã chuẩn hóa ĐÚNG thành 'biết gì về vụ iphone không bạn' nhưng vẫn fallback",
+        "Nguyên nhân": "Chuẩn hóa BUNG từ viết tắt thành từ đầy đủ -> thêm token khung vào câu. Vector query chuẩn hóa L2 nên mỗi token thừa chia bớt trọng số token quan trọng: 'giá iphone' đạt 0.167 nhưng 'biết gì về vụ iphone không bạn' chỉ 0.100",
+        "Xử lý": "Thêm QUERY_FRAME_WORDS, lọc từ khung câu hỏi trước khi dựng vector truy hồi",
+        "Trạng thái": "ĐÃ SỬA",
+    },
+    {
+        "STT": 9,
+        "Tầng": "Kiến trúc / trùng lặp định nghĩa",
+        "Input": "không biết tin sức khỏe gì luôn",
+        "Sai": "Bị coi là có chủ đề cụ thể rồi đem đi tìm kiếm và trượt",
+        "Nguyên nhân": "chatbot.py và retriever.py giữ HAI danh sách từ khung riêng, và chúng đã lệch nhau: 'biết' có ở bên retriever nhưng thiếu ở chatbot",
+        "Xử lý": "Gộp về một nguồn duy nhất trong config.py. Bài học: một khái niệm không được có hai định nghĩa ở hai nơi",
+        "Trạng thái": "ĐÃ SỬA",
+    },
+    {
+        "STT": 10,
+        "Tầng": "Word segmentation",
+        "Input": "so khớp tên chuyên mục 'Sức khỏe'",
+        "Sai": "word_tokenize('Sức khỏe') -> ['sức','khỏe'] nhưng word_tokenize('...tin sức khỏe gì luôn') -> ['sức_khỏe']",
+        "Nguyên nhân": "Bộ tách từ cho kết quả KHÁC NHAU cho cùng một cụm tùy ngữ cảnh xung quanh, nên phép so 'sức_khỏe' thuộc {'sức','khỏe'} luôn sai",
+        "Xử lý": "Chuyển sang so khớp ở mức ÂM TIẾT (tách theo '_') thay vì so nguyên token",
+        "Trạng thái": "ĐÃ SỬA",
+    },
+    {
+        "STT": 11,
+        "Tầng": "Mô hình sinh (n-gram LM)",
+        "Input": "sinh câu với n = 4",
+        "Sai": "Perplexity TĂNG theo bậc n (819 -> 1.951 -> 5.911), ngược trực giác",
+        "Nguyên nhân": "Dữ liệu thưa: hầu hết 4-gram ở tập test chưa từng thấy nên thành phần bậc cao = 0, công thức nội suy nhân thêm (1-lambda) ở MỖI lần lùi bậc -> phạt 0,09 lần",
+        "Xử lý": "Đã kiểm chứng bằng cách quét lambda: hạ 0,9 -> 0,3 làm perplexity n=4 giảm 54 lần. Kết luận: với dữ liệu này bigram là điểm dừng; muốn n cao hơn phải đổi sang Kneser-Ney",
+        "Trạng thái": "ĐÃ GIẢI THÍCH",
+    },
+    {
+        "STT": 12,
+        "Tầng": "Chuẩn hóa teencode",
+        "Input": "token 't'",
+        "Sai": "Luôn chuẩn hóa thành 'tôi', kể cả khi câu vốn nói 'tao'",
+        "Nguyên nhân": "Dữ liệu có mâu thuẫn thật: t->tôi (889 lần) vs t->tao (132 lần). Chuẩn hóa ở mức từ đơn lẻ, không xét ngữ cảnh",
+        "Xử lý": "Chấp nhận, chọn đích chiếm ưu thế. Muốn đúng phải dùng mô hình seq2seq có ngữ cảnh - ngoài phạm vi đồ án",
+        "Trạng thái": "TỒN TẠI",
+    },
 ])
 error_analysis
 """)
@@ -752,16 +1083,24 @@ md(r"""
    sẽ không tìm ra bài viết dùng từ "ô tô". Đây là hạn chế cốt lõi của mô hình
    túi từ, không sửa được bằng chỉnh tham số.
 
-2. **Không suy luận, không tổng hợp.** Bot chỉ trích câu có sẵn. Câu hỏi kiểu
+2. **Không suy luận, không sinh văn bản, không diễn đạt lại.** Bot **trích xuất
+   100%** — nó chỉ trả về câu đã có sẵn trong corpus. Không có thành phần nào
+   trong hệ thống có khả năng tạo ra một từ chưa có trong dữ liệu. Câu hỏi kiểu
    "so sánh giá iPhone năm nay với năm ngoái" nằm ngoài khả năng.
+   Đây là giới hạn **kiến trúc**, đã được kiểm chứng bằng thực nghiệm ở Phần G3:
+   mô hình sinh n-gram ở quy mô dữ liệu này thua trích xuất trên mọi tiêu chí.
 
-3. **Kho tri thức tĩnh.** 381 bài tại thời điểm crawl. Muốn cập nhật phải chạy
+3. **Chuẩn hóa teencode không xét ngữ cảnh.** Recall chỉ 70.2%: bỏ sót các từ
+   teencode hiếm. Và với từ mơ hồ như "t" (tôi/tao), mô hình luôn chọn một đích
+   duy nhất nên sai ở phần còn lại.
+
+4. **Kho tri thức tĩnh.** 381 bài tại thời điểm crawl. Muốn cập nhật phải chạy
    lại crawler và dựng lại index.
 
-4. **Tập intent nhỏ** (14 intent, ~150 pattern). Hai intent chồng lấn ngữ nghĩa
+5. **Tập intent nhỏ** (14 intent, ~150 pattern). Hai intent chồng lấn ngữ nghĩa
    (`huong_dan` / `liet_ke_chuyen_muc`) vẫn nhầm lẫn.
 
-5. **Tham chiếu chỉ neo vào lượt gần nhất.** "bài thứ hai ấy" hoặc "cái lúc nãy
+6. **Tham chiếu chỉ neo vào lượt gần nhất.** "bài thứ hai ấy" hoặc "cái lúc nãy
    bạn nói" sẽ không giải đúng.
 
 ## Hướng phát triển
@@ -769,6 +1108,8 @@ md(r"""
 | Hướng | Kỹ thuật | Kỳ vọng |
 |---|---|---|
 | Hiểu từ đồng nghĩa | Word2Vec / PhoBERT embedding, kết hợp lai với TF-IDF | Giải quyết hạn chế 1 |
+| **Sinh câu trả lời tự nhiên** | **RAG: dùng chính retriever hiện tại làm "R", ghép mô hình ngôn ngữ lớn tiếng Việt (PhoGPT, Vistral) làm "G"** | **Giải quyết hạn chế 2 — bot diễn đạt lại thay vì chép nguyên văn, vẫn dẫn được nguồn** |
+| Chuẩn hóa teencode có ngữ cảnh | Mô hình seq2seq (BARTpho) thay cho tra từ điển | Tăng recall, giải được từ mơ hồ như "t" |
 | Xếp hạng tốt hơn | BM25 thay TF-IDF (chuẩn hóa độ dài tài liệu tốt hơn) | Recall@1 cao hơn với bài dài |
 | Khôi phục dấu | Mô hình seq2seq phục hồi dấu thay vì hạ về âm tiết | Chính xác hơn với câu không dấu |
 | Mở rộng intent | Thu thập log chat thật để bổ sung pattern | Giảm nhầm lẫn intent chồng lấn |
@@ -815,7 +1156,9 @@ python src/evaluate.py
 - [x] Quản lý trạng thái hội thoại, giải tham chiếu
 - [x] Đánh giá định lượng: Accuracy, macro-F1, Recall@k, MRR
 - [x] Dò siêu tham số bằng thực nghiệm, không chọn cảm tính
-- [x] Error analysis (7 case, vượt yêu cầu tối thiểu 3)
+- [x] Chuẩn hóa teencode học từ ViLexNorm, đánh giá bằng ERR
+- [x] Thí nghiệm đối chứng: mô hình sinh n-gram vs truy hồi
+- [x] Error analysis (12 case, vượt yêu cầu tối thiểu 3)
 - [x] Giao diện CLI + Web
 - [x] Notebook đã Run và lưu output
 """)

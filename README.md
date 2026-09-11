@@ -22,6 +22,8 @@ Bot trả lời câu hỏi về tin tức dựa trên kho **381 bài báo VnExpr
 | Retrieval | Recall@3 | **100%** |
 | Retrieval | MRR | **0.952** |
 | Retrieval | chặn câu ngoài phạm vi | **100%** |
+| Chuẩn hóa teencode | ERR trên ViLexNorm test | **67.5%** |
+| Chuẩn hóa teencode | Accuracy 83.9% → | **94.8%** |
 
 Toàn bộ số liệu tái lập được bằng `python src/evaluate.py`.
 
@@ -52,6 +54,8 @@ python src/api.py
 # Kiểm thử và đánh giá
 python tests/test_vectorizer.py     # đối chiếu TF-IDF tự viết với sklearn
 python src/evaluate.py              # Recall@k, MRR, F1, dò ngưỡng
+python src/normalizer.py            # học + đánh giá từ điển teencode (ERR)
+python src/generator.py             # thí nghiệm sinh văn bản n-gram
 
 # Thu thập thêm dữ liệu
 python src/crawler.py --per-category 45
@@ -78,6 +82,7 @@ gồm đầy đủ lý thuyết, thực nghiệm, đánh giá và phân tích l�
 | Liệt kê chuyên mục | `có những chuyên mục nào` |
 | Chào hỏi, cảm ơn, hỏi về bot | `bạn là ai` |
 | **Hiểu câu gõ không dấu** | `tin ve dao hai nam` |
+| **Hiểu teencode** | `bt gì về vụ iphone k b` → `biết gì về vụ iphone không bạn` |
 | **Từ chối khi không biết** | `thời tiết sao hỏa hôm nay` → nói thẳng là không có dữ liệu |
 
 ---
@@ -92,6 +97,8 @@ final-project/
 │   ├── vectorizer.py        # BoW / n-gram / TF-IDF / cosine — TỰ CÀI ĐẶT
 │   ├── intent_classifier.py # Naive Bayes TỰ CÀI ĐẶT + ensemble cosine
 │   ├── retriever.py         # truy hồi 2 tầng: bài báo -> câu
+│   ├── normalizer.py        # chuẩn hóa teencode học từ ViLexNorm
+│   ├── generator.py         # n-gram LM — thí nghiệm đối chứng sinh văn bản
 │   ├── entities.py          # NER + Regex (Lab 01)
 │   ├── dialogue.py          # trạng thái hội thoại, giải tham chiếu
 │   ├── chatbot.py           # bộ điều phối
@@ -104,11 +111,15 @@ final-project/
 │   ├── raw/corpus_raw.csv           # 381 bài báo
 │   ├── intents/intents_vi.json      # 14 intent, ~150 pattern
 │   ├── intents/test_queries.json    # tập test viết riêng
-│   └── resources/vietnamese-stopwords.txt
+│   ├── resources/vietnamese-stopwords.txt
+│   ├── resources/teencode_lexicon.json  # học được từ ViLexNorm
+│   └── resources/vilexnorm/         # corpus chuẩn hóa (CC BY-NC-SA 4.0)
 ├── notebooks/FinalProject_Chatbot_23IT036.ipynb   # BÁO CÁO
 ├── docs/
 │   ├── 01-nghien-cuu-du-an-tham-khao.md
-│   └── 02-kien-truc.md
+│   ├── 02-kien-truc.md
+│   ├── 03-chuan-hoa-teencode.md
+│   └── 04-thi-nghiem-sinh-van-ban.md
 ├── tests/test_vectorizer.py
 └── requirements.txt
 ```
@@ -145,18 +156,34 @@ trên tập test viết riêng, tối ưu đồng thời độ chính xác và k
 
 **5. Biết nói "mình không biết".** Mọi đường đi đều có ngưỡng tin cậy.
 
+**6. Hiểu teencode, và bảng ánh xạ được HỌC chứ không hardcode.** Học từ
+[ViLexNorm](https://github.com/ngxtnhi/ViLexNorm) (10.467 cặp câu do người gán
+nhãn) với ba điều kiện an toàn. ERR 67.5% trên split test chưa từng thấy.
+
+**7. Đã kiểm chứng vì sao KHÔNG sinh văn bản.** `src/generator.py` cài đặt
+n-gram LM hoàn chỉnh và đo: ở quy mô dữ liệu này, sinh văn bản thua truy hồi
+trên mọi tiêu chí (bịa sự kiện, không dẫn được nguồn, n cao thì suy biến thành
+chép nguyên văn). Lựa chọn kiến trúc dựa trên số liệu, không phải giả định.
+
 ---
 
 ## Hạn chế đã biết
 
 1. **Không hiểu từ đồng nghĩa** — TF-IDF so khớp trên mặt chữ; "xe hơi" không
    tìm ra bài dùng "ô tô". Đây là hạn chế cốt lõi của mô hình túi từ.
-2. **Không suy luận, không tổng hợp** — bot chỉ trích câu có sẵn.
+2. **Không suy luận, không sinh văn bản, không diễn đạt lại** — bot trích xuất
+   100%, chỉ trả về câu đã có sẵn trong corpus. Không thành phần nào có khả năng
+   tạo ra từ chưa có trong dữ liệu. Đây là giới hạn **kiến trúc**, đã kiểm chứng
+   bằng thực nghiệm ở [docs/04](docs/04-thi-nghiem-sinh-van-ban.md).
 3. **Kho tri thức tĩnh** — muốn cập nhật phải chạy lại crawler.
 4. **Hai intent chồng lấn** (`huong_dan` / `liet_ke_chuyen_muc`) vẫn nhầm lẫn.
 5. **Tham chiếu chỉ neo vào lượt gần nhất** — "bài thứ hai ấy" chưa giải được.
 
-Phân tích chi tiết 7 lỗi thật kèm nguyên nhân: xem **Phần J** của notebook.
+Phân tích chi tiết 12 lỗi thật kèm nguyên nhân: xem **Phần J** của notebook.
+
+Muốn bot **diễn đạt lại thay vì chép nguyên văn** thì cần ghép mô hình ngôn ngữ
+lớn tiếng Việt (PhoGPT, Vistral) theo kiểu RAG — `NewsRetriever` hiện tại chính
+là thành phần "R". Xem [docs/04](docs/04-thi-nghiem-sinh-van-ban.md).
 
 ---
 
@@ -165,4 +192,7 @@ Phân tích chi tiết 7 lỗi thật kèm nguyên nhân: xem **Phần J** của
 - Danh sách stopword: [stopwords/vietnamese-stopwords](https://github.com/stopwords/vietnamese-stopwords)
 - Thư viện NLP tiếng Việt: [underthesea](https://github.com/undertheseanlp/underthesea)
 - Khảo sát các dự án chatbot tham khảo: [`docs/01-nghien-cuu-du-an-tham-khao.md`](docs/01-nghien-cuu-du-an-tham-khao.md)
+- Corpus chuẩn hóa teencode: [ViLexNorm](https://github.com/ngxtnhi/ViLexNorm) —
+  Nguyen et al., EACL 2024. Giấy phép **CC BY-NC-SA 4.0**, chỉ dùng cho mục đích
+  nghiên cứu/học tập.
 - Dữ liệu: bài báo công khai từ VnExpress, thu thập cho mục đích học tập.
