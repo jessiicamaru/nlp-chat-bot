@@ -397,8 +397,13 @@ quét lưới và tối ưu đồng thời hai mục tiêu ngược chiều:
 - **safety** — câu cần truy hồi / ngoài phạm vi **không được** trả lời bằng một
   câu soạn sẵn sai chỗ.
 
-Tập test (`data/intents/test_queries.json`) được **viết riêng**, không trùng với
-patterns dùng để train — nếu lấy chính patterns đi test thì kết quả đẹp giả tạo.
+Tham số được dò trên **tập DEV** (`data/eval/dev.json`), rồi báo cáo **một lần**
+trên **tập TEST** tách riêng (`data/eval/test.json`) — câu trong TEST chưa từng
+được dùng để dò. Cả hai đều viết riêng, không trùng với patterns dùng để train.
+Phương pháp chi tiết ở **Phần I**.
+
+Ô dưới chạy toàn bộ `evaluate.py`: pha 1 dò trên dev, pha 2 báo cáo trên test.
+Kết quả được lưu vào `data/eval/test_results.json` và dùng lại ở Phần I.
 """)
 
 code(r"""
@@ -523,6 +528,10 @@ md(r"""
 | Recall@1 | 85.7% | **90.5%** |
 | Recall@3 | 95.2% | **100%** |
 | MRR | 0.905 | **0.952** |
+
+> ⚠️ Bảng này đo trên tập test **cũ** (21 câu, bị dùng để dò tham số). Kết quả
+> đo đúng cách trên tập TEST tách riêng: câu không dấu Recall@1 **95.5%** (21/22)
+> — xem Phần I.
 
 Lý do ngoài dự kiến: các truy vấn chứa tên riêng nước ngoài như
 *"champions league man utd"* vốn **không có dấu nào**, nên trước đây bị tách từ
@@ -786,37 +795,29 @@ bằng 0 dù mới tinh.
 """)
 
 code(r"""
-# Dò lưới: tối ưu ĐỒNG THỜI chất lượng truy hồi VÀ ca tin mâu thuẫn
-import dates as _dates
+# Dò lưới trên TẬP DEV: đo ĐỒNG THỜI chất lượng truy hồi VÀ ca tin mâu thuẫn.
+# Dùng lại đúng các hàm của evaluate.py để số liệu khớp với báo cáo.
 import json as _json
-from config import INTENTS_DIR as _ID
+from evaluate import ranks_for, mrr as _mrr, set_freshness, conflict_ok
+from config import DATA_DIR as _DD
 
-_tests = _json.loads((_ID / "test_queries.json").read_text(encoding="utf-8"))
+_dev = _json.loads((_DD / "eval" / "dev.json").read_text(encoding="utf-8"))
+_case = _json.loads((_DD / "eval" / "conflict_case.json").read_text(encoding="utf-8"))
 _df_clean = df.dropna(subset=["title", "text"]).reset_index(drop=True)
 
-def _quality(r):
-    ranks = []
-    for c in _tests["retrieval_tests"]:
-        res = r.search(c["query"], top_k=10, min_score=0.0)
-        needle = c["expect_title_contains"].lower()
-        ranks.append(next((i for i, x in enumerate(res, 1) if needle in x.title.lower()), None))
-    r1 = sum(1 for x in ranks if x == 1) / len(ranks)
-    mrr = float(np.mean([1 / x if x else 0 for x in ranks]))
-    return r1, mrr
+_rq = _NR().fit_cached(_df_clean)     # corpus gốc -> đo chất lượng
+_rc = _NR().fit(df_conflict)          # corpus + 2 bài mâu thuẫn -> kiểm tra ca mâu thuẫn
 
 print(f"{'half-life':>10} {'alpha':>7} {'Recall@1':>9} {'MRR':>7}   ca tin mâu thuẫn")
 print("-" * 56)
-for hl, alpha in [(30, 0.35), (14, 0.60), (3, 0.60), (7, 0.60)]:
-    rq = _NR(freshness_alpha=alpha).fit(_df_clean)
-    rq.recency = _dates.compute_recency(rq.published_dates, half_life_days=hl)
-    r1, mrr = _quality(rq)
-
-    rc = _NR(freshness_alpha=alpha).fit(df_conflict)
-    rc.recency = _dates.compute_recency(rc.published_dates, half_life_days=hl)
-    res = [x for x in rc.search(QUERY, top_k=5, min_score=0.0) if "example.test" in x.url]
-    verdict = ("ĐÚNG" if res and "ngay-2" in res[0].url else "SAI")
-    mark = "  <- chọn" if (hl, alpha) == (7, 0.60) else ""
-    print(f"{hl:>10} {alpha:>7.2f} {r1:>8.1%} {mrr:>7.3f}   {verdict}{mark}")
+for hl, alpha in [(3, 0.0), (30, 0.35), (14, 0.60), (7, 0.60), (3, 0.60)]:
+    set_freshness(_rq, hl, alpha)
+    set_freshness(_rc, hl, alpha)
+    ranks = ranks_for(_rq, _dev["retrieval"])
+    r1 = sum(1 for x in ranks if x == 1) / len(ranks)
+    verdict = "ĐÚNG" if conflict_ok(_rc, _case) else "SAI"
+    mark = "  <- chọn" if (hl, alpha) == (3, 0.60) else ("  (tắt độ mới)" if alpha == 0 else "")
+    print(f"{hl:>10} {alpha:>7.2f} {r1:>8.1%} {_mrr(ranks):>7.3f}   {verdict}{mark}")
 """)
 
 md(r"""
@@ -828,25 +829,28 @@ $$\text{recency}_{\text{cũ}} = 0.5^{9/30} = 0.81 \Rightarrow \text{hệ số } 
 \qquad
 \text{recency}_{\text{mới}} = 1.00 \Rightarrow \text{hệ số } 1.60$$
 
-Chênh lệch hệ số chỉ **7%**, trong khi khoảng cách cosine là **21%** → không đủ
-để lật thứ hạng. Với nửa chu kỳ 7 ngày: $0.5^{9/7} = 0.41$ → hệ số 1.25 so với
-1.60, chênh **28%** → đủ.
+Chênh lệch hệ số chỉ **7%**, trong khi khoảng cách cosine là **~22%** → không đủ
+để lật thứ hạng. Nửa chu kỳ ngắn hơn làm chênh lệch này lớn lên; dò trên dev
+chọn được **3 ngày**.
 
-### Kết quả ngoài mong đợi: độ mới còn LÀM TỐT LÊN truy hồi
+### Độ mới là một ĐÁNH ĐỔI, không phải cải tiến miễn phí
 
-| | Tắt độ mới | Bật độ mới |
-|---|---|---|
-| Recall@1 | 93.5% | **96.8%** |
-| Recall@3 | 100% | 100% |
-| MRR | 0.968 | **0.984** |
+Bảng trên cho thấy: trên tập dev 112 câu, độ mới **không cải thiện một cách nhất
+quán**. Một vài cấu hình tăng nhẹ MRR (khoảng một câu), phần lớn giảm nhẹ — tất
+cả đều trong phạm vi nhiễu. Điều quan trọng: **các cấu hình xử lý đúng ca tin mâu
+thuẫn đều thấp hơn một chút** so với khi tắt độ mới (cấu hình chọn: 0.964 so với
+0.965). Độ mới được giữ vì đổi một chút chất lượng xếp hạng trung bình lấy việc
+**không trả lời bằng tin đã lỗi thời**.
 
-> So sánh này đo trên **cùng một tập test 31 truy vấn** (bật/tắt độ mới).
-> Con số 90.5% ở các phần trước là trên tập test CŨ chỉ có 21 truy vấn viết
-> chuẩn — không so trực tiếp được với ở đây.
+> ⚠️ **Đính chính.** Phiên bản trước của báo cáo ghi "độ mới làm Recall@1 tăng
+> 93.5% → 96.8%". Con số đó đo trên tập 31 câu **đã dùng để dò tham số**; trên
+> tập dev lớn hơn, mức tăng biến mất. Đó là nhiễu của tập nhỏ.
 
-
-Lý do: báo chí thường đưa tin **nhiều lần** về cùng một sự việc. Trước đây bài
-nào trúng từ khóa hơn thì thắng, kể cả khi đó là bài cũ hơn và ít đầy đủ hơn.
+**Một quyết định thiết kế quan trọng khác:** độ mới chỉ dùng để **xếp hạng**.
+Việc **chấp nhận** trả lời ("có đủ căn cứ không?") dựa trên cosine thuần. Nếu
+áp ngưỡng lên điểm đã nhân độ mới, bài cũ hơn vài tuần sẽ bị âm thầm loại dù
+rất liên quan — lỗi này đã thực sự xảy ra và được kiểm thử hồi quy bắt được
+(xem Phần I).
 """)
 
 code(r"""
@@ -1101,70 +1105,208 @@ md(r"""
 # ---------------------------------------------------------------- PART I ----
 md(r"""
 ---
-# PHẦN I — ĐÁNH GIÁ TỔNG HỢP
+# PHẦN I — ĐÁNH GIÁ TRUNG THỰC
 
-| Hạng mục | Chỉ số | Kết quả |
+## Lỗi phương pháp đã mắc — và cách sửa
+
+Ở phiên bản đầu, mọi siêu tham số (`w_nb`, các ngưỡng, độ mới) đều được chọn
+bằng cách quét lưới trên tập test, rồi số liệu báo cáo lại đo trên **chính tập
+đó**. Đó là **rò rỉ tập test**: con số phản ánh mức "khớp" với những câu đã dùng
+để dò, không phải hiệu năng trên câu hỏi chưa thấy. Tập lại quá nhỏ (21–31 câu),
+một câu sai đã làm Recall@1 dao động 3,2 điểm.
+
+| | DEV | TEST |
 |---|---|---|
-| TF-IDF tự cài đặt | khớp với sklearn | **28/28 test pass**, sai số ~1e-16 |
-| Intent classification | Accuracy (tập test riêng) | **88.5%** |
-| Intent classification | Macro-F1 | **0.91** |
-| Intent classification | Safety (không trả lời bừa) | **87.5%** |
-| Retrieval | Recall@1 | **96.8%** |
-| Retrieval | Recall@3 | **100%** |
-| Retrieval | MRR | **0.984** |
-| Retrieval | chặn câu ngoài phạm vi | **100%** ở ngưỡng 0.155 |
-| Xếp hạng độ mới | ca tin mới phủ định tin cũ | **xử lý đúng cả 4 cách hỏi** |
-| Chuẩn hóa teencode | ERR trên ViLexNorm test | **67.5%** |
-| Chuẩn hóa teencode | Accuracy 83.9% → | **94.8%** |
-| Chuẩn hóa teencode | Precision / Recall | **90.7% / 70.2%** |
-| Mô hình sinh n-gram | Perplexity tốt nhất (n=2) | **819** |
-| Tốc độ | khởi động (có cache) / một câu hỏi | **1.1s / 24ms** |
+| Dùng để | dò tham số | **chỉ báo cáo** |
+| Truy hồi | 112 | 122 |
+| Ngoài phạm vi | 28 | 24 |
+| Intent | 55 | 32 |
 
-## Ngưỡng được chọn như thế nào
+- Toàn bộ truy vấn **cũ** (đã từng dùng để dò) bắt buộc vào DEV.
+- Nhãn đúng theo **URL bài báo**, không theo "tiêu đề chứa từ X".
+- Truy vấn đi qua **đúng đường xử lý của chatbot** (chuẩn hóa teencode...).
+- Mọi tỷ lệ kèm **khoảng tin cậy Wilson 95%**.
+- Thêm **đánh giá đầu-cuối**: gọi `bot.respond()` như người dùng thật.
 
-Điểm cosine của truy vấn **trong** và **ngoài** phạm vi tách nhau khá rõ:
-
-| Nhóm | min | trung vị | max |
-|---|---|---|---|
-| Trong phạm vi (trúng bài) | 0.088 | 0.344 | — |
-| Ngoài phạm vi | 0.000 | 0.080 | **0.151** |
-
-Ngưỡng **0.155** là giá trị thấp nhất còn chặn được 100% câu ngoài phạm vi —
-tối đa hóa số câu trả lời được mà vẫn không đoán bừa.
-
-> Lưu ý: đây là ngưỡng trên điểm **đã nhân hệ số độ mới**, không phải cosine
-> thuần. Bật độ mới làm mọi điểm tăng tối đa 1,6 lần nên ngưỡng phải dò lại
-> (0.12 → 0.155). Tập dò ngưỡng cũng đã được bổ sung câu **không dấu** và
-> **teencode** — xem lỗi số 13 ở phần Error Analysis.
+**Giới hạn:** người viết truy vấn cũng là người xây bot, nên truy vấn có thể
+mang cùng "điểm mù" với bot. Cách tốt nhất vẫn là nhờ người khác viết thêm.
 """)
 
 code(r"""
-# Đo lại trực tiếp trong notebook: điểm top-1 trong vs ngoài phạm vi
 import json
-from config import INTENTS_DIR
-from entities import expand_query
+from config import DATA_DIR
+from evaluate import wilson
 
-tests = json.loads((INTENTS_DIR / "test_queries.json").read_text(encoding="utf-8"))
+res = json.loads((DATA_DIR / "eval" / "test_results.json").read_text(encoding="utf-8"))
 
-in_scores, oos_scores = [], []
-for c in tests["retrieval_tests"]:
-    r = retriever.search(c["query"], top_k=1, min_score=0.0)
-    if r and c["expect_title_contains"].lower() in r[0].title.lower():
-        in_scores.append(r[0].score)
-for q in tests["out_of_scope"]:
-    r = retriever.search(expand_query(q), top_k=1, min_score=0.0)
-    oos_scores.append(r[0].score if r else 0.0)
+def row(name, k, n):
+    lo, hi = wilson(k, n)
+    return {"chỉ số": name, "kết quả": f"{k / n:.1%}", "k/n": f"{k}/{n}",
+            "KTC 95%": f"{lo:.0%}–{hi:.0%}"}
+
+rows = [
+    row("Truy hồi — Recall@1", *res["recall_at_1"]),
+    row("Truy hồi — Recall@3", *res["recall_at_3"]),
+]
+for style, v in res["by_style"].items():
+    rows.append(row(f"   Recall@1 — {style}", v["r1"], v["n"]))
+rows += [
+    row("Chặn câu ngoài phạm vi (truy hồi)", *res["oos_blocked"]),
+    row("Intent — accuracy", *res["intent_accuracy"]),
+    row("ĐẦU-CUỐI: câu tin tức -> đúng bài", *res["e2e_answer"]),
+    row("ĐẦU-CUỐI: ngoài phạm vi -> từ chối", *res["e2e_refuse"]),
+]
+print(f"MRR truy hồi: {res['mrr']:.3f}    |    Intent macro-F1: {res['intent_macro_f1']:.3f}")
+pd.DataFrame(rows)
+""")
+
+md(r"""
+### Đọc bảng này thế nào
+
+| Trước đây báo cáo (rò rỉ) | Nay (TEST tách riêng) |
+|---|---|
+| Recall@1 96.8% | **93.4%** |
+| MRR 0.984 | **0.950** |
+| Intent accuracy 88.5% | **61.5%** |
+
+- **Truy hồi vẫn tốt**, giảm vừa phải.
+- **Intent classifier là điểm yếu thật sự**, không phải truy hồi. Các câu sai
+  đều cùng một kiểu: câu ngắn, cách nói đời thường ("ừm", "thanks nhé") có độ
+  tin cậy **dưới ngưỡng** nên bị từ chối.
+- **Teencode yếu nhất trong truy hồi**, nhưng chỉ có 14 câu nên khoảng tin cậy
+  rất rộng — chưa kết luận chắc được.
+- **Khoảng cách thành phần → đầu-cuối** (93% → 77%) chủ yếu do ngưỡng chấp
+  nhận: dò trên dev, ngưỡng 0.13 chặn đúng 100% câu ngoài phạm vi, đổi lại từ
+  chối một phần câu trả lời được. Đây là đánh đổi có chủ đích.
+
+## Ngưỡng chấp nhận — dò trên DEV, trên thang cosine thuần
+""")
+
+code(r"""
+from evaluate import top1_scores, set_freshness as _sf
+from config import RETRIEVAL_THRESHOLD, FRESHNESS_ALPHA, FRESHNESS_HALFLIFE_DAYS
+
+_r = _NR().fit_cached(df.dropna(subset=["title", "text"]).reset_index(drop=True))
+_sf(_r, FRESHNESS_HALFLIFE_DAYS, FRESHNESS_ALPHA)
+_ins = top1_scores(_r, _dev["retrieval"], "query")
+in_scores = [x.base_score for x, c in zip(_ins, _dev["retrieval"])
+             if x is not None and x.url in set(c["gold_urls"])]
+oos_scores = [x.base_score if x else 0.0 for x in top1_scores(_r, _dev["out_of_scope"], "text")]
 
 fig, ax = plt.subplots(figsize=(9, 3.4))
-ax.hist(in_scores, bins=12, alpha=.75, label="trong phạm vi", color="#0d9488")
+ax.hist(in_scores, bins=20, alpha=.75, label="trong phạm vi (trúng bài)", color="#0d9488")
 ax.hist(oos_scores, bins=12, alpha=.75, label="ngoài phạm vi", color="#b45309")
-ax.axvline(0.155, color="#dc2626", ls="--", lw=2, label="ngưỡng = 0.155")
-ax.set_xlabel("cosine similarity của kết quả top-1"); ax.set_ylabel("số truy vấn")
-ax.set_title("Ngưỡng chấp nhận nằm trong khe hở giữa hai phân bố")
+ax.axvline(RETRIEVAL_THRESHOLD, color="#dc2626", ls="--", lw=2,
+           label=f"ngưỡng = {RETRIEVAL_THRESHOLD}")
+ax.set_xlabel("cosine TF-IDF của kết quả top-1 (tập DEV)"); ax.set_ylabel("số truy vấn")
+ax.set_title("Ngưỡng chấp nhận nằm trên điểm cao nhất của câu ngoài phạm vi")
 ax.legend(); plt.tight_layout(); plt.show()
 
 print(f"Trong phạm vi: min={min(in_scores):.3f}  trung vị={np.median(in_scores):.3f}")
 print(f"Ngoài phạm vi: max={max(oos_scores):.3f}  trung vị={np.median(oos_scores):.3f}")
+""")
+
+md(r"""
+## Kiểm thử hồi quy bắt được hai lỗi thiết kế
+
+`tests/test_chatbot.py` có 21 kiểm thử, mỗi cái ứng với một lỗi thật từng làm
+bot trả lời sai mà **không báo lỗi gì**. Ngay lần chạy đầu sau khi áp tham số
+mới dò trên dev, chúng bắt được hai lỗi:
+
+**1. Độ mới âm thầm biến thành bộ lọc loại bài cũ.** Ngưỡng áp lên điểm *đã
+nhân* độ mới; với nửa chu kỳ 3 ngày, bài 16 ngày tuổi gần như không được
+thưởng nên bị loại dù liên quan. Sửa: **xếp hạng** theo điểm có độ mới,
+**chấp nhận** theo cosine thuần.
+
+**2. Cùng một câu, kết quả tùy nhánh.** Ngưỡng nới lỏng khi người dùng nêu
+chuyên mục chỉ có ở một nhánh. "tin du lịch ninh bình" có độ tin cậy intent
+0.246 — dưới ngưỡng 0.25 một chút — nên rơi sang nhánh kia và thất bại. Sửa:
+một hằng số dùng chung cho cả hai nhánh.
+""")
+
+code(r"""
+r = subprocess.run([sys.executable, str(PROJECT_DIR / "tests" / "test_chatbot.py")],
+                   capture_output=True, text=True, encoding="utf-8")
+print(r.stdout[-1900:])
+""")
+
+md(r"""
+---
+# PHẦN I2 — BM25 TỰ CÀI ĐẶT: MỘT KẾT QUẢ ÂM
+
+BM25 là bước tiếp theo tự nhiên sau TF-IDF, sửa hai điểm yếu của nó:
+**tần suất bão hòa** (lần xuất hiện thứ 20 của một từ gần như không thêm bằng
+chứng) và **chuẩn hóa độ dài có tham số**.
+
+$$\text{score}(q,d) = \sum_{t \in q} \text{idf}(t)\,
+\frac{\text{tf}(t,d)\,(k_1+1)}{\text{tf}(t,d) + k_1\left(1 - b + b\,\frac{|d|}{\text{avgdl}}\right)}
+\qquad
+\text{idf}(t) = \ln\!\left(\frac{N - \text{df}(t) + 0.5}{\text{df}(t) + 0.5} + 1\right)$$
+
+sklearn không có BM25, nên bản vector hóa được **đối chiếu với một bản cài đặt
+ngây thơ viết thẳng từ công thức** (vòng lặp) trên 4 cặp (k1, b) — khớp tuyệt
+đối (xem kết quả `test_vectorizer.py` ở Phần D).
+
+Điểm BM25 không bị chặn trên, nên chỉ dùng để **xếp hạng**; việc **chấp nhận**
+vẫn dựa trên cosine TF-IDF.
+""")
+
+code(r"""
+from evaluate import ranks_for as _rf, mrr as _m, sign_test_p
+from config import BM25_K1, BM25_B
+
+_r.freshness_alpha = 0.0   # so CHẤT LƯỢNG XẾP HẠNG thuần, tắt độ mới
+print(f"{'k1':>5} {'MRR BM25 (dev, b=0.9)':>24}")
+for k1 in [0.6, 1.2, 2.0, 3.0, 5.0, 8.0]:
+    _r.set_bm25(k1, 0.9, ranking="bm25")
+    print(f"{k1:>5} {_m(_rf(_r, _dev['retrieval'])):>24.3f}")
+
+_r.set_bm25(BM25_K1, BM25_B, ranking="tfidf")
+rr_tf = [1 / x if x else 0 for x in _rf(_r, _dev["retrieval"])]
+_r.set_bm25(BM25_K1, BM25_B, ranking="bm25")
+rr_bm = [1 / x if x else 0 for x in _rf(_r, _dev["retrieval"])]
+_r.set_bm25(BM25_K1, BM25_B, ranking="tfidf")
+
+w = sum(a > b for a, b in zip(rr_bm, rr_tf)); l = sum(a < b for a, b in zip(rr_bm, rr_tf))
+print(f"\nTF-IDF MRR (dev): {np.mean(rr_tf):.3f}   BM25 tốt nhất (k1={BM25_K1}, b={BM25_B}): {np.mean(rr_bm):.3f}")
+print(f"Kiểm định dấu có cặp: BM25 thắng {w} câu, thua {l} câu, hòa {len(rr_tf) - w - l} -> p = {sign_test_p(w, l):.3f}")
+print("\nTrên TEST:", {k: f"R@1 {v['r1'][0]}/{v['r1'][1]}, MRR {v['mrr']:.3f}"
+                     for k, v in res["ranking_comparison"].items()})
+""")
+
+md(r"""
+### Vì sao BM25 không hơn — giả thuyết được dữ liệu ủng hộ
+
+Index tăng trọng số tiêu đề bằng cách **lặp tiêu đề 3 lần**. Mẹo này chỉ hiệu
+quả khi tf còn tăng theo số lần lặp — mà **độ bão hòa tf**, đặc điểm cốt lõi
+của BM25, triệt tiêu đúng hiệu ứng đó.
+
+Nếu giả thuyết đúng, BM25 phải tốt dần khi **giảm bão hòa** (tăng $k_1$). Bảng
+trên cho thấy đúng như vậy: MRR tăng đều theo $k_1$. Ở $k_1$ lớn, BM25 gần như
+quay lại hành vi của TF-IDF. Cách làm đúng là **BM25F** — bão hòa riêng từng
+trường rồi mới cộng có trọng số.
+
+### Quyết định: giữ TF-IDF — và một quy tắc quyết định bị sửa
+
+Quy tắc ban đầu "hơn trên dev là đổi" đã chọn BM25 với chênh **0.002 MRR**
+(khoảng một câu), rồi BM25 **thua** trên test. Quy tắc được sửa thành: phương
+pháp phức tạp hơn phải thắng **có ý nghĩa thống kê** trên dev (kiểm định dấu
+có cặp). Kết quả p = 1.0 → giữ TF-IDF.
+
+> **Minh bạch:** quy tắc kiểm định được thêm **sau khi** đã thấy kết quả test
+> BM25. Dưới cả hai quy tắc, kết luận không đổi: hai phương pháp không khác nhau
+> có ý nghĩa (khoảng tin cậy chồng lấn gần như hoàn toàn).
+
+### Số lần đã xem tập TEST
+
+| Lần | Lý do | Có đổi gì dựa trên test? |
+|---|---|---|
+| 1 | Báo cáo đầu tiên sau khi tách dev/test | Không |
+| 2 | Sau hai sửa lỗi do **kiểm thử hồi quy** phát hiện | Không |
+| 3 | Sau khi thêm BM25 | **Có** — quy tắc chọn phương pháp |
+
+Vì tập test đã bị xem 3 lần, mọi cải tiến tiếp theo (đặc biệt cho intent) phải
+được đo trên một **tập test mới**.
 """)
 
 # ---------------------------------------------------------------- PART J ----
@@ -1172,7 +1314,7 @@ md(r"""
 ---
 # PHẦN J — PHÂN TÍCH LỖI (Error Analysis)
 
-Yêu cầu tối thiểu 3 case. Dưới đây là **7 lỗi thật** phát hiện trong quá trình
+Yêu cầu tối thiểu 3 case. Dưới đây là **19 lỗi thật** phát hiện trong quá trình
 làm, kèm nguyên nhân và cách xử lý.
 """)
 
@@ -1305,6 +1447,42 @@ error_analysis = pd.DataFrame([
         "Trạng thái": "ĐÃ SỬA",
     },
     {
+        "STT": 16,
+        "Tầng": "Phương pháp đánh giá",
+        "Input": "toàn bộ quy trình dò tham số",
+        "Sai": "Báo cáo Recall@1 96.8%, intent 88.5% — đo trên chính tập đã dùng để dò tham số",
+        "Nguyên nhân": "Rò rỉ tập test: không tách tập dò tham số (dev) khỏi tập báo cáo (test); tập lại quá nhỏ (21-31 câu)",
+        "Xử lý": "Tách DEV 112 / TEST 122 câu, nhãn theo URL, KTC Wilson 95%. Số thật: Recall@1 93.4%, intent 61.5%",
+        "Trạng thái": "ĐÃ SỬA",
+    },
+    {
+        "STT": 17,
+        "Tầng": "Xếp hạng / ngưỡng",
+        "Input": "tin ve dao hai nam (sau khi dò lại nửa chu kỳ = 3 ngày)",
+        "Sai": "Từ trả lời đúng thành 'không tìm thấy'",
+        "Nguyên nhân": "Ngưỡng chấp nhận áp lên điểm ĐÃ NHÂN độ mới -> bài 16 ngày tuổi gần như không được thưởng nên bị loại. Độ mới âm thầm thành bộ lọc",
+        "Xử lý": "Xếp hạng theo điểm có độ mới, CHẤP NHẬN theo cosine thuần. Kiểm thử hồi quy bắt được",
+        "Trạng thái": "ĐÃ SỬA",
+    },
+    {
+        "STT": 18,
+        "Tầng": "Định tuyến",
+        "Input": "tin du lịch ninh bình",
+        "Sai": "Thất bại khi độ tin cậy intent là 0.246 nhưng thành công khi 0.27",
+        "Nguyên nhân": "Ngưỡng nới lỏng khi đã nêu chuyên mục chỉ có ở nhánh duyệt mục, không có ở nhánh truy hồi",
+        "Xử lý": "Một hằng số CATEGORY_SCOPED_THRESHOLD_FACTOR dùng cho cả hai nhánh",
+        "Trạng thái": "ĐÃ SỬA",
+    },
+    {
+        "STT": 19,
+        "Tầng": "Quy tắc chọn mô hình",
+        "Input": "TF-IDF vs BM25",
+        "Sai": "Chọn BM25 vì hơn 0.002 MRR trên dev, rồi BM25 thua trên test",
+        "Nguyên nhân": "Quy tắc 'hơn là đổi' bỏ qua nhiễu: chênh 0.002 nhỏ hơn rất nhiều so với độ rộng khoảng tin cậy",
+        "Xử lý": "Yêu cầu thắng có ý nghĩa thống kê (kiểm định dấu có cặp): p = 1.0 -> giữ TF-IDF. Quy tắc thêm SAU khi thấy test — ghi rõ",
+        "Trạng thái": "ĐÃ SỬA",
+    },
+    {
         "STT": 12,
         "Tầng": "Chuẩn hóa teencode",
         "Input": "token 't'",
@@ -1367,6 +1545,10 @@ md(r"""
 6. **Tham chiếu chỉ neo vào lượt gần nhất.** "bài thứ hai ấy" hoặc "cái lúc nãy
    bạn nói" sẽ không giải đúng.
 
+8. **Intent classifier là điểm yếu lớn nhất** — 61.5% trên test. Câu ngắn,
+   cách nói đời thường có độ tin cậy dưới ngưỡng. Cần thêm pattern và/hoặc hiệu
+   chỉnh xác suất; phải đo trên một tập test **mới** vì tập hiện tại đã bị xem 3 lần.
+
 7. **Không phát hiện mâu thuẫn giữa các bài.** Xếp hạng theo độ mới chỉ *giảm
    nhẹ* vấn đề: bot ưu tiên bài mới khi hai bài gần ngang nhau, nhưng nếu bài cũ
    liên quan **vượt trội** thì nó vẫn thắng. Bot không hiểu bài B phủ định bài A.
@@ -1379,6 +1561,7 @@ md(r"""
 | **Sinh câu trả lời tự nhiên** | **RAG: dùng chính retriever hiện tại làm "R", ghép mô hình ngôn ngữ lớn tiếng Việt (PhoGPT, Vistral) làm "G"** | **Giải quyết hạn chế 2 — bot diễn đạt lại thay vì chép nguyên văn, vẫn dẫn được nguồn** |
 | Chuẩn hóa teencode có ngữ cảnh | Mô hình seq2seq (BARTpho) thay cho tra từ điển | Tăng recall, giải được từ mơ hồ như "t" |
 | **Phát hiện cùng-một-sự-việc** | Nhóm các bài có độ tương đồng cao thành cụm, chỉ hiện bài mới nhất trong cụm kèm cảnh báo "có bài mới hơn" | **Giải quyết triệt để hạn chế 7** |
+| **BM25F** | Bão hòa tf riêng từng trường (tiêu đề, mô tả, thân) rồi cộng có trọng số, thay mẹo lặp tiêu đề | Cho BM25 cơ hội thật sự — hiện mẹo lặp tiêu đề triệt tiêu ưu điểm của nó |
 | Cập nhật index tăng dần | Thêm bài mới mà không dựng lại toàn bộ vocabulary/IDF | Giảm chi phí khi corpus lớn |
 | Xếp hạng tốt hơn | BM25 thay TF-IDF (chuẩn hóa độ dài tài liệu tốt hơn) | Recall@1 cao hơn với bài dài |
 | Khôi phục dấu | Mô hình seq2seq phục hồi dấu thay vì hạ về âm tiết | Chính xác hơn với câu không dấu |
@@ -1409,8 +1592,9 @@ python src/cli.py --explain "tin về đảo hải nam"
 python src/api.py
 
 # 5. Chạy kiểm thử và đánh giá
-python tests/test_vectorizer.py
-python src/evaluate.py
+python tests/test_vectorizer.py     # TF-IDF vs sklearn, BM25 vs tham chiếu
+python tests/test_chatbot.py        # 21 kiểm thử hồi quy
+python src/evaluate.py              # dò trên DEV, báo cáo trên TEST
 ```
 
 ---
@@ -1429,7 +1613,10 @@ python src/evaluate.py
 - [x] Chuẩn hóa teencode học từ ViLexNorm, đánh giá bằng ERR
 - [x] Thí nghiệm đối chứng: mô hình sinh n-gram vs truy hồi
 - [x] Xếp hạng theo độ mới, xử lý tin lỗi thời
-- [x] Error analysis (15 case, vượt yêu cầu tối thiểu 3)
+- [x] Tách DEV/TEST, báo cáo trên TEST kèm khoảng tin cậy 95%, đánh giá đầu-cuối
+- [x] 21 kiểm thử hồi quy cho các lỗi thật đã gặp
+- [x] BM25 tự cài đặt, kiểm chứng, so sánh có kiểm định thống kê
+- [x] Error analysis (19 case, vượt yêu cầu tối thiểu 3)
 - [x] Giao diện CLI + Web
 - [x] Notebook đã Run và lưu output
 """)

@@ -55,6 +55,10 @@ tín hiệu rất rõ ràng, vì tiếng Việt thật gần như luôn có ít 
 
 Thay đổi này làm retrieval **tốt lên**, không chỉ thêm tính năng:
 
+> Số liệu bảng dưới đo trên tập test cũ (21 câu, bị dùng để dò tham số). Kết quả
+> đo đúng cách trên tập TEST tách riêng: câu không dấu Recall@1 95.5% (21/22),
+> teencode 78.6% (11/14) — xem [docs/06](06-danh-gia-trung-thuc-va-bm25.md).
+
 | | Trước | Sau |
 |---|---|---|
 | Recall@1 | 85.7% | **90.5%** |

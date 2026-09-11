@@ -1,5 +1,20 @@
 # Thông tin lỗi thời và xếp hạng theo độ mới
 
+> ⚠️ **ĐÍNH CHÍNH (xem [docs/06](06-danh-gia-trung-thuc-va-bm25.md)).** Các số
+> liệu trong tài liệu này được đo khi tham số còn được dò và báo cáo trên cùng
+> một tập (rò rỉ tập test), trên tập chỉ 21–31 câu. Khi đo lại đúng cách trên
+> tập DEV 112 câu:
+>
+> - Kết luận **"độ mới làm tốt lên truy hồi" là SAI** — độ mới không cải thiện
+>   nhất quán (chênh lệch nằm trong nhiễu); các cấu hình xử lý đúng tin mâu thuẫn
+>   đều thấp hơn một chút. Độ mới là một **đánh đổi**, không phải cải tiến.
+> - Ngưỡng chấp nhận nay áp lên **cosine thuần**, không lên điểm đã nhân độ mới
+>   (áp lên điểm có độ mới đã âm thầm loại bài cũ). Giá trị hiện hành: 0.13.
+> - Nửa chu kỳ hiện hành: 3 ngày (dò lại trên dev).
+>
+> Phần phân tích ca tin mâu thuẫn bên dưới vẫn đúng.
+
+
 ## Câu hỏi đặt ra
 
 > Nếu hôm nay tin nói "vấn đề X là A", hôm sau tin nói "vấn đề X là B",
