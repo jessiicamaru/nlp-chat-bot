@@ -11,40 +11,52 @@ from pathlib import Path
 cells = []
 
 
+def _cell(kind, text, **extra):
+    # id cố định: nbformat 4.5 yêu cầu mỗi ô có id; thiếu thì VS Code/Jupyter tự
+    # thêm khi mở file, làm file "bị sửa" dù không ai sửa gì.
+    cells.append({"cell_type": kind, "id": f"cell-{len(cells):02d}", "metadata": {},
+                  "source": text.strip("\n").splitlines(keepends=True), **extra})
+
+
 def md(text):
-    cells.append({"cell_type": "markdown", "metadata": {},
-                  "source": text.strip("\n").splitlines(keepends=True)})
+    _cell("markdown", text)
 
 
 def code(text):
-    cells.append({"cell_type": "code", "execution_count": None, "metadata": {},
-                  "outputs": [], "source": text.strip("\n").splitlines(keepends=True)})
+    _cell("code", text, execution_count=None, outputs=[])
 
 
 md(r"""
-# RAG với PhoGPT-4B-Chat — Chatbot tin tức tiếng Việt
+# RAG với PhoGPT-4B-Chat — Chatbot tin tức tiếng Việt (lần chạy 2: so sánh prompt v1 / v2)
 
 Notebook này thêm bước **sinh câu trả lời tự nhiên** lên trên chatbot trích xuất
 đã xây from scratch:
 
 ```text
-câu hỏi ─> [truy hồi TF-IDF tự cài đặt] ─> 1–3 bài báo ─> [PhoGPT diễn đạt lại, có dẫn nguồn]
+câu hỏi ─> [truy hồi TF-IDF tự cài đặt] ─> 1–3 bài báo ─> [chốt chặn giả định] ─> [PhoGPT] ─> [chốt chặn số bịa]
 ```
 
 **Nguyên tắc an toàn:** PhoGPT chỉ được gọi khi phần truy hồi đã tìm được bài báo
 vượt ngưỡng. Câu ngoài phạm vi bị từ chối **trước** khi tới PhoGPT.
 
+**Lần chạy này** chạy CÙNG một bộ câu hỏi (giống lần 1) qua hai phiên bản prompt
+trên CÙNG một mô hình, để so sánh công bằng:
+
+- **v1** — prompt của lần chạy đầu (6 quy tắc đánh số), không chốt chặn.
+- **v2** — prompt ngắn, câu từ khóa được chuyển thành câu hỏi, làm sạch phần mô
+  hình chép lại prompt, thêm hai chốt chặn tất định. Lý do từng thay đổi: `docs/07`.
+
 ## Cách chạy (khoảng 10–15 phút)
 
 1. **Runtime → Change runtime type → T4 GPU** → Save.
 2. **Runtime → Run all**.
-3. Khi ô số 2 hỏi, **chọn file `rag_bundle.zip`** để tải lên.
+3. Khi ô số 2 hỏi, **chọn file `rag_bundle.zip`** (bản MỚI) để tải lên.
 4. Chờ chạy xong. Ô cuối cùng sẽ **tải về** 2 file kết quả:
-   `rag_results.json` và `rag_samples.csv`.
-5. Gửi 2 file đó lại (hoặc chép vào `final-project/data/eval/rag/`).
+   `rag_results_run2.json` và `rag_samples_run2.csv`.
+5. Chép 2 file đó vào thư mục `final-project/local/`.
 
-> Ô tải mô hình lần đầu mất vài phút (tải ~7.5 GB từ Hugging Face về máy Colab,
-> không tốn dung lượng máy bạn).
+> Lần này dùng bản GGUF **Q8_0** (~3.9 GB, gần như không mất chất lượng) thay cho
+> Q4_K_M (4 bit) của lần 1. Tải về máy Colab, không tốn dung lượng máy bạn.
 """)
 
 md(r"""
@@ -53,11 +65,14 @@ md(r"""
 
 code(r"""
 # ----- Có thể chỉnh -----
-BACKEND = "auto"        # "auto" | "transformers" | "llamacpp"
+BACKEND = "llamacpp"    # "llamacpp" | "transformers" | "auto" (lần 1: transformers lỗi triton_pre_mlir)
+GGUF_FILE = "PhoGPT-4B-Chat-Q8_0.gguf"     # lần 1 dùng "PhoGPT-4B-Chat-Q4_K_M.gguf"
+PROMPT_VERSIONS = ["v1", "v2"]
+MAX_NEW_TOKENS = {"v1": 256, "v2": 160}  # v1 giữ đúng như lần 1; v2 chỉ cần 2-3 câu
 EVAL_SPLIT = "dev"      # "dev" khi còn đang chỉnh prompt; đổi sang "test" CHỈ MỘT LẦN khi đã chốt
-N_EVAL = 25             # số câu hỏi tin tức lấy mẫu từ tập đánh giá
-MAX_NEW_TOKENS = 256
+N_EVAL = 25             # số câu hỏi tin tức lấy mẫu (cùng SEED -> cùng 25 câu như lần 1)
 SEED = 2026
+RUN_TAG = "run2"        # hậu tố tên file kết quả, để không đè file lần trước
 # ------------------------
 
 import os, sys, time, json, random, zipfile, subprocess
@@ -145,9 +160,9 @@ print(bot.respond("tin về đảo hải nam").text[:300])
 md(r"""
 ## 5. Nạp PhoGPT
 
-Thử `transformers` trước (float16 trên GPU). Nếu lỗi — ví dụ mã tùy biến của
-PhoGPT không tương thích với phiên bản `transformers` mới trên Colab — tự chuyển
-sang bản GGUF lượng tử hóa chạy bằng `llama.cpp`.
+Mặc định dùng bản GGUF chạy bằng `llama.cpp` trên GPU. Lần chạy 1, `transformers`
+(bản 5.x trên Colab) không nạp được mã tùy biến của PhoGPT (thiếu gói
+`triton_pre_mlir`); `BACKEND = "auto"` vẫn thử nó trước nếu muốn.
 """)
 
 code(r"""
@@ -169,16 +184,24 @@ else:
             subprocess.run([sys.executable, "-m", "pip", "install", "-q", "llama-cpp-python",
                             "--extra-index-url",
                             "https://abetlen.github.io/llama-cpp-python/whl/cu124"], check=False)
-            backend = LlamaCppBackend()
+            backend = LlamaCppBackend(filename=GGUF_FILE)
         except Exception as exc:
             load_errors.append(("llama.cpp", repr(exc)[:400]))
 
 for name, err in load_errors:
     print(f"⚠️ {name} lỗi: {err}")
 assert backend is not None, "Không nạp được backend nào — xem lỗi ở trên và gửi lại."
-print(f"Backend: {backend.name}  (nạp trong {time.time() - t0:.0f}s)")
+print(f"Backend: {backend.name} {getattr(backend, 'filename', '')}  (nạp trong {time.time() - t0:.0f}s)")
 
-rag = RagChatbot(bot, backend, max_new_tokens=MAX_NEW_TOKENS)
+
+def make_rag(chatbot, version):
+    # generate_when_guarded: khi chốt chặn giả định đã chặn, VẪN gọi PhoGPT để ghi
+    # lại nó định trả lời gì (cột "câu LLM") — đo được chốt chặn đã ngăn được gì.
+    return RagChatbot(chatbot, backend, prompt_version=version,
+                      max_new_tokens=MAX_NEW_TOKENS[version], generate_when_guarded=True)
+
+
+rag = make_rag(bot, "v2")
 _ = backend.generate("### Câu hỏi: Xin chào\n### Trả lời:", max_new_tokens=8)   # khởi động
 """)
 
@@ -192,15 +215,18 @@ def show(question):
     r = rag.respond(question)
     print("=" * 90)
     print("HỎI :", question)
-    print(f"[route={r.route}  |  {r.latency_s:.1f}s]")
+    print(f"[route={r.route}  guard={r.guard}  |  {r.latency_s:.1f}s]")
     print("\nTRÍCH XUẤT (bot gốc):\n", r.extractive_text[:350])
-    if r.route == "rag":
-        print("\nRAG (PhoGPT):\n", r.text)
+    if r.route.startswith("rag"):
+        print("\nHIỂN THỊ (RAG v2):\n", r.text[:600])
+        if r.guard:
+            print(f"\n[chốt chặn '{r.guard}' {r.guard_detail}] — PhoGPT định trả lời:\n", r.llm_text)
         print("\nNguồn:", [f"[{s['id']}] {s['title'][:50]} ({s['published']})" for s in r.sources])
         print("Kiểm tra:", r.checks)
 
 for q in ["cho tôi biết về đảo hải nam", "bt gì về vụ giá xăng k",
-          "tin sức khỏe về ăn chuối", "thời tiết sao hỏa hôm nay"]:
+          "tin sức khỏe về ăn chuối", "đảo Hải Nam miễn visa từ năm 2015 phải không",
+          "thời tiết sao hỏa hôm nay"]:
     show(q)
 """)
 
@@ -216,8 +242,8 @@ Bốn nhóm câu hỏi:
 | **bẫy** | hỏi chi tiết mà bài báo KHÔNG có | phải từ chối, không được bịa |
 | **ngoài phạm vi** | câu không liên quan kho dữ liệu | PhoGPT không được gọi |
 
-Chấm tự động chỉ là **tín hiệu cảnh báo**. File CSV xuất ra có sẵn cột để chấm
-tay (tự nhiên 1–5, trung thành 1–5).
+Mỗi câu chạy qua **cả v1 và v2** (cột `prompt`). Chấm tự động chỉ là **tín hiệu
+cảnh báo**. File CSV xuất ra có sẵn cột để chấm tay (tự nhiên 1–5, trung thành 1–5).
 """)
 
 code(r"""
@@ -234,7 +260,7 @@ oos = rng.sample(split["out_of_scope"], min(5, len(split["out_of_scope"])))
 # classifier hiểu nhầm thành "thống kê kho dữ liệu" và "đồng ý" — ghi nhận là
 # điểm yếu của intent classifier (xem báo cáo), không phải của RAG.
 traps = [
-    ("tai nghe AirPods 5 có chống nước chuẩn IP68 không", "không nêu khả năng chống nước"),
+    ("tai nghe AirPods 5 có chống nước chuẩn IP68 không", "bài nói chống nước được cải thiện, KHÔNG nêu chuẩn IP68"),
     ("Messi mua CLB Eldense với giá bao nhiêu tiền", "bài không nêu giá mua"),
     ("vì sao kem Tràng Tiền phải đóng cửa", "bài không nêu lý do đóng cửa"),
     ("lợi nhuận năm 2020 của metro Bến Thành Suối Tiên", "bài chỉ nói mục tiêu 2026-2030"),
@@ -252,7 +278,6 @@ code(r"""
 df_conflict = pd.concat([pd.read_csv(PROJECT / "data" / "raw" / "corpus_raw.csv"),
                          pd.DataFrame(case["articles"])], ignore_index=True)
 conflict_bot = NewsChatbot().train(df=df_conflict, use_cache=False)
-conflict_rag = RagChatbot(conflict_bot, backend, max_new_tokens=MAX_NEW_TOKENS)
 print("Đã dựng bot cho ca mâu thuẫn.")
 """)
 
@@ -269,8 +294,13 @@ def conflict_verdict(answer):
 
 
 def trap_verdict(r):
-    if r.route != "rag":
+    # Chấm trên câu HIỂN THỊ cho người dùng.
+    if not r.route.startswith("rag"):
         return "không qua RAG (truy hồi không tìm thấy)"
+    if r.guard == "premise":
+        return "ĐÚNG (chốt chặn giả định)"
+    if r.guard in ("numbers", "empty"):
+        return "AN TOÀN (hiển thị trích xuất)"
     if r.checks.get("refused"):
         return "ĐÚNG (từ chối)"
     if r.checks.get("unsupported_numbers"):
@@ -280,12 +310,16 @@ def trap_verdict(r):
 
 rows = []
 
-def run(group, question, chatbot, gold=None, note="", style=""):
+def run(version, group, question, chatbot, gold=None, note="", style=""):
     chatbot.bot.reset()
     r = chatbot.respond(question)
+    is_rag = r.route.startswith("rag")
     row = {
+        "prompt": version,
         "nhóm": group, "câu hỏi": question, "kiểu gõ": style, "ghi chú": note,
-        "route": r.route, "rag": r.text if r.route == "rag" else "",
+        "route": r.route, "rag": r.text if is_rag else "",
+        "chốt chặn": r.guard or "", "chi tiết chốt chặn": ", ".join(r.guard_detail),
+        "câu LLM": r.llm_text, "câu LLM nguyên văn": r.raw_generation,
         "trích xuất": r.extractive_text, "độ trễ (s)": round(r.latency_s, 2),
         "nguồn": " | ".join(f"[{s['id']}] {s['title']} ({s['published']})" for s in r.sources),
         "số bịa": ", ".join(r.checks.get("unsupported_numbers", [])),
@@ -302,23 +336,25 @@ def run(group, question, chatbot, gold=None, note="", style=""):
     elif group == "bẫy":
         row["đánh giá tự động"] = trap_verdict(r)
     elif group == "ngoài phạm vi":
-        row["đánh giá tự động"] = "ĐÚNG (không gọi LLM)" if r.route != "rag" else "SAI (đã gọi LLM)"
+        row["đánh giá tự động"] = "ĐÚNG (không gọi LLM)" if not is_rag else "SAI (đã gọi LLM)"
     rows.append(row)
     return r
 
 
 t_all = time.time()
-for i, c in enumerate(news, 1):
-    run("tin tức", c["query"], rag, gold=c["gold_urls"], style=c.get("style", ""))
-    if i % 5 == 0:
-        print(f"  tin tức {i}/{len(news)}  ({time.time() - t_all:.0f}s)")
-for q in case["queries"]:
-    run("mâu thuẫn", q, conflict_rag)
-for q, note in traps:
-    run("bẫy", q, rag, note=note)
-for x in oos:
-    run("ngoài phạm vi", x["text"], rag, style=x.get("style", ""))
-print(f"Xong {len(rows)} câu trong {time.time() - t_all:.0f}s")
+for version in PROMPT_VERSIONS:
+    news_rag, conflict_rag = make_rag(bot, version), make_rag(conflict_bot, version)
+    for i, c in enumerate(news, 1):
+        run(version, "tin tức", c["query"], news_rag, gold=c["gold_urls"], style=c.get("style", ""))
+        if i % 5 == 0:
+            print(f"  [{version}] tin tức {i}/{len(news)}  ({time.time() - t_all:.0f}s)")
+    for q in case["queries"]:
+        run(version, "mâu thuẫn", q, conflict_rag)
+    for q, note in traps:
+        run(version, "bẫy", q, news_rag, note=note)
+    for x in oos:
+        run(version, "ngoài phạm vi", x["text"], news_rag, style=x.get("style", ""))
+print(f"Xong {len(rows)} lượt trong {time.time() - t_all:.0f}s")
 """)
 
 md(r"""
@@ -327,24 +363,38 @@ md(r"""
 
 code(r"""
 df_res = pd.DataFrame(rows)
-rag_rows = df_res[df_res["route"] == "rag"]
-news_rag = rag_rows[rag_rows["nhóm"] == "tin tức"]
+
+
+def summarize(d):
+    rag_rows = d[d["route"].str.startswith("rag")]
+    news_rag = rag_rows[rag_rows["nhóm"] == "tin tức"]
+    called = rag_rows[rag_rows["độ trễ (s)"] > 0]
+    return {
+        "n_news": int((d["nhóm"] == "tin tức").sum()),
+        "n_news_answered_by_rag": int(len(news_rag)),
+        "news_guard": news_rag["chốt chặn"].replace("", "không").value_counts().to_dict(),
+        "latency_mean_s": round(float(called["độ trễ (s)"].mean()), 2) if len(called) else None,
+        "latency_p90_s": round(float(called["độ trễ (s)"].quantile(0.9)), 2) if len(called) else None,
+        # Chấm trên câu PhoGPT sinh (cột "câu LLM"), kể cả khi bị chặn không hiển thị.
+        "news_llm_with_unsupported_numbers": int((news_rag["số bịa"] != "").sum()),
+        "news_llm_support_ratio_mean": round(float(news_rag["tỷ lệ từ có trong nguồn"].dropna().mean()), 3)
+                                       if len(news_rag) else None,
+        "news_llm_refused": int(news_rag["từ chối"].fillna(False).astype(bool).sum()),
+        "news_with_valid_citation": int((news_rag["trích dẫn hợp lệ"].fillna(0) > 0).sum()),
+        "news_with_invalid_citation": int((news_rag["trích dẫn sai"].fillna(0) > 0).sum()),
+        "news_retrieval_correct": int(news_rag["truy hồi đúng bài"].fillna(False).astype(bool).sum()),
+        "conflict": d[d["nhóm"] == "mâu thuẫn"]["đánh giá tự động"].value_counts().to_dict(),
+        "traps": d[d["nhóm"] == "bẫy"]["đánh giá tự động"].value_counts().to_dict(),
+        "out_of_scope": d[d["nhóm"] == "ngoài phạm vi"]["đánh giá tự động"].value_counts().to_dict(),
+    }
+
 
 summary = {
     "backend": backend.name,
+    "gguf_file": getattr(backend, "filename", None),
     "eval_split": EVAL_SPLIT,
-    "n_news": int((df_res["nhóm"] == "tin tức").sum()),
-    "n_news_answered_by_rag": int(len(news_rag)),
-    "latency_mean_s": round(float(rag_rows["độ trễ (s)"].mean()), 2) if len(rag_rows) else None,
-    "latency_p90_s": round(float(rag_rows["độ trễ (s)"].quantile(0.9)), 2) if len(rag_rows) else None,
-    "news_with_unsupported_numbers": int((news_rag["số bịa"] != "").sum()),
-    "news_support_ratio_mean": round(float(news_rag["tỷ lệ từ có trong nguồn"].mean()), 3) if len(news_rag) else None,
-    "news_with_valid_citation": int((news_rag["trích dẫn hợp lệ"] > 0).sum()),
-    "news_with_invalid_citation": int((news_rag["trích dẫn sai"] > 0).sum()),
-    "news_retrieval_correct": int(news_rag["truy hồi đúng bài"].fillna(False).sum()),
-    "conflict": df_res[df_res["nhóm"] == "mâu thuẫn"]["đánh giá tự động"].value_counts().to_dict(),
-    "traps": df_res[df_res["nhóm"] == "bẫy"]["đánh giá tự động"].value_counts().to_dict(),
-    "out_of_scope": df_res[df_res["nhóm"] == "ngoài phạm vi"]["đánh giá tự động"].value_counts().to_dict(),
+    "max_new_tokens": MAX_NEW_TOKENS,
+    "by_prompt": {v: summarize(df_res[df_res["prompt"] == v]) for v in PROMPT_VERSIONS},
 }
 if IN_COLAB:
     import torch, transformers
@@ -355,12 +405,15 @@ summary["load_errors"] = load_errors
 summary["dry_run"] = DRY_RUN
 
 for k, v in summary.items():
-    print(f"{k:32}: {v}")
+    if k != "by_prompt":
+        print(f"{k:16}: {v}")
+print()
+print(pd.DataFrame(summary["by_prompt"]).to_string())
 """)
 
 code(r"""
 pd.set_option("display.max_colwidth", 160)
-cols = ["nhóm", "câu hỏi", "rag", "số bịa", "đánh giá tự động"]
+cols = ["prompt", "nhóm", "câu hỏi", "rag", "chốt chặn", "số bịa", "đánh giá tự động"]
 df_res[df_res["nhóm"] != "tin tức"][cols]
 """)
 
@@ -369,15 +422,17 @@ md(r"""
 """)
 
 code(r"""
-(OUT_DIR / "rag_results.json").write_text(
-    json.dumps({"summary": summary, "rows": rows}, ensure_ascii=False, indent=1), encoding="utf-8")
-df_res.to_csv(OUT_DIR / "rag_samples.csv", index=False, encoding="utf-8-sig")
-print("Đã lưu:", OUT_DIR / "rag_results.json", "và", OUT_DIR / "rag_samples.csv")
+res_path = OUT_DIR / f"rag_results_{RUN_TAG}.json"
+csv_path = OUT_DIR / f"rag_samples_{RUN_TAG}.csv"
+res_path.write_text(json.dumps({"summary": summary, "rows": rows}, ensure_ascii=False, indent=1,
+                               default=str), encoding="utf-8")
+df_res.to_csv(csv_path, index=False, encoding="utf-8-sig")
+print("Đã lưu:", res_path, "và", csv_path)
 
 if IN_COLAB and not DRY_RUN:
     from google.colab import files
-    files.download(str(OUT_DIR / "rag_results.json"))
-    files.download(str(OUT_DIR / "rag_samples.csv"))
+    files.download(str(res_path))
+    files.download(str(csv_path))
 """)
 
 md(r"""

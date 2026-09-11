@@ -115,15 +115,21 @@ của đồ án.
 | Chỉ số | Giá trị |
 |---|---|
 | Accuracy trước (không làm gì) | 83.88% |
-| Accuracy sau | **94.77%** |
-| **ERR** (tỷ lệ giảm lỗi) | **67.54%** |
-| Precision / Recall | 90.71% / 70.16% |
+| Accuracy sau | **94.82%** |
+| **ERR** (tỷ lệ giảm lỗi) | **67.84%** |
+| Precision / Recall | 91.36% / 70.22% |
+
+> **Đính chính (khi làm RAG, docs/07):** bản đầu gộp ký tự lặp bằng `(.)\1{2,}`
+> nên gộp cả **chữ số** — `15.000 → 15.0`, `2000 → 20`, `1000 → 10`. Sau khi
+> sửa thành chỉ gộp chữ cái, ERR tăng từ 67.54% lên 67.84% (P 90.71 → 91.36%).
+> Lỗi này chỉ chạm 1/195 câu dev và 0/178 câu test của bộ đánh giá chatbot, tham
+> số dò trên dev không đổi, nên các số trong docs/06 vẫn giữ nguyên.
 
 > **Vì sao báo cáo ERR chứ không chỉ accuracy:** ~84% token vốn đã đúng sẵn,
 > nên accuracy thô bị thổi phồng. ERR chỉ đo phần lỗi thực sự được sửa, và là
 > chỉ số chuẩn của bài toán lexical normalization.
 
-**Precision (90.7%) cao hơn hẳn Recall (70.2%)** — đây là đánh đổi có chủ đích.
+**Precision (91.4%) cao hơn hẳn Recall (70.2%)** — đây là đánh đổi có chủ đích.
 Ba điều kiện an toàn ở trên khiến từ điển thận trọng: nó bỏ sót một số từ
 teencode hiếm, nhưng gần như không sửa sai từ đã đúng. Với chatbot, sửa hỏng
 một từ vốn đúng gây hại nhiều hơn là bỏ sót một từ lạ.

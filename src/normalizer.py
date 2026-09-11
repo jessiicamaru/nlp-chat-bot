@@ -64,7 +64,9 @@ VILEXNORM_DIR = RESOURCES_DIR / "vilexnorm"
 
 # Lặp ký tự để nhấn mạnh: "đẹppppp" -> "đẹp", "hayyy" -> "hay".
 # Gộp 3 lần trở lên về 1. KHÔNG gộp 2 lần vì tiếng Việt có phụ âm đôi hợp lệ.
-_ELONGATION = re.compile(r"(.)\1{2,}", re.UNICODE)
+# CHỈ gộp CHỮ CÁI: bản đầu dùng (.) nên gộp cả chữ số — "15.000" -> "15.0",
+# "2000" -> "20" — làm hỏng mọi câu hỏi có con số (phát hiện khi làm RAG, docs/07).
+_ELONGATION = re.compile(r"([^\W\d_])\1{2,}", re.UNICODE)
 
 # Token là dấu câu / emoticon thuần -> giữ nguyên, không tra từ điển.
 _PUNCT_ONLY = re.compile(r"^[^\w]+$", re.UNICODE)
