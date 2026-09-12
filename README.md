@@ -78,7 +78,8 @@ python src/crawler.py --per-category 20 --only "Công nghệ" "Thể thao"
 ## Báo cáo
 
 `notebooks/FinalProject_Chatbot_23IT036.ipynb` — notebook đã chạy và lưu output,
-gồm đầy đủ lý thuyết, thực nghiệm, đánh giá và phân tích lỗi.
+gồm đầy đủ lý thuyết, thực nghiệm, đánh giá, phân tích lỗi, và **Phần K** —
+thí nghiệm RAG với PhoGPT cùng kết luận rút ra từ ba lần chạy thật.
 
 ---
 

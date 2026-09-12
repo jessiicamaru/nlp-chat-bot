@@ -1517,7 +1517,137 @@ bác bỏ, và ngưỡng tuyệt đối 0.12 được giữ nguyên vì nó tác
 # ---------------------------------------------------------------- PART K ----
 md(r"""
 ---
-# PHẦN K — HẠN CHẾ VÀ HƯỚNG PHÁT TRIỂN
+# PHẦN K — RAG VỚI PhoGPT: THÍ NGHIỆM MỞ RỘNG (NGOÀI PHẠM VI *FROM SCRATCH*)
+
+Phần G3 đã chứng minh: tự sinh văn bản bằng mô hình n-gram tự cài đặt thì **bịa
+sự kiện**. Nhưng hạn chế "bot chỉ chép nguyên văn, không diễn đạt lại" vẫn còn.
+Cách chuẩn của ngành để vừa **tự nhiên** vừa **bám nguồn** là **RAG**:
+
+```text
+câu hỏi ─> [truy hồi TF-IDF tự cài đặt] ─> 1-3 bài ─> [chốt chặn] ─> [PhoGPT-4B-Chat] ─> [chốt chặn]
+```
+
+Đây là phần **duy nhất** của đồ án dùng mô hình tiền huấn luyện, nên nó là **lớp
+tùy chọn, mặc định tắt**: tắt đi thì chatbot chạy y như cũ. Máy cá nhân không có
+GPU NVIDIA nên PhoGPT chạy trên Google Colab (T4), qua `notebooks/RAG_PhoGPT_Colab.ipynb`.
+
+## Hai chốt chặn tất định — hàng rào cho LLM
+
+Cả hai đều là **quy tắc** (regex + so khớp số theo giá trị, tinh thần Lab 01), nên
+kiểm thử được không cần GPU (`tests/test_rag.py`, 29 test):
+
+| Chốt chặn | Khi nào | Làm gì |
+|---|---|---|
+| **Giả định** (trước LLM) | câu hỏi nêu con số/mã hiệu mà **không bài nào** nhắc: "từ năm 2015", "chuẩn IP68" | không gọi LLM; trả lời "các bài báo không nhắc tới ..." + đoạn trích |
+| **Số bịa** (sau LLM) | câu sinh chứa số không có trong nguồn | hiển thị đoạn trích gốc thay cho câu sinh |
+| **Lặp lại** (sau LLM) | câu sinh không thêm gì ngoài chính câu hỏi | hiển thị đoạn trích gốc |
+
+## Ba lần chạy thật (chi tiết: `docs/07-rag-phogpt.md`)
+
+| Lần | Tập | Mô hình | Mục đích |
+|---|---|---|---|
+| 1 | dev | GGUF Q4_K_M | prompt v1 (6 quy tắc đánh số) — kết quả **tệ**, dùng để tìm dạng lỗi |
+| 2 | dev | GGUF Q8_0 | so v1 với **v2** (prompt ngắn, câu hỏi đặt cuối, hậu xử lý, chốt chặn) |
+| 3 | **test** | GGUF Q8_0 | đo **một lần** trên câu hỏi chưa từng thấy, bẫy mới chốt trước khi chạy |
+""")
+
+code(r"""
+import json
+import pandas as pd
+
+RAG_DIR = DATA_DIR / "eval" / "rag"
+run3 = json.loads((RAG_DIR / "run3_test_results.json").read_text(encoding="utf-8"))
+ann = pd.read_csv(RAG_DIR / "run3_annotation.csv")
+
+NHAN = {"A": "A · đúng, trả lời được", "B": "B · đúng, trình bày hỏng",
+        "C": "C · không trả lời (lặp câu hỏi)", "D": "D · CÓ THÔNG TIN SAI",
+        "E": "E · từ chối sai"}
+bang = pd.DataFrame({
+    "prompt v1": ann["nhãn v1"].value_counts(),
+    "prompt v2": ann["nhãn v2"].value_counts(),
+}).reindex(list(NHAN)).fillna(0).astype(int)
+bang.index = [NHAN[k] for k in bang.index]
+print(f"Chấm tay {len(ann)} câu tin tức trên tập TEST (câu PhoGPT sinh, TRƯỚC chốt chặn)")
+display(bang)
+
+thang = ann[(ann["nhãn v2"] == "A") & (ann["nhãn v1"] != "A")]
+thua = ann[(ann["nhãn v1"] == "A") & (ann["nhãn v2"] != "A")]
+print(f"So có cặp trên nhãn A — v2 thắng {len(thang)}, thua {len(thua)}")
+print(f"kiểm định dấu p = {sign_test_p(len(thang), len(thua)):.4f}")
+""")
+
+md(r"""
+**Đọc bảng trên cho đúng:**
+
+- Prompt v2 tăng mạnh số câu **dùng được** (9 → 19 trên 33) và xóa sạch **từ chối
+  sai**. Đây là tập test, chưa từng dùng để chỉnh prompt, nên kết luận này đứng vững.
+- Nhưng **số câu chứa thông tin sai KHÔNG giảm** (3 → 4). RAG chỉ **đổi kiểu sai**:
+  v1 sai lộ liễu (bịa ngày tháng, chép lại quy tắc trong prompt), v2 sai trôi chảy
+  nên **khó phát hiện hơn** — ví dụ "Messi được đề cử **vì** anh không có tên năm
+  2024 và 2025" (đảo nhân quả), hay gán kỷ lục nhiệt độ 56,7 °C cho một ca tử vong
+  xảy ra ở 46,7 °C.
+""")
+
+code(r"""
+traps = pd.read_csv(RAG_DIR / "run3_trap_annotation.csv")
+print("11 CÂU BẪY MỚI (chốt trước khi chạy) — kết quả theo LOẠI bẫy")
+display(traps[["bẫy", "loại", "v1", "v2"]])
+""")
+
+md(r"""
+Bảng bẫy là kết quả **quan trọng nhất** của phần này:
+
+- v1 và v2 **hòa nhau**: 6 an toàn / 5 sai — nhưng vì lý do **trái ngược**.
+- v2 an toàn **nhờ chốt chặn** ở những bẫy **có con số**; còn với giả định sai
+  **không có số**, v2 sai **4/4**: nó khẳng định thẳng điều bài báo phủ định
+  ("robot Optimus của Tesla tự bước ra khỏi dây chuyền" — bài nói Tesla **chưa**
+  làm được). Ở đúng những câu đó, v1 lại an toàn vì nó **từ chối**.
+- Nói cách khác: prompt v2 làm mô hình **quả quyết hơn** → trả lời tốt hơn nhiều
+  với câu hỏi thật, nhưng cũng **gật đầu với giả định sai** dễ hơn.
+- Một bẫy được thiết kế nhắm **điểm mù đã biết** của chốt chặn ("đập cao **500 m**"
+  trong khi bài có "500 MW") — và nó lọt đúng như dự đoán.
+
+Ngoài ra, câu "iPhone 18 Pro Max có mấy màu" cho thấy lỗi **không chỉ ở LLM**: tầng
+chọn câu chỉ đưa 4 câu vào ngữ cảnh, câu liệt kê màu không nằm trong đó, nên **cả
+hai** prompt đều bịa màu. Truy hồi đúng bài vẫn chưa đủ — phải đưa đúng *câu*.
+""")
+
+code(r"""
+rows = pd.DataFrame(run3["rows"])
+v2 = rows[(rows["prompt"] == "v2") & rows["route"].str.startswith("rag")]
+
+for q in ["vì sao đêm đầu ngủ ở khách sạn hay bị mất ngủ", "giá vé tàu cát linh bao nhiêu",
+          "robot Optimus của Tesla tự bước ra khỏi dây chuyền"]:
+    r = v2[v2["câu hỏi"] == q].iloc[0]
+    print("=" * 100)
+    print("HỎI:", q, f"   [chốt chặn: {r['chốt chặn'] or 'không'}]")
+    print("\nTRÍCH XUẤT (bot nộp bài):\n ", str(r["trích xuất"])[:260].replace("\n", " "))
+    print("\nRAG (PhoGPT v2):\n ", str(r["câu LLM"])[:260].replace("\n", " "))
+    if r["ghi chú"]:
+        print("\n  ⚠️ ghi chú bẫy:", r["ghi chú"])
+""")
+
+md(r"""
+## Kết luận phần K
+
+| | Bot trích xuất (bài nộp) | RAG + PhoGPT-4B |
+|---|---|---|
+| Câu trả lời tự nhiên | không — chép nguyên câu trong bài | **có** |
+| Câu dùng được (test, 33 câu) | — (luôn là trích dẫn thật) | 19/33 |
+| Khẳng định điều bài báo **không** nói | **không bao giờ** | có, 4/33 câu + 5/11 bẫy |
+| Cần GPU | không | có |
+| Giải thích được vì sao trả lời vậy | có (`--explain`) | không |
+
+**RAG làm câu trả lời tự nhiên hơn hẳn, nhưng không trung thực hơn.** Vì vậy đồ án
+giữ RAG ở đúng vị trí: một lớp **tùy chọn, mặc định tắt**, còn sản phẩm nộp là bản
+**trích xuất**. Muốn bật RAG cho người dùng thật thì cần thêm tầng kiểm tra suy
+diễn (NLI) cho giả định sai không có con số — ngoài phạm vi đồ án.
+""")
+
+# ---------------------------------------------------------------- PART L ----
+md(r"""
+---
+# PHẦN L — HẠN CHẾ VÀ HƯỚNG PHÁT TRIỂN
 
 ## Hạn chế đã biết
 
@@ -1531,6 +1661,10 @@ md(r"""
    "so sánh giá iPhone năm nay với năm ngoái" nằm ngoài khả năng.
    Đây là giới hạn **kiến trúc**, đã được kiểm chứng bằng thực nghiệm ở Phần G3:
    mô hình sinh n-gram ở quy mô dữ liệu này thua trích xuất trên mọi tiêu chí.
+   Phần K đo thêm lớp **RAG với PhoGPT**: câu trả lời tự nhiên hơn hẳn (19/33 câu
+   dùng được so với 9/33 của prompt đầu) nhưng **không trung thực hơn** — số câu
+   chứa thông tin sai không giảm, và với giả định sai không có con số thì nó còn
+   tệ hơn bản trích xuất. Vì vậy hạn chế này vẫn được coi là **chưa giải quyết**.
 
 3. **Chuẩn hóa teencode không xét ngữ cảnh.** Recall chỉ 70.2%: bỏ sót các từ
    teencode hiếm. Và với từ mơ hồ như "t" (tôi/tao), mô hình luôn chọn một đích
@@ -1558,7 +1692,8 @@ md(r"""
 | Hướng | Kỹ thuật | Kỳ vọng |
 |---|---|---|
 | Hiểu từ đồng nghĩa | Word2Vec / PhoBERT embedding, kết hợp lai với TF-IDF | Giải quyết hạn chế 1 |
-| **Sinh câu trả lời tự nhiên** | **RAG: dùng chính retriever hiện tại làm "R", ghép mô hình ngôn ngữ lớn tiếng Việt (PhoGPT, Vistral) làm "G"** | **Giải quyết hạn chế 2 — bot diễn đạt lại thay vì chép nguyên văn, vẫn dẫn được nguồn** |
+| ~~Sinh câu trả lời tự nhiên~~ **ĐÃ THỬ — xem Phần K** | RAG: retriever hiện tại làm "R", PhoGPT-4B-Chat làm "G" | Tự nhiên hơn hẳn, nhưng **không** trung thực hơn. Muốn dùng thật cần thêm tầng kiểm tra suy diễn (NLI) cho giả định sai không có con số |
+| **Chọn câu đưa vào ngữ cảnh tốt hơn** | Tăng số câu / chọn câu theo thực thể trong câu hỏi, thay vì cố định 4 câu cosine cao nhất | Sửa lỗi thấy ở Phần K: câu liệt kê màu iPhone không lọt vào ngữ cảnh nên **cả hai** prompt đều bịa màu |
 | Chuẩn hóa teencode có ngữ cảnh | Mô hình seq2seq (BARTpho) thay cho tra từ điển | Tăng recall, giải được từ mơ hồ như "t" |
 | **Phát hiện cùng-một-sự-việc** | Nhóm các bài có độ tương đồng cao thành cụm, chỉ hiện bài mới nhất trong cụm kèm cảnh báo "có bài mới hơn" | **Giải quyết triệt để hạn chế 7** |
 | **BM25F** | Bão hòa tf riêng từng trường (tiêu đề, mô tả, thân) rồi cộng có trọng số, thay mẹo lặp tiêu đề | Cho BM25 cơ hội thật sự — hiện mẹo lặp tiêu đề triệt tiêu ưu điểm của nó |
@@ -1569,10 +1704,10 @@ md(r"""
 | Cập nhật tự động | Lên lịch crawl định kỳ + index tăng dần | Kho tri thức luôn mới |
 """)
 
-# ---------------------------------------------------------------- PART L ----
+# ---------------------------------------------------------------- PART M ----
 md(r"""
 ---
-# PHẦN L — CÁCH CHẠY SẢN PHẨM
+# PHẦN M — CÁCH CHẠY SẢN PHẨM
 
 ```powershell
 # 1. Tạo môi trường
@@ -1599,7 +1734,7 @@ python src/evaluate.py              # dò trên DEV, báo cáo trên TEST
 
 ---
 
-# PHẦN M — CHECKLIST NỘP BÀI
+# PHẦN N — CHECKLIST NỘP BÀI
 
 - [x] Corpus tiếng Việt tự thu thập (381 bài / 8 chuyên mục)
 - [x] Pipeline tiền xử lý kế thừa Lab 03, có so sánh 2 cấu hình
@@ -1617,6 +1752,9 @@ python src/evaluate.py              # dò trên DEV, báo cáo trên TEST
 - [x] 21 kiểm thử hồi quy cho các lỗi thật đã gặp
 - [x] BM25 tự cài đặt, kiểm chứng, so sánh có kiểm định thống kê
 - [x] Error analysis (19 case, vượt yêu cầu tối thiểu 3)
+- [x] Thí nghiệm mở rộng: RAG với PhoGPT-4B-Chat — 3 lần chạy thật trên Colab,
+      bộ câu bẫy chốt **trước** khi chạy, chốt chặn tất định có kiểm thử, và một
+      **kết quả âm** được ghi nhận đầy đủ (RAG không trung thực hơn bản trích xuất)
 - [x] Giao diện CLI + Web
 - [x] Notebook đã Run và lưu output
 """)
