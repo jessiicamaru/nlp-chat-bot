@@ -113,29 +113,32 @@ vượt ngưỡng; câu ngoài phạm vi bị từ chối **trước** khi tới
 («năm 2015», «IP68») thì không cho mô hình trả lời; câu sinh ra có số không có
 trong nguồn, hoặc chỉ lặp lại câu hỏi, thì hiển thị câu trích xuất thay thế.
 
-**Hai lần chạy thật trên Colab T4, ghi lại đầy đủ** ở [docs/07](docs/07-rag-phogpt.md).
-Chấm tay 21 câu tin tức (tập dev), câu PhoGPT sinh trước mọi chốt chặn:
+**Ba lần chạy thật trên Colab T4, ghi lại đầy đủ** ở [docs/07](docs/07-rag-phogpt.md).
+Bảng dưới là kết quả trên tập **TEST** (33 câu tin tức chưa từng dùng để chỉnh
+prompt), chấm tay từng câu đối chiếu bài gốc:
 
-| | v1 · Q4_K_M (lần 1) | v1 · Q8_0 (lần 2) | **v2 · Q8_0 (lần 2)** |
-|---|---|---|---|
-| đúng, trả lời được | 3 | 4 | **10** |
-| đúng nhưng trình bày hỏng | 5 | 3 | 3 |
-| không trả lời (lặp lại câu hỏi) | 3 | 4 | 3 |
-| **có thông tin sai** | **8** | **7** | **5** |
-| từ chối sai | 2 | 3 | **0** |
+| Chất lượng câu trả lời | prompt v1 | **prompt v2** |
+|---|---|---|
+| đúng, trả lời được | 9 | **19** |
+| đúng nhưng trình bày hỏng | 10 | **2** |
+| không trả lời (lặp lại câu hỏi) | 8 | 8 |
+| **có thông tin sai** | **3** | **4** |
+| từ chối sai | 3 | **0** |
 
-Lần 1 rất tệ: chép lại quy tắc trong prompt, bịa ngày tháng, và **0/5 câu bẫy**
-được xử lý đúng — mô hình 4B đồng ý với giả định sai ("Đúng."). Prompt v2 + các
-chốt chặn được thiết kế từ chính các lỗi đó; lần 2 tốt hơn rõ (6 câu v2 đạt mức
-"đúng, trả lời được" mà v1 không, 0 câu ngược lại), nhưng con số này **lạc quan**
-vì v2 được thiết kế trên chính các câu hỏi đó. Lượng tử hóa không phải nguyên
-nhân: v1 trên Q8_0 cũng sai như trên Q4_K_M.
+Prompt v2 hơn v1 rõ rệt về mức dùng được (11 câu thắng / 1 thua, kiểm định dấu
+p = 0.006) — nhưng **thông tin sai không giảm**. RAG chỉ đổi kiểu sai: v1 sai lộ
+liễu (bịa ngày, từ chối nhầm), v2 sai trôi chảy và khó phát hiện hơn.
 
-Điểm ổn định qua cả hai lần: ca tin mâu thuẫn trả lời theo **tin mới** 3/3, câu
-ngoài phạm vi **không bao giờ** tới mô hình, và chốt chặn giả định chặn nhầm **0**
-câu hợp lệ trên cả dev (93 câu) lẫn test (97 câu). Điểm còn lại: lỗi không có con
-số thì không chốt chặn nào bắt được (đảo nghĩa "dưới/trên 100 nghìn", bịa thêm một
-vế cho câu trả lời đúng). Lần chạy 3 trên tập **test** với bộ bẫy mới đang chờ.
+Trên **11 câu bẫy mới** (hỏi chi tiết bài không có / giả định sai, chốt trước khi
+chạy): v1 và v2 hòa 6 an toàn / 5 sai, nhưng vì lý do trái ngược. v2 an toàn **nhờ
+chốt chặn** ở các bẫy có con số; với giả định sai **không có số** ("robot Optimus
+của Tesla tự bước ra khỏi dây chuyền" — bài nói Tesla chưa làm được) thì v2 khẳng
+định luôn, còn v1 lại tình cờ từ chối. Ca tin mâu thuẫn: v2 **3/3** theo tin mới.
+Câu ngoài phạm vi: 21/24 không bao giờ tới mô hình.
+
+**Kết luận:** RAG làm câu trả lời tự nhiên hơn hẳn nhưng **không an toàn hơn** bot
+trích xuất — bot trích xuất không bao giờ khẳng định điều bài báo không nói. Vì vậy
+RAG là lớp **tùy chọn, mặc định tắt**; chatbot chính vẫn là bản trích xuất.
 
 ```powershell
 python tools/make_colab_bundle.py   # tạo dist/rag_bundle.zip (mã nguồn + dữ liệu)

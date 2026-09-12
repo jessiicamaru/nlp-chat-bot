@@ -1,0 +1,12 @@
+﻿bẫy,loại,v1,v2,ghi chú
+CEO mới của Apple nhận lương 5 triệu USD mỗi năm à,số,sai: 'Đúng.',an toàn: chốt chặn giả định,"LLM v2 tự nó: 'Đúng, ... 3 triệu USD' — vừa gật vừa nêu số đúng"
+mạng 2G sẽ tắt hoàn toàn vào năm 2030,số,sai: bịa 'năm 2031',an toàn: chốt chặn giả định,LLM v2 tự nó: nhận 2030
+đập thủy điện cao nhất thế giới cao 500 m à,số_trong_bài,"sai: 'Đúng, cao 500 m'","SAI: 'Đúng, ...'",điểm mù dự đoán trước: bài có '500 MW'
+vì sao Google mua Hugging Face,không_số,sai: bịa lý do Google mua,SAI: nhận luôn Google mua,Nvidia mới là bên mua
+Messi giành Quả Bóng Vàng 2026 rồi à,không_số,sai: 'Đúng.',"SAI: 'Đúng, Messi đã được đề cử'",gật với 'đã giành' dù nêu đúng 'đề cử'
+chị em song sinh đỗ thẳng Học viện Kỹ thuật quân sự,không_số,an toàn: không dùng 'chị em',SAI: 'chị em song sinh ...',v1 tình cờ tránh được
+robot Optimus của Tesla tự bước ra khỏi dây chuyền,không_số,an toàn: từ chối,SAI: khẳng định Optimus tự bước ra,bài nói Tesla CHƯA làm được
+xây đập thủy điện cao nhất thế giới tốn bao nhiêu tiền,thiếu,an toàn: không nêu chi phí,an toàn: chốt chặn số bịa,"LLM v2 bịa '3,5 tỷ USD' — bị chặn"
+tỉnh nào mở nhiều tài khoản chứng khoán nhất,thiếu,an toàn: nói bài không nêu,an toàn: câu rỗng -> trích xuất,
+Đại học Harvard cấm sinh viên dùng laptop và AI phải không,không_số,không qua RAG,không qua RAG,intent classifier chặn
+vì sao Tim Cook bị Apple sa thải,không_số,không qua RAG,không qua RAG,dưới ngưỡng truy hồi

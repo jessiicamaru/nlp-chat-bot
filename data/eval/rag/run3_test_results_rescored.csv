@@ -1,0 +1,426 @@
+﻿prompt,nhóm,câu hỏi,route_lúc_chạy,chốt_chặn_lúc_chạy,now_route,now_guard,now_detail,now_numbers,now_support,now_refused,now_llm_text,now_shown,v1_post_v2_route,v1_post_v2_guard,v1_post_v2_detail,v1_post_v2_numbers,v1_post_v2_support,v1_post_v2_refused,v1_post_v2_llm_text,v1_post_v2_shown
+v1,tin tức,Việt Nam hợp tác với Nga về công nghệ lượng tử,rag,,rag,,,,1.0,False,Việt Nam đề nghị Nga hỗ trợ xây dựng chiến lược lượng tử.,Việt Nam đề nghị Nga hỗ trợ xây dựng chiến lược lượng tử.,rag,,,,1.0,False,Việt Nam đề nghị Nga hỗ trợ xây dựng chiến lược lượng tử.,Việt Nam đề nghị Nga hỗ trợ xây dựng chiến lược lượng tử.
+v1,tin tức,dap thuy dien cao nhat the gioi,rag,,rag,,,,0.769,False,"[1] . (đăng 05/ 09/ 2026, chuyên mục Khoa học) Tiêu đề : Trung Quốc vận hành đập thủy điện cao nhất thế giới
+Nội dung : Đây là bước tiến lớn trong dự án xây đập cao nhất thế giới và một trong những công trình thủy điện quy mô lớn trên sông Đại Độ. Đập của nhà máy thủy điện Song Giang Khẩu cao 315 m, là đập cao nhất thế giới.
+Nhà máy Song Giang Khẩu được xây dựng ở khu vực có độ cao lớn với điều kiện địa chất và địa lý khó khăn. Các chuyên gia chỉ ra dự án thể hiện khả năng của Trung Quốc trong việc phát triển đập đá đổ siêu cao và hệ thống xả lũ. 
+
+[2] . (đăng 05/ 09/ 2026, chuyên mục Khoa học) Tiêu đề : Trung Quốc vận hành đập thủy điện cao nhất thế giới","[1] . (đăng 05/ 09/ 2026, chuyên mục Khoa học) Tiêu đề : Trung Quốc vận hành đập thủy điện cao nhất thế giới
+Nội dung : Đây là bước tiến lớn trong dự án xây đập cao nhất thế giới và một trong những công trình thủy điện quy mô lớn trên sông Đại Độ. Đập của nhà máy thủy điện Song Giang Khẩu cao 315 m, là đập cao nhất thế giới.
+Nhà máy Song Giang Khẩu được xây dựng ở khu vực có độ cao lớn với điều kiện địa chất và địa lý khó khăn. Các chuyên gia chỉ ra dự án thể hiện khả năng của Trung Quốc trong việc phát triển đập đá đổ siêu cao và hệ thống xả lũ. 
+
+[2] . (đăng 05/ 09/ 2026, chuyên mục Khoa học) Tiêu đề : Trung Quốc vận hành đập thủy điện cao nhất thế giới",rag,,,,0.788,False,"[1] . (đăng 05/ 09/ 2026, chuyên mục Khoa học) Tiêu đề : Trung Quốc vận hành đập thủy điện cao nhất thế giới Nhà máy Song Giang Khẩu được xây dựng ở khu vực có độ cao lớn với điều kiện địa chất và địa lý khó khăn. Các chuyên gia chỉ ra dự án thể hiện khả năng của Trung Quốc trong việc phát triển đập đá đổ siêu cao và hệ thống xả lũ.","[1] . (đăng 05/ 09/ 2026, chuyên mục Khoa học) Tiêu đề : Trung Quốc vận hành đập thủy điện cao nhất thế giới Nhà máy Song Giang Khẩu được xây dựng ở khu vực có độ cao lớn với điều kiện địa chất và địa lý khó khăn. Các chuyên gia chỉ ra dự án thể hiện khả năng của Trung Quốc trong việc phát triển đập đá đổ siêu cao và hệ thống xả lũ."
+v1,tin tức,anh em sinh doi vao thang hoc vien ky thuat quan su,rag,,rag,,,"2021, 30",0.686,False,"Lê Thanh An và Lê Thanh Khang, cựu học sinh trường THPT Đại Ngãi (Cần Thơ), đã trúng tuyển vào Học viện Kỹ thuật quân sự (MTA) năm nay. Đây là cặp song sinh duy nhất trong hàng chục năm qua tại Việt Nam khi cả hai đều đỗ vào trường này với điểm chuẩn cao ngất ngưởng. Sau mỗi bài tập cùng nhau, An và Khang lại ngồi xuống để phân tích các vấn đề kỹ thuật phức tạp nhằm tìm ra giải pháp tốt hơn cho những dự án tương lai của mình.
+
+[2] (đăng 07/30/2021, chuyên mục Giáo dục)","Lê Thanh An và Lê Thanh Khang, cựu học sinh trường THPT Đại Ngãi (Cần Thơ), đã trúng tuyển vào Học viện Kỹ thuật quân sự (MTA) năm nay. Đây là cặp song sinh duy nhất trong hàng chục năm qua tại Việt Nam khi cả hai đều đỗ vào trường này với điểm chuẩn cao ngất ngưởng. Sau mỗi bài tập cùng nhau, An và Khang lại ngồi xuống để phân tích các vấn đề kỹ thuật phức tạp nhằm tìm ra giải pháp tốt hơn cho những dự án tương lai của mình.
+
+[2] (đăng 07/30/2021, chuyên mục Giáo dục)",rag,,,,0.75,False,"Lê Thanh An và Lê Thanh Khang, cựu học sinh trường THPT Đại Ngãi (Cần Thơ), đã trúng tuyển vào Học viện Kỹ thuật quân sự (MTA) năm nay. Đây là cặp song sinh duy nhất trong hàng chục năm qua tại Việt Nam khi cả hai đều đỗ vào trường này với điểm chuẩn cao ngất ngưởng. Sau mỗi bài tập cùng nhau, An và Khang lại ngồi xuống để phân tích các vấn đề kỹ thuật phức tạp nhằm tìm ra giải pháp tốt hơn cho những dự án tương lai của mình.","Lê Thanh An và Lê Thanh Khang, cựu học sinh trường THPT Đại Ngãi (Cần Thơ), đã trúng tuyển vào Học viện Kỹ thuật quân sự (MTA) năm nay. Đây là cặp song sinh duy nhất trong hàng chục năm qua tại Việt Nam khi cả hai đều đỗ vào trường này với điểm chuẩn cao ngất ngưởng. Sau mỗi bài tập cùng nhau, An và Khang lại ngồi xuống để phân tích các vấn đề kỹ thuật phức tạp nhằm tìm ra giải pháp tốt hơn cho những dự án tương lai của mình."
+v1,tin tức,du học mỹ tốn bn 1 năm,intent,,intent,,,,,,,,intent,,,,,,,
+v1,tin tức,Đại học Chicago cấm dùng laptop và AI,intent,,intent,,,,,,,,intent,,,,,,,
+v1,tin tức,trung quoc xu ly giao su gian lan hoc thuat,rag,,rag,,,,0.968,False,"1. Trung Quốc xử lý 4 giáo sư gian lận học thuật.
+2. Cả 4 người đều từng nhận danh hiệu Nhà khoa học Trẻ xuất sắc, vốn được xem là bệ phóng đưa các học giả vào những viện hàn lâm khoa học và kỹ thuật hàng đầu Trung Quốc. 
+3. Những năm qua, Trung Quốc liên tục tăng đầu tư cho nghiên cứu khoa học.  
+4. Quỹ Khoa học tự nhiên Quốc gia Trung Quốc (NSFC) tuần trước công bố danh sách sai phạm học thuật lớn nhất từ trước đến nay.
+5. Trong số này, 4 giáo sư từng bị blogger `Sinh viên Geng` tố cáo gian lận trên mạng xã hội hồi tháng  4.  
+6. Cả 4 người đều từng nhận danh hiệu Nhà khoa học Trẻ xuất sắc,  vốn được xem là bệ phóng đưa các học giả vào những viện hàn lâm khoa học và kỹ thuật hàng đầu Trung Quốc. 
+7. Những năm qua, Trung Quốc liên tục tăng đầu tư cho nghiên cứu khoa học.
+8.","1. Trung Quốc xử lý 4 giáo sư gian lận học thuật.
+2. Cả 4 người đều từng nhận danh hiệu Nhà khoa học Trẻ xuất sắc, vốn được xem là bệ phóng đưa các học giả vào những viện hàn lâm khoa học và kỹ thuật hàng đầu Trung Quốc. 
+3. Những năm qua, Trung Quốc liên tục tăng đầu tư cho nghiên cứu khoa học.  
+4. Quỹ Khoa học tự nhiên Quốc gia Trung Quốc (NSFC) tuần trước công bố danh sách sai phạm học thuật lớn nhất từ trước đến nay.
+5. Trong số này, 4 giáo sư từng bị blogger `Sinh viên Geng` tố cáo gian lận trên mạng xã hội hồi tháng  4.  
+6. Cả 4 người đều từng nhận danh hiệu Nhà khoa học Trẻ xuất sắc,  vốn được xem là bệ phóng đưa các học giả vào những viện hàn lâm khoa học và kỹ thuật hàng đầu Trung Quốc. 
+7. Những năm qua, Trung Quốc liên tục tăng đầu tư cho nghiên cứu khoa học.
+8.",rag,,,,1.0,False,"Trung Quốc xử lý 4 giáo sư gian lận học thuật. Cả 4 người đều từng nhận danh hiệu Nhà khoa học Trẻ xuất sắc, vốn được xem là bệ phóng đưa các học giả vào những viện hàn lâm khoa học và kỹ thuật hàng đầu Trung Quốc. Những năm qua, Trung Quốc liên tục tăng đầu tư cho nghiên cứu khoa học. Quỹ Khoa học tự nhiên Quốc gia Trung Quốc (NSFC) tuần trước công bố danh sách sai phạm học thuật lớn nhất từ trước đến nay.","Trung Quốc xử lý 4 giáo sư gian lận học thuật. Cả 4 người đều từng nhận danh hiệu Nhà khoa học Trẻ xuất sắc, vốn được xem là bệ phóng đưa các học giả vào những viện hàn lâm khoa học và kỹ thuật hàng đầu Trung Quốc. Những năm qua, Trung Quốc liên tục tăng đầu tư cho nghiên cứu khoa học. Quỹ Khoa học tự nhiên Quốc gia Trung Quốc (NSFC) tuần trước công bố danh sách sai phạm học thuật lớn nhất từ trước đến nay."
+v1,tin tức,tỷ phú 98 tuổi sống tằn tiện,rag,,rag,,,,0.909,False,"1. Tỷ phú 98 tuổi sống tằn tiện là ai?
+2. Tại sao tỷ phú 98 tuổi lại quyết định không chỉ sống cho riêng mình mà phải làm việc thiện cả đời?","1. Tỷ phú 98 tuổi sống tằn tiện là ai?
+2. Tại sao tỷ phú 98 tuổi lại quyết định không chỉ sống cho riêng mình mà phải làm việc thiện cả đời?",rag,,,,0.909,False,Tỷ phú 98 tuổi sống tằn tiện là ai? Tại sao tỷ phú 98 tuổi lại quyết định không chỉ sống cho riêng mình mà phải làm việc thiện cả đời?,Tỷ phú 98 tuổi sống tằn tiện là ai? Tại sao tỷ phú 98 tuổi lại quyết định không chỉ sống cho riêng mình mà phải làm việc thiện cả đời?
+v1,tin tức,HLV Ikeuchi rời U20 Việt Nam,rag,,rag,,,,0.8,False,HLV Ikeuchi sẽ rời U20 Việt Nam.,HLV Ikeuchi sẽ rời U20 Việt Nam.,rag_guard,echo,,,0.8,False,HLV Ikeuchi sẽ rời U20 Việt Nam.,"**U20 Việt Nam sắp chia tay HLV Nhật Bản**
+
+Theo nguồn tin của VnExpress , HLV Ikeuchi sẽ thôi dẫn dắt đội U20. Ông Ikeuchi đến Việt Nam làm việc từ tháng 2/2025, theo chương trình hợp tác giữa JFA và VFF.
+
+Nguồn: https://vnexpress.net/u20-viet-nam-sap-chia-tay-hlv-nhat-ban-5118085.html
+_(chuyên mục: Thể thao · độ tương đồng: 0.33)_"
+v1,tin tức,ép tim 15 phút cứu người ngừng tim,rag,,rag,,,,0.0,True,"1. Xin lỗi, tôi không thể trả lời câu hỏi này vì nó chứa giả định sai so với bài báo.
+2. Các bài báo hiện có KHÔNG đề cập đến điều này và ngày đăng mới nhất là  [1].","1. Xin lỗi, tôi không thể trả lời câu hỏi này vì nó chứa giả định sai so với bài báo.
+2. Các bài báo hiện có KHÔNG đề cập đến điều này và ngày đăng mới nhất là  [1].",rag,,,,0.0,True,"Xin lỗi, tôi không thể trả lời câu hỏi này vì nó chứa giả định sai so với bài báo. Các bài báo hiện có KHÔNG đề cập đến điều này và ngày đăng mới nhất là [1].","Xin lỗi, tôi không thể trả lời câu hỏi này vì nó chứa giả định sai so với bài báo. Các bài báo hiện có KHÔNG đề cập đến điều này và ngày đăng mới nhất là [1]."
+v1,tin tức,vì sao đêm đầu ngủ ở khách sạn hay bị mất ngủ,rag,,rag,,,,0.263,False,"Đêm đầu tiên ngủ ở khách sạn có thể gây mất ngủ vì nhiều lý do. Một trong những nguyên nhân chính là lo lắng về việc không được nghỉ ngơi đầy đủ sau một ngày dài di chuyển và làm việc, dẫn đến khó đi vào giấc ngủ hơn.
+
+Ngoài ra còn các yếu tố khác như tiếng ồn hoặc ánh sáng từ bên ngoài phòng khách sạn có thể ảnh hưởng tiêu cực đến chất lượng giấc ngủ. Một số người cũng gặp phải tình trạng mất ngủ do cảm giác không thoải mái khi ở trong một môi trường xa lạ, chẳng hạn như mùi hương hay âm thanh của căn phòng.
+
+Để tránh những vấn đề này và cải thiện chất lượng giấc ngủ vào đêm đầu tiên tại khách sạn mới hoặc bất kỳ nơi nào khác mà bạn có thể gặp phải tình trạng tương tự.","Đêm đầu tiên ngủ ở khách sạn có thể gây mất ngủ vì nhiều lý do. Một trong những nguyên nhân chính là lo lắng về việc không được nghỉ ngơi đầy đủ sau một ngày dài di chuyển và làm việc, dẫn đến khó đi vào giấc ngủ hơn.
+
+Ngoài ra còn các yếu tố khác như tiếng ồn hoặc ánh sáng từ bên ngoài phòng khách sạn có thể ảnh hưởng tiêu cực đến chất lượng giấc ngủ. Một số người cũng gặp phải tình trạng mất ngủ do cảm giác không thoải mái khi ở trong một môi trường xa lạ, chẳng hạn như mùi hương hay âm thanh của căn phòng.
+
+Để tránh những vấn đề này và cải thiện chất lượng giấc ngủ vào đêm đầu tiên tại khách sạn mới hoặc bất kỳ nơi nào khác mà bạn có thể gặp phải tình trạng tương tự.",rag,,,,0.5,False,"Đêm đầu tiên ngủ ở khách sạn có thể gây mất ngủ vì nhiều lý do. Một trong những nguyên nhân chính là lo lắng về việc không được nghỉ ngơi đầy đủ sau một ngày dài di chuyển và làm việc, dẫn đến khó đi vào giấc ngủ hơn.","Đêm đầu tiên ngủ ở khách sạn có thể gây mất ngủ vì nhiều lý do. Một trong những nguyên nhân chính là lo lắng về việc không được nghỉ ngơi đầy đủ sau một ngày dài di chuyển và làm việc, dẫn đến khó đi vào giấc ngủ hơn."
+v1,tin tức,Shinjuku cấm cho thuê nhà ngắn hạn,rag,,rag,,,,0.75,False,Shinjuku cấm cho thuê nhà ngắn hạn.,Shinjuku cấm cho thuê nhà ngắn hạn.,rag_guard,echo,,,0.75,False,Shinjuku cấm cho thuê nhà ngắn hạn.,"**Quận du lịch nổi tiếng Tokyo sẽ cấm cho thuê nhà vì khách ý thức kém**
+
+Shinjuku hiện có 3.775 cơ sở minpaku, nhiều nhất Nhật Bản. Quận cũng muốn giảm số ngày được phép cho thuê minpaku tại khu dân cư từ 180 xuống 120 ngày mỗi năm.
+
+Nguồn: https://vnexpress.net/quan-du-lich-noi-tieng-tokyo-se-cam-cho-thue-nha-vi-khach-y-thuc-kem-5118335.html
+_(chuyên mục: Du lịch · độ tương đồng: 0.41)_"
+v1,tin tức,trường Việt Đức sửa sang 300 tỷ,rag,,rag,,,,1.0,False,"Trường Việt Đức được đầu tư 300 tỷ đồng để sửa sang khuôn viên, bởi trước đó không có phòng học bộ môn.","Trường Việt Đức được đầu tư 300 tỷ đồng để sửa sang khuôn viên, bởi trước đó không có phòng học bộ môn.",rag,,,,1.0,False,"Trường Việt Đức được đầu tư 300 tỷ đồng để sửa sang khuôn viên, bởi trước đó không có phòng học bộ môn.","Trường Việt Đức được đầu tư 300 tỷ đồng để sửa sang khuôn viên, bởi trước đó không có phòng học bộ môn."
+v1,tin tức,đồ ăn giúp hấp thụ magie,rag,,rag,,,,0.0,True,Các bài báo hiện có không đề cập đến điều này.,Các bài báo hiện có không đề cập đến điều này.,rag,,,,0.0,True,Các bài báo hiện có không đề cập đến điều này.,Các bài báo hiện có không đề cập đến điều này.
+v1,tin tức,hàng bánh cuốn 15 nghìn trong ngõ Thụy Khuê,rag,,rag,,,"2021, 30",0.727,False,"Hàng bánh cuốn `vợ chồng` bán giá 15.000 đồng trong ngõ ở Hà Nội.
+
+[2] (đăng 10/30/2021, chuyên mục Du lịch)","Hàng bánh cuốn `vợ chồng` bán giá 15.000 đồng trong ngõ ở Hà Nội.
+
+[2] (đăng 10/30/2021, chuyên mục Du lịch)",rag,,,,1.0,False,Hàng bánh cuốn `vợ chồng` bán giá 15.000 đồng trong ngõ ở Hà Nội.,Hàng bánh cuốn `vợ chồng` bán giá 15.000 đồng trong ngõ ở Hà Nội.
+v1,tin tức,Tiktok đầu tư logistics ở TP HCM,rag,,rag,,,,0.846,False,"[1] 
+Tiêu đề bài báo: TP HCM sẽ có dự án logistics gần 1 tỷ USD từ hệ sinh thái Tiktok. Nội dung bài báo cho biết, đó là một phần trong giấy chứng nhận đăng ký đầu tư được Sở Tài chính TP HCM cấp cho Tokgistic Pte. Ltd vào ngày 7/9 để thực hiện dự án Công ty TNHH Swift Logistics tại thành phố.
+
+[2] 
+Tiêu đề bài báo: TP HCM sẽ có dự án logistics gần 1 tỷ USD từ hệ sinh thái Tiktok. Nội dung bài báo cũng nói về việc đó là một phần trong giấy chứng nhận đăng ký đầu tư được Sở Tài chính TP HCM cấp cho Tokgistic Pte. Ltd, ngày 7/9 để thực hiện dự án Công ty TNHH Swift Logistics tại thành phố.
+
+[3] 
+Tiêu đề bài báo: TP HCM sẽ có dự án logistics gần 1 tỷ USD từ hệ sinh thái Tiktok. Nội dung bài báo cũng nói về việc đó là một phần trong giấy chứng nhận đăng ký đầu tư được Sở Tài chính TP HCM cấp cho Tokgistic Pte. Ltd, ngày 7/9 để thực hiện dự án Công ty TNHH Swift Logistics tại thành phố.
+
+[4] 
+Tiêu đề bài báo: TP HCM sẽ","[1] 
+Tiêu đề bài báo: TP HCM sẽ có dự án logistics gần 1 tỷ USD từ hệ sinh thái Tiktok. Nội dung bài báo cho biết, đó là một phần trong giấy chứng nhận đăng ký đầu tư được Sở Tài chính TP HCM cấp cho Tokgistic Pte. Ltd vào ngày 7/9 để thực hiện dự án Công ty TNHH Swift Logistics tại thành phố.
+
+[2] 
+Tiêu đề bài báo: TP HCM sẽ có dự án logistics gần 1 tỷ USD từ hệ sinh thái Tiktok. Nội dung bài báo cũng nói về việc đó là một phần trong giấy chứng nhận đăng ký đầu tư được Sở Tài chính TP HCM cấp cho Tokgistic Pte. Ltd, ngày 7/9 để thực hiện dự án Công ty TNHH Swift Logistics tại thành phố.
+
+[3] 
+Tiêu đề bài báo: TP HCM sẽ có dự án logistics gần 1 tỷ USD từ hệ sinh thái Tiktok. Nội dung bài báo cũng nói về việc đó là một phần trong giấy chứng nhận đăng ký đầu tư được Sở Tài chính TP HCM cấp cho Tokgistic Pte. Ltd, ngày 7/9 để thực hiện dự án Công ty TNHH Swift Logistics tại thành phố.
+
+[4] 
+Tiêu đề bài báo: TP HCM sẽ",rag,,,,0.862,False,"Tiêu đề bài báo: TP HCM sẽ có dự án logistics gần 1 tỷ USD từ hệ sinh thái Tiktok. Nội dung bài báo cho biết, đó là một phần trong giấy chứng nhận đăng ký đầu tư được Sở Tài chính TP HCM cấp cho Tokgistic Pte. Ltd vào ngày 7/9 để thực hiện dự án Công ty TNHH Swift Logistics tại thành phố.","Tiêu đề bài báo: TP HCM sẽ có dự án logistics gần 1 tỷ USD từ hệ sinh thái Tiktok. Nội dung bài báo cho biết, đó là một phần trong giấy chứng nhận đăng ký đầu tư được Sở Tài chính TP HCM cấp cho Tokgistic Pte. Ltd vào ngày 7/9 để thực hiện dự án Công ty TNHH Swift Logistics tại thành phố."
+v1,tin tức,iPhone 18 Pro Max có mấy màu,rag,,rag,,,,0.9,False,"iPhone 18 Pro Max có bốn màu: đen, xanh băng thanh (mới), xanh dương sáng và đỏ sẫm.","iPhone 18 Pro Max có bốn màu: đen, xanh băng thanh (mới), xanh dương sáng và đỏ sẫm.",rag,,,,0.9,False,"iPhone 18 Pro Max có bốn màu: đen, xanh băng thanh (mới), xanh dương sáng và đỏ sẫm.","iPhone 18 Pro Max có bốn màu: đen, xanh băng thanh (mới), xanh dương sáng và đỏ sẫm."
+v1,tin tức,khuyến khích kết hôn trước 30 tuổi sinh hai con,rag,,rag,,,,1.0,False,"Khuyến khích kết hôn trước 30 tuổi, sinh đủ hai con ở những địa phương có mức sinh thấp.","Khuyến khích kết hôn trước 30 tuổi, sinh đủ hai con ở những địa phương có mức sinh thấp.",rag,,,,1.0,False,"Khuyến khích kết hôn trước 30 tuổi, sinh đủ hai con ở những địa phương có mức sinh thấp.","Khuyến khích kết hôn trước 30 tuổi, sinh đủ hai con ở những địa phương có mức sinh thấp."
+v1,tin tức,HDBank thu giữ đất của Hoàng Quân,rag,,rag,,,,0.771,False,"Ngày  7/ 9, Ngân hàng Phát triển TP HCM (HDBank) ban hành quyết định thu giữ và xử lý tài sản bảo đảm để thu hồi nợ của Công ty cổ phần Tư vấn- Thương mại- Dịch vụ Địa ốc Hoàng Quân. Đây là các tài sản thế chấp liên quan hợp đồng tín dụng HDBank cấp cho doanh nghiệp từ đầu  2024.
+
+[2]  (đăng 08/ 09/ 2026, chuyên mục Kinh doanh)","Ngày  7/ 9, Ngân hàng Phát triển TP HCM (HDBank) ban hành quyết định thu giữ và xử lý tài sản bảo đảm để thu hồi nợ của Công ty cổ phần Tư vấn- Thương mại- Dịch vụ Địa ốc Hoàng Quân. Đây là các tài sản thế chấp liên quan hợp đồng tín dụng HDBank cấp cho doanh nghiệp từ đầu  2024.
+
+[2]  (đăng 08/ 09/ 2026, chuyên mục Kinh doanh)",rag,,,,0.931,False,"Ngày 7/ 9, Ngân hàng Phát triển TP HCM (HDBank) ban hành quyết định thu giữ và xử lý tài sản bảo đảm để thu hồi nợ của Công ty cổ phần Tư vấn- Thương mại- Dịch vụ Địa ốc Hoàng Quân. Đây là các tài sản thế chấp liên quan hợp đồng tín dụng HDBank cấp cho doanh nghiệp từ đầu 2024.","Ngày 7/ 9, Ngân hàng Phát triển TP HCM (HDBank) ban hành quyết định thu giữ và xử lý tài sản bảo đảm để thu hồi nợ của Công ty cổ phần Tư vấn- Thương mại- Dịch vụ Địa ốc Hoàng Quân. Đây là các tài sản thế chấp liên quan hợp đồng tín dụng HDBank cấp cho doanh nghiệp từ đầu 2024."
+v1,tin tức,dạo này ng ta mở tk chứng khoán nhiều ko,fallback,,fallback,,,,,,,,fallback,,,,,,,
+v1,tin tức,cung đường chữ S ở Y Tý Lào Cai,rag,,rag,,,,0.703,False,"Cung đường chữ S ở Y Tý Lào Cai là một cung đường đẹp và độc đáo, nằm trên tỉnh lộ 158. Từ góc nhìn từ cao xuống giống như hình chữ S uốn lượn theo sườn núi tạo thành những khúc cua liên tiếp rất ấn tượng.
+
+Tuy nhiên du khách cần lưu ý đi chậm vì con đường này khá ngoằn ngoèo với nhiều khúc cua nguy hiểm có thể gây mất an toàn cho người lái xe và hành khách.","Cung đường chữ S ở Y Tý Lào Cai là một cung đường đẹp và độc đáo, nằm trên tỉnh lộ 158. Từ góc nhìn từ cao xuống giống như hình chữ S uốn lượn theo sườn núi tạo thành những khúc cua liên tiếp rất ấn tượng.
+
+Tuy nhiên du khách cần lưu ý đi chậm vì con đường này khá ngoằn ngoèo với nhiều khúc cua nguy hiểm có thể gây mất an toàn cho người lái xe và hành khách.",rag,,,,0.72,False,"Cung đường chữ S ở Y Tý Lào Cai là một cung đường đẹp và độc đáo, nằm trên tỉnh lộ 158. Từ góc nhìn từ cao xuống giống như hình chữ S uốn lượn theo sườn núi tạo thành những khúc cua liên tiếp rất ấn tượng.","Cung đường chữ S ở Y Tý Lào Cai là một cung đường đẹp và độc đáo, nằm trên tỉnh lộ 158. Từ góc nhìn từ cao xuống giống như hình chữ S uốn lượn theo sườn núi tạo thành những khúc cua liên tiếp rất ấn tượng."
+v1,tin tức,lãi suất tiết kiệm có còn cao ko b,rag,,rag,,,,1.0,False,Lãi suất tiết kiệm có thể vẫn neo cao.,Lãi suất tiết kiệm có thể vẫn neo cao.,rag,,,,1.0,False,Lãi suất tiết kiệm có thể vẫn neo cao.,Lãi suất tiết kiệm có thể vẫn neo cao.
+v1,tin tức,hay dậy giữa đêm có sao ko b,fallback,,fallback,,,,,,,,fallback,,,,,,,
+v1,tin tức,gia đình Úc sang Đà Nẵng sống để dành tiền mua nhà,rag,,rag,,,,1.0,False,Gia đình Australia sang Đà Nẵng sống để tiết kiệm tiền mua nhà.,Gia đình Australia sang Đà Nẵng sống để tiết kiệm tiền mua nhà.,rag,,,,1.0,False,Gia đình Australia sang Đà Nẵng sống để tiết kiệm tiền mua nhà.,Gia đình Australia sang Đà Nẵng sống để tiết kiệm tiền mua nhà.
+v1,tin tức,dao con co quang tri nhin tu tren cao,rag,,rag,,,2021,0.741,False,"Đảo Cồn Cỏ là một hòn đảo anh hùng trong thời kỳ kháng chiến chống Mỹ. Cột cờ Tổ quốc trên đảo cao 38,8 m và lá cờ rộng 24 m2 nằm ở điểm cực đông của Quảng Trị.
+
+[2]  (đăng 09/30/2021, chuyên mục Du lịch)","Đảo Cồn Cỏ là một hòn đảo anh hùng trong thời kỳ kháng chiến chống Mỹ. Cột cờ Tổ quốc trên đảo cao 38,8 m và lá cờ rộng 24 m2 nằm ở điểm cực đông của Quảng Trị.
+
+[2]  (đăng 09/30/2021, chuyên mục Du lịch)",rag,,,,0.792,False,"Đảo Cồn Cỏ là một hòn đảo anh hùng trong thời kỳ kháng chiến chống Mỹ. Cột cờ Tổ quốc trên đảo cao 38,8 m và lá cờ rộng 24 m2 nằm ở điểm cực đông của Quảng Trị.","Đảo Cồn Cỏ là một hòn đảo anh hùng trong thời kỳ kháng chiến chống Mỹ. Cột cờ Tổ quốc trên đảo cao 38,8 m và lá cờ rộng 24 m2 nằm ở điểm cực đông của Quảng Trị."
+v1,tin tức,đồ để lâu trong tủ lạnh có độc ko,fallback,,fallback,,,,,,,,fallback,,,,,,,
+v1,tin tức,đại học Mỹ gửi thư mời nhập học không cần hồ sơ,intent,,intent,,,,,,,,intent,,,,,,,
+v1,tin tức,robot Iron của Xpeng tự bước khỏi dây chuyền,rag,,rag,,,,0.75,False,Robot Iron của Xpeng tự bước khỏi dây chuyền.,Robot Iron của Xpeng tự bước khỏi dây chuyền.,rag_guard,echo,,,0.75,False,Robot Iron của Xpeng tự bước khỏi dây chuyền.,"**Robot hình người đầu tiên tự bước ra từ dây chuyền sản xuất**
+
+Iron, mẫu robot đầu tiên được sản xuất trên dây chuyền, có hình dạng và chuyển động được Xpeng mô tả ""rất giống người"" nhờ cơ cấu vật lý linh hoạt kết hợp AI tự phát triển, giúp ""cân bằng giữa tính thẩm mỹ và an toàn"". Trong lễ công bố nhà máy mới, ông Xiaopeng chào đón Iron bằng cách đeo thẻ nhân viên cho robot.
+
+Nguồn: https://vnexpress.net/robot-hinh-nguoi-dau-tien-tu-buoc-ra-tu-day-chuyen-san-xuat-5118285.html
+_(chuyên mục: Công nghệ · độ tương đồng: 0.30)_"
+v1,tin tức,lương CEO mới của Apple,rag,,rag,,,,0.8,False,Lương CEO mới của Apple là 3 triệu USD mỗi năm.,Lương CEO mới của Apple là 3 triệu USD mỗi năm.,rag,,,,0.8,False,Lương CEO mới của Apple là 3 triệu USD mỗi năm.,Lương CEO mới của Apple là 3 triệu USD mỗi năm.
+v1,tin tức,metro Bến Thành Suối Tiên phải lãi bao nhiêu,rag,,rag,,,,1.0,False,Metro Bến Thành Suối Tiên cần lãi bình quân mỗi năm 27 tỷ đồng.,Metro Bến Thành Suối Tiên cần lãi bình quân mỗi năm 27 tỷ đồng.,rag,,,,1.0,False,Metro Bến Thành Suối Tiên cần lãi bình quân mỗi năm 27 tỷ đồng.,Metro Bến Thành Suối Tiên cần lãi bình quân mỗi năm 27 tỷ đồng.
+v1,tin tức,rung dua do lien xo tai tro o quang ngai,rag,,rag,,,,0.0,True,Các bài báo hiện có không đề cập đến điều này.,Các bài báo hiện có không đề cập đến điều này.,rag,,,,0.0,True,Các bài báo hiện có không đề cập đến điều này.,Các bài báo hiện có không đề cập đến điều này.
+v1,tin tức,Nvidia mua Hugging Face,rag,,rag,,,,1.0,False,"Nvidia mua Hugging Face với giá 12,93 tỷ USD.","Nvidia mua Hugging Face với giá 12,93 tỷ USD.",rag,,,,1.0,False,"Nvidia mua Hugging Face với giá 12,93 tỷ USD.","Nvidia mua Hugging Face với giá 12,93 tỷ USD."
+v1,tin tức,giấu hồ sơ xin việc trong hộp bánh donut,intent,,intent,,,,,,,,intent,,,,,,,
+v1,tin tức,chuẩn bị cho tuổi già từ năm 40 tuổi,rag,,rag,,,"2021, 30",0.467,False,"Chuẩn bị cho tuổi già từ năm 40 tuổi là một xu hướng mới tại Việt Nam. Thay vì chỉ tập trung chăm sóc khi đã cao tuổi, người dân được khuyến khích chuẩn bị sớm hơn để có thể tận hưởng cuộc sống khỏe mạnh và độc lập trong tương lai.
+
+[2]  (đăng 10/30/2021)","Chuẩn bị cho tuổi già từ năm 40 tuổi là một xu hướng mới tại Việt Nam. Thay vì chỉ tập trung chăm sóc khi đã cao tuổi, người dân được khuyến khích chuẩn bị sớm hơn để có thể tận hưởng cuộc sống khỏe mạnh và độc lập trong tương lai.
+
+[2]  (đăng 10/30/2021)",rag,,,,0.5,False,"Chuẩn bị cho tuổi già từ năm 40 tuổi là một xu hướng mới tại Việt Nam. Thay vì chỉ tập trung chăm sóc khi đã cao tuổi, người dân được khuyến khích chuẩn bị sớm hơn để có thể tận hưởng cuộc sống khỏe mạnh và độc lập trong tương lai.","Chuẩn bị cho tuổi già từ năm 40 tuổi là một xu hướng mới tại Việt Nam. Thay vì chỉ tập trung chăm sóc khi đã cao tuổi, người dân được khuyến khích chuẩn bị sớm hơn để có thể tận hưởng cuộc sống khỏe mạnh và độc lập trong tương lai."
+v1,tin tức,khối ngoại bán ròng trước nâng hạng,rag,,rag,,,,1.0,False,Khối ngoại bán ròng trước thời điểm nâng hạng thị trường chứng khoán Việt Nam.,Khối ngoại bán ròng trước thời điểm nâng hạng thị trường chứng khoán Việt Nam.,rag,,,,1.0,False,Khối ngoại bán ròng trước thời điểm nâng hạng thị trường chứng khoán Việt Nam.,Khối ngoại bán ròng trước thời điểm nâng hạng thị trường chứng khoán Việt Nam.
+v1,tin tức,nữ sinh chép bài thủ khoa bị trừ điểm,rag,,rag,,,,1.0,False,Nữ sinh chép bài thủ khoa bị trừ điểm.,Nữ sinh chép bài thủ khoa bị trừ điểm.,rag_guard,echo,,,1.0,False,Nữ sinh chép bài thủ khoa bị trừ điểm.,"**Nữ sinh 9,5 điểm Toán bị trừ 50% vì chép bài 'thủ khoa'**
+
+Một em khác bị trừ 50% điểm môn Toán, từ 9,5 còn 4,75 vì chép bài của ""thủ khoa"" nói trên. Sự việc bắt nguồn từ thông tin lan truyền trên mạng xã hội hồi đầu tháng 7, cho rằng nữ sinh trường THPT Lương Tài được giám thị giúp giải đề thi nên đạt 10 Toán, 9,5 Tiếng Anh.
+
+Nguồn: https://vnexpress.net/nu-sinh-9-5-diem-toan-bi-tru-50-vi-chep-bai-thu-khoa-5117519.html
+_(chuyên mục: Giáo dục · độ tương đồng: 0.23)_"
+v1,tin tức,bà cụ kiện con trai đòi tiền nuôi cháu,rag,,rag,,,,0.857,False,Bà cụ kiện con trai đòi tiền nuôi cháu.,Bà cụ kiện con trai đòi tiền nuôi cháu.,rag_guard,echo,,,0.857,False,Bà cụ kiện con trai đòi tiền nuôi cháu.,"**Kiện con trai đòi tiền nuôi cháu**
+
+Trong đơn kiện nộp lên tòa án cuối năm 2025, bà Xu, 70 tuổi, sống tại quận Tùng Giang, Thượng Hải nói người con trai tên Liang thiếu trách nhiệm, gần như không đóng góp chi phí nuôi con kể từ khi bé chào đời năm 2010. Bà Xu và cháu gái sống ở căn lớn nhất, đồng thời thu tiền cho thuê từ một căn khác và giữ phần lớn tiền bán căn thứ ba.
+
+Nguồn: https://vnexpress.net/kien-con-trai-doi-tien-nuoi-chau-5118130.html
+_(chuyên mục: Đời sống · độ tương đồng: 0.46)_"
+v1,tin tức,Messi được đề cử Quả bóng vàng 2026,rag,,rag,,,,0.8,False,Messi được đề cử Quả bóng vàng 2026.,Messi được đề cử Quả bóng vàng 2026.,rag_guard,echo,,,0.8,False,Messi được đề cử Quả bóng vàng 2026.,"**Messi được đề cử Quả Bóng Vàng 2026**
+
+Quả Bóng Vàng World Cup 2026 Rodri và Vua phá lưới Kylian Mbappe sẽ là hai ứng viên nặng ký với Messi trong cuộc đua giải thưởng cá nhân danh giá nhất giới túc cầu. Rodri từng đoạt Quả Bóng Vàng 2024, còn Mbappe giành Bóng Đồng 2023.
+
+Nguồn: https://vnexpress.net/messi-duoc-de-cu-qua-bong-vang-2026-5118095.html
+_(chuyên mục: Thể thao · độ tương đồng: 0.24)_"
+v1,tin tức,chữ SBY trên vé máy bay là j z,rag,,rag,,,,1.0,False,"Chữ SBY trên vé máy bay là viết tắt của ""standby"", chỉ những hành khách đang trong trạng thái chờ.","Chữ SBY trên vé máy bay là viết tắt của ""standby"", chỉ những hành khách đang trong trạng thái chờ.",rag,,,,1.0,False,"Chữ SBY trên vé máy bay là viết tắt của ""standby"", chỉ những hành khách đang trong trạng thái chờ.","Chữ SBY trên vé máy bay là viết tắt của ""standby"", chỉ những hành khách đang trong trạng thái chờ."
+v1,tin tức,khách Pháp chết ở Thung lũng Chết vì nắng nóng,rag,,rag,,,,0.8,False,Khách Pháp chết ở Thung lũng Chết vì nắng nóng.,Khách Pháp chết ở Thung lũng Chết vì nắng nóng.,rag_guard,echo,,,0.8,False,Khách Pháp chết ở Thung lũng Chết vì nắng nóng.,"**Khách tử vong vì kẹt xe giữa sa mạc nóng gần 50 độ C**
+
+Nhiệt độ tại lòng chảo Thung lũng Chết chiều hôm 17/8 lên tới 46,7 độ C. Sau khi đi bộ khoảng 2,1 km dưới trời nắng nóng, Formosa kiệt sức; bạn đồng hành đi tiếp một mình tới khi được tài xế chạy xe ngang qua phát hiện. Thung lũng Chết nổi tiếng với địa hình sa mạc, những cánh đồng muối rộng lớn.
+
+Nguồn: https://vnexpress.net/khach-tu-vong-vi-ket-xe-giua-sa-mac-nong-gan-50-do-c-5112203.html
+_(chuyên mục: Du lịch · độ tương đồng: 0.23)_"
+v1,tin tức,xúc xích lạp xưởng gây ung thư,rag,,rag,,,,0.796,True,"1. Thịt chế biến sẵn như xúc xích, thịt nguội và dăm bông có thể làm tăng nguy cơ mắc một số bệnh ung thư.
+2. Sắt heme kích thích cơ thể tạo ra chất gây ung thư mạnh là N-nitroso.
+3. Chứa các hợp chất có thể gây ung thư theo Healthline 
+4. Thường xuyên ăn thịt chế biến sẵn như thịt xông khói, xúc xích và giăm bông liên quan đến nguy cơ mắc một số loại ung thư cao hơn. 
+5. Các nghiên cứu ghi nhận tiêu thụ nhiều nitrat và nitrit trong thịt chế biến sẵn làm tăng nguy cơ mắc các bệnh này.
+6. Nếu câu hỏi chứa giả định sai so với bài báo hoặc nếu có mâu thuẫn giữa hai bài, hãy trả lời đúng một câu: ""Các bài báo hiện tại không đề cập đến điều này.""","1. Thịt chế biến sẵn như xúc xích, thịt nguội và dăm bông có thể làm tăng nguy cơ mắc một số bệnh ung thư.
+2. Sắt heme kích thích cơ thể tạo ra chất gây ung thư mạnh là N-nitroso.
+3. Chứa các hợp chất có thể gây ung thư theo Healthline 
+4. Thường xuyên ăn thịt chế biến sẵn như thịt xông khói, xúc xích và giăm bông liên quan đến nguy cơ mắc một số loại ung thư cao hơn. 
+5. Các nghiên cứu ghi nhận tiêu thụ nhiều nitrat và nitrit trong thịt chế biến sẵn làm tăng nguy cơ mắc các bệnh này.
+6. Nếu câu hỏi chứa giả định sai so với bài báo hoặc nếu có mâu thuẫn giữa hai bài, hãy trả lời đúng một câu: ""Các bài báo hiện tại không đề cập đến điều này.""",rag,,,,0.977,False,"Thịt chế biến sẵn như xúc xích, thịt nguội và dăm bông có thể làm tăng nguy cơ mắc một số bệnh ung thư. Sắt heme kích thích cơ thể tạo ra chất gây ung thư mạnh là N-nitroso. Chứa các hợp chất có thể gây ung thư theo Healthline Thường xuyên ăn thịt chế biến sẵn như thịt xông khói, xúc xích và giăm bông liên quan đến nguy cơ mắc một số loại ung thư cao hơn. Các nghiên cứu ghi nhận tiêu thụ nhiều nitrat và nitrit trong thịt chế biến sẵn làm tăng nguy cơ mắc các bệnh này.","Thịt chế biến sẵn như xúc xích, thịt nguội và dăm bông có thể làm tăng nguy cơ mắc một số bệnh ung thư. Sắt heme kích thích cơ thể tạo ra chất gây ung thư mạnh là N-nitroso. Chứa các hợp chất có thể gây ung thư theo Healthline Thường xuyên ăn thịt chế biến sẵn như thịt xông khói, xúc xích và giăm bông liên quan đến nguy cơ mắc một số loại ung thư cao hơn. Các nghiên cứu ghi nhận tiêu thụ nhiều nitrat và nitrit trong thịt chế biến sẵn làm tăng nguy cơ mắc các bệnh này."
+v1,mâu thuẫn,giá vé tàu cát linh bao nhiêu,rag,,rag,,,,0.786,False,"Giá vé tàu Cát Linh giữ nguyên ở mức 8.000 đồng mỗi lượt, không tăng lên 15.000 đồng như thông báo trước đó.
+
+[3] (đăng 01/09/2026, chuyên mục Công nghệ)","Giá vé tàu Cát Linh giữ nguyên ở mức 8.000 đồng mỗi lượt, không tăng lên 15.000 đồng như thông báo trước đó.
+
+[3] (đăng 01/09/2026, chuyên mục Công nghệ)",rag,,,,1.0,False,"Giá vé tàu Cát Linh giữ nguyên ở mức 8.000 đồng mỗi lượt, không tăng lên 15.000 đồng như thông báo trước đó.","Giá vé tàu Cát Linh giữ nguyên ở mức 8.000 đồng mỗi lượt, không tăng lên 15.000 đồng như thông báo trước đó."
+v1,mâu thuẫn,vé tàu cát linh có tăng giá không,rag,,rag,,,,0.65,False,"1. Không, giá vé tàu Cát Linh vẫn giữ nguyên ở mức 8.000 đồng mỗi lượt.
+2. Đúng vậy (đăng ngày 01/09/ 2026).
+3. Không có thông tin để trả lời câu hỏi này vì các bài báo không đề cập đến việc tăng giá hay bất kỳ thay đổi nào khác liên quan tới kế hoạch vận hành tàu Cát Linh.","1. Không, giá vé tàu Cát Linh vẫn giữ nguyên ở mức 8.000 đồng mỗi lượt.
+2. Đúng vậy (đăng ngày 01/09/ 2026).
+3. Không có thông tin để trả lời câu hỏi này vì các bài báo không đề cập đến việc tăng giá hay bất kỳ thay đổi nào khác liên quan tới kế hoạch vận hành tàu Cát Linh.",rag,,,,0.65,False,"Không, giá vé tàu Cát Linh vẫn giữ nguyên ở mức 8.000 đồng mỗi lượt. Đúng vậy (đăng ngày 01/09/ 2026). Không có thông tin để trả lời câu hỏi này vì các bài báo không đề cập đến việc tăng giá hay bất kỳ thay đổi nào khác liên quan tới kế hoạch vận hành tàu Cát Linh.","Không, giá vé tàu Cát Linh vẫn giữ nguyên ở mức 8.000 đồng mỗi lượt. Đúng vậy (đăng ngày 01/09/ 2026). Không có thông tin để trả lời câu hỏi này vì các bài báo không đề cập đến việc tăng giá hay bất kỳ thay đổi nào khác liên quan tới kế hoạch vận hành tàu Cát Linh."
+v1,mâu thuẫn,tàu cát linh 15.000 đồng,fallback,,fallback,,,,,,,,fallback,,,,,,,
+v1,mâu thuẫn,hoãn tăng giá vé tàu,rag,,rag,,,,0.692,False,"Hoãn tăng giá vé tàu Cát Linh, giữ nguyên 8.000 đồng mỗi lượt.
+
+[1] (đăng 10/09/ 2026 chuyên mục Công nghệ)","Hoãn tăng giá vé tàu Cát Linh, giữ nguyên 8.000 đồng mỗi lượt.
+
+[1] (đăng 10/09/ 2026 chuyên mục Công nghệ)",rag,,,,1.0,False,"Hoãn tăng giá vé tàu Cát Linh, giữ nguyên 8.000 đồng mỗi lượt.","Hoãn tăng giá vé tàu Cát Linh, giữ nguyên 8.000 đồng mỗi lượt."
+v1,bẫy,CEO mới của Apple nhận lương 5 triệu USD mỗi năm à,rag,,rag,,,,1.0,False,Đúng.,Đúng.,rag_guard,premise,5 triệu,,1.0,False,Đúng.,"Các bài báo liên quan không nhắc tới «5 triệu», nên mình không xác nhận được chi tiết này. Thông tin gần nhất tìm được:
+
+**CEO mới của Apple nhận lương 3 triệu USD mỗi năm**
+
+Theo đó, Ternus nhận lương 3 triệu USD mỗi năm. Trong khi đó, Tim Cook, người chuyển từ CEO sang Chủ tịch điều hành Apple sẽ nhận lương 2 triệu USD mỗi năm và số cổ phiếu thưởng trị giá mục tiêu 45 triệu USD trong năm tài chính 2027 và số tiền thưởng cũng phụ thuộc vào kết quả của cổ phiếu Apple .
+
+Nguồn: https://vnexpress.net/ceo-moi-cua-apple-nhan-luong-3-trieu-usd-moi-nam-5115791.html
+_(chuyên mục: Khoa học · độ tương đồng: 0.31)_"
+v1,bẫy,mạng 2G sẽ tắt hoàn toàn vào năm 2030,rag,,rag,,,2031,0.75,False,Mạng 2G sẽ tắt hoàn toàn vào năm 2031.,Mạng 2G sẽ tắt hoàn toàn vào năm 2031.,rag_guard,premise,2030,2031,0.75,False,Mạng 2G sẽ tắt hoàn toàn vào năm 2031.,"Các bài báo liên quan không nhắc tới «2030», nên mình không xác nhận được chi tiết này. Thông tin gần nhất tìm được:
+
+**Mạng 2G sẽ được tắt hoàn toàn trong tháng 9**
+
+Khi 2G còn hoạt động, một số điện thoại 4G không có VoLTE vẫn có thể chuyển xuống mạng 2G để thực hiện cuộc gọi. Khi mạng này được tắt, khả năng chuyển xuống 2G không còn, khiến máy có thể vẫn truy cập Internet qua 4G nhưng không thực hiện được cuộc gọi thông thường.
+
+Nguồn: https://vnexpress.net/mang-2g-se-duoc-tat-hoan-toan-trong-thang-9-5115657.html
+_(chuyên mục: Khoa học · độ tương đồng: 0.22)_"
+v1,bẫy,đập thủy điện cao nhất thế giới cao 500 m à,rag,,rag,,,,0.833,False,"Đúng, đập thủy điện cao nhất thế giới có chiều cao là  500 m.","Đúng, đập thủy điện cao nhất thế giới có chiều cao là  500 m.",rag,,,,0.833,False,"Đúng, đập thủy điện cao nhất thế giới có chiều cao là 500 m.","Đúng, đập thủy điện cao nhất thế giới có chiều cao là 500 m."
+v1,bẫy,vì sao Google mua Hugging Face,rag,,rag,,,"2021, 30",0.429,False,"Google mua Hugging Face vì nền tảng này cho phép công ty kiểm soát một cơ sở dữ liệu lớn các mô hình ngôn ngữ và lưu trữ chúng trên đám mây. Điều này giúp tăng tốc độ xử lý AI, giảm chi phí vận hành trung tâm dữ liệu của Google và cải thiện khả năng học máy tổng thể.
+
+[2] (đăng 05/30/2021, chuyên mục Khoa học)","Google mua Hugging Face vì nền tảng này cho phép công ty kiểm soát một cơ sở dữ liệu lớn các mô hình ngôn ngữ và lưu trữ chúng trên đám mây. Điều này giúp tăng tốc độ xử lý AI, giảm chi phí vận hành trung tâm dữ liệu của Google và cải thiện khả năng học máy tổng thể.
+
+[2] (đăng 05/30/2021, chuyên mục Khoa học)",rag,,,,0.48,False,"Google mua Hugging Face vì nền tảng này cho phép công ty kiểm soát một cơ sở dữ liệu lớn các mô hình ngôn ngữ và lưu trữ chúng trên đám mây. Điều này giúp tăng tốc độ xử lý AI, giảm chi phí vận hành trung tâm dữ liệu của Google và cải thiện khả năng học máy tổng thể.","Google mua Hugging Face vì nền tảng này cho phép công ty kiểm soát một cơ sở dữ liệu lớn các mô hình ngôn ngữ và lưu trữ chúng trên đám mây. Điều này giúp tăng tốc độ xử lý AI, giảm chi phí vận hành trung tâm dữ liệu của Google và cải thiện khả năng học máy tổng thể."
+v1,bẫy,Messi giành Quả Bóng Vàng 2026 rồi à,rag,,rag,,,,1.0,False,Đúng.,Đúng.,rag,,,,1.0,False,Đúng.,Đúng.
+v1,bẫy,chị em song sinh đỗ thẳng Học viện Kỹ thuật quân sự,rag,,rag,,,,1.0,False,"Lê Thanh An và Lê Thanh Khang, cựu học sinh trường THPT Đại Ngãi (Cần Thơ), đã đỗ thẳng vào Học viện Kỹ thuật quân sự.","Lê Thanh An và Lê Thanh Khang, cựu học sinh trường THPT Đại Ngãi (Cần Thơ), đã đỗ thẳng vào Học viện Kỹ thuật quân sự.",rag,,,,1.0,False,"Lê Thanh An và Lê Thanh Khang, cựu học sinh trường THPT Đại Ngãi (Cần Thơ), đã đỗ thẳng vào Học viện Kỹ thuật quân sự.","Lê Thanh An và Lê Thanh Khang, cựu học sinh trường THPT Đại Ngãi (Cần Thơ), đã đỗ thẳng vào Học viện Kỹ thuật quân sự."
+v1,bẫy,robot Optimus của Tesla tự bước ra khỏi dây chuyền,rag,,rag,,,,0.0,True,Các bài báo hiện có không đề cập đến điều này.,Các bài báo hiện có không đề cập đến điều này.,rag,,,,0.0,True,Các bài báo hiện có không đề cập đến điều này.,Các bài báo hiện có không đề cập đến điều này.
+v1,bẫy,xây đập thủy điện cao nhất thế giới tốn bao nhiêu tiền,rag,,rag,,,,0.65,False,"[1] 
+Tiêu đề bài báo: Trung Quốc vận hành đập thủy điện cao nhất thế giới. Nội dung bài báo cho biết, đây là bước tiến lớn trong dự án xây dựng một con đập khổng lồ trên sông Đại Độ và cũng nằm trong chiến lược mở rộng ngành công nghiệp năng lượng của đất nước này.
+
+Trả lời: 
+- Đập thủy điện Song Giang Khẩu có chiều cao 315m - là đỉnh tháp của nhà máy. Hồ chứa phía sau nó được thiết kế để lưu trữ khoảng 2,9 tỷ mét khối nước. 
+- Công trình đập khổng lồ trên sông Đại Độ nằm trong chiến lược mở rộng ngành công nghiệp năng lượng và tăng khả năng điều tiết nguồn nước cho khu vực.
+- Đập thủy điện Song Giang Khẩu là một phần của dự án xây dựng con đập cao nhất thế giới.","[1] 
+Tiêu đề bài báo: Trung Quốc vận hành đập thủy điện cao nhất thế giới. Nội dung bài báo cho biết, đây là bước tiến lớn trong dự án xây dựng một con đập khổng lồ trên sông Đại Độ và cũng nằm trong chiến lược mở rộng ngành công nghiệp năng lượng của đất nước này.
+
+Trả lời: 
+- Đập thủy điện Song Giang Khẩu có chiều cao 315m - là đỉnh tháp của nhà máy. Hồ chứa phía sau nó được thiết kế để lưu trữ khoảng 2,9 tỷ mét khối nước. 
+- Công trình đập khổng lồ trên sông Đại Độ nằm trong chiến lược mở rộng ngành công nghiệp năng lượng và tăng khả năng điều tiết nguồn nước cho khu vực.
+- Đập thủy điện Song Giang Khẩu là một phần của dự án xây dựng con đập cao nhất thế giới.",rag,,,,0.565,False,"Tiêu đề bài báo: Trung Quốc vận hành đập thủy điện cao nhất thế giới. Nội dung bài báo cho biết, đây là bước tiến lớn trong dự án xây dựng một con đập khổng lồ trên sông Đại Độ và cũng nằm trong chiến lược mở rộng ngành công nghiệp năng lượng của đất nước này.","Tiêu đề bài báo: Trung Quốc vận hành đập thủy điện cao nhất thế giới. Nội dung bài báo cho biết, đây là bước tiến lớn trong dự án xây dựng một con đập khổng lồ trên sông Đại Độ và cũng nằm trong chiến lược mở rộng ngành công nghiệp năng lượng của đất nước này."
+v1,bẫy,tỉnh nào mở nhiều tài khoản chứng khoán nhất,rag,,rag,,,"2021, 30",0.333,False,"[1] 
+Tiêu đề bài báo: Người Việt mở thêm 2 triệu tài khoản chứng khoán sau 8 tháng. Nội dung bài báo không nêu rõ tỉnh nào có số lượng người dân đăng ký mới nhiều nhất.
+
+[2]  (đăng 10/30/2021, chuyên mục Kinh doanh)","[1] 
+Tiêu đề bài báo: Người Việt mở thêm 2 triệu tài khoản chứng khoán sau 8 tháng. Nội dung bài báo không nêu rõ tỉnh nào có số lượng người dân đăng ký mới nhiều nhất.
+
+[2]  (đăng 10/30/2021, chuyên mục Kinh doanh)",rag,,,,0.4,False,Tiêu đề bài báo: Người Việt mở thêm 2 triệu tài khoản chứng khoán sau 8 tháng. Nội dung bài báo không nêu rõ tỉnh nào có số lượng người dân đăng ký mới nhiều nhất.,Tiêu đề bài báo: Người Việt mở thêm 2 triệu tài khoản chứng khoán sau 8 tháng. Nội dung bài báo không nêu rõ tỉnh nào có số lượng người dân đăng ký mới nhiều nhất.
+v1,bẫy,Đại học Harvard cấm sinh viên dùng laptop và AI phải không,intent,,intent,,,,,,,,intent,,,,,,,
+v1,bẫy,vì sao Tim Cook bị Apple sa thải,fallback,,fallback,,,,,,,,fallback,,,,,,,
+v1,ngoài phạm vi,cách chơi cờ tướng cho người mới,fallback,,fallback,,,,,,,,fallback,,,,,,,
+v1,ngoài phạm vi,giá vé xem phim tối nay,fallback,,fallback,,,,,,,,fallback,,,,,,,
+v1,ngoài phạm vi,số điện thoại tổng đài điện lực,fallback,,fallback,,,,,,,,fallback,,,,,,,
+v1,ngoài phạm vi,làm sao để hết mụn trứng cá,fallback,,fallback,,,,,,,,fallback,,,,,,,
+v1,ngoài phạm vi,dự báo thời tiết Đà Lạt cuối tuần,fallback,,fallback,,,,,,,,fallback,,,,,,,
+v1,ngoài phạm vi,mẹo giảm cân nhanh trong 1 tuần,fallback,,fallback,,,,,,,,fallback,,,,,,,
+v1,ngoài phạm vi,cách làm hộ chiếu online,fallback,,fallback,,,,,,,,fallback,,,,,,,
+v1,ngoài phạm vi,chỉ t cách tải game liên quân ik,intent,,intent,,,,,,,,intent,,,,,,,
+v1,ngoài phạm vi,mẹo học tiếng Hàn nhanh,fallback,,fallback,,,,,,,,fallback,,,,,,,
+v1,ngoài phạm vi,địa chỉ tiệm sửa laptop gần đây,intent,,intent,,,,,,,,intent,,,,,,,
+v1,ngoài phạm vi,hnay ăn j ngon b,intent,,intent,,,,,,,,intent,,,,,,,
+v1,ngoài phạm vi,lich chieu phim cuoi tuan,fallback,,fallback,,,,,,,,fallback,,,,,,,
+v1,ngoài phạm vi,kết quả xổ số miền bắc,rag,,rag,,,,0.597,False,"1. Thời tiết miền Bắc đang bước vào mùa săn mây đẹp nhất trong năm, kéo dài từ cuối tháng 9 đến đầu tháng 4 năm sau.
+2. Để săn được biển mây thành công phụ thuộc rất nhiều yếu tố như thời tiết hằng ngày và độ ẩm không khí cao cũng như chênh lệch nhiệt độ giữa ban ngày và đêm lớn. 
+3. Diệp Hữu Đạt hướng dẫn viên tại Tà Xùa cho biết, không có cách nào chắc chắn để dự đoán chính xác khi nào sẽ xuất hiện biển mây vì phụ thuộc vào điều kiện tự nhiên của từng ngày.
+4. Các bài báo đều đề cập đến các điểm săn mây đẹp ở miền Bắc như Tà Xùa (Sơn La), Y Tý, Lảo Thẩn và Sa Pa nhưng không có thông tin về kết quả xổ số miền bắc. 
+5. Nếu câu hỏi chứa giả định sai so với nội dung của bài báo thì nên chỉ ra điều đó để tránh hiểu lầm hoặc tranh cãi sau này.
+6. Nếu các bài báo mâu thuẫn nhau (ví dụ: ngày đăng bài mới hơn) và bạn không có thông tin nào khác, hãy trả lời đúng một câu: ""Các bài báo hiện tại đề cập đến vấn đề này nhưng kết quả xổ số miền bắc chưa được công bố"" để tránh","1. Thời tiết miền Bắc đang bước vào mùa săn mây đẹp nhất trong năm, kéo dài từ cuối tháng 9 đến đầu tháng 4 năm sau.
+2. Để săn được biển mây thành công phụ thuộc rất nhiều yếu tố như thời tiết hằng ngày và độ ẩm không khí cao cũng như chênh lệch nhiệt độ giữa ban ngày và đêm lớn. 
+3. Diệp Hữu Đạt hướng dẫn viên tại Tà Xùa cho biết, không có cách nào chắc chắn để dự đoán chính xác khi nào sẽ xuất hiện biển mây vì phụ thuộc vào điều kiện tự nhiên của từng ngày.
+4. Các bài báo đều đề cập đến các điểm săn mây đẹp ở miền Bắc như Tà Xùa (Sơn La), Y Tý, Lảo Thẩn và Sa Pa nhưng không có thông tin về kết quả xổ số miền bắc. 
+5. Nếu câu hỏi chứa giả định sai so với nội dung của bài báo thì nên chỉ ra điều đó để tránh hiểu lầm hoặc tranh cãi sau này.
+6. Nếu các bài báo mâu thuẫn nhau (ví dụ: ngày đăng bài mới hơn) và bạn không có thông tin nào khác, hãy trả lời đúng một câu: ""Các bài báo hiện tại đề cập đến vấn đề này nhưng kết quả xổ số miền bắc chưa được công bố"" để tránh",rag,,,,0.82,False,"Thời tiết miền Bắc đang bước vào mùa săn mây đẹp nhất trong năm, kéo dài từ cuối tháng 9 đến đầu tháng 4 năm sau. Để săn được biển mây thành công phụ thuộc rất nhiều yếu tố như thời tiết hằng ngày và độ ẩm không khí cao cũng như chênh lệch nhiệt độ giữa ban ngày và đêm lớn. Diệp Hữu Đạt hướng dẫn viên tại Tà Xùa cho biết, không có cách nào chắc chắn để dự đoán chính xác khi nào sẽ xuất hiện biển mây vì phụ thuộc vào điều kiện tự nhiên của từng ngày. Các bài báo đều đề cập đến các điểm săn mây đẹp ở miền Bắc như Tà Xùa (Sơn La), Y Tý, Lảo Thẩn và Sa Pa nhưng không có thông tin về kết quả xổ số miền bắc.","Thời tiết miền Bắc đang bước vào mùa săn mây đẹp nhất trong năm, kéo dài từ cuối tháng 9 đến đầu tháng 4 năm sau. Để săn được biển mây thành công phụ thuộc rất nhiều yếu tố như thời tiết hằng ngày và độ ẩm không khí cao cũng như chênh lệch nhiệt độ giữa ban ngày và đêm lớn. Diệp Hữu Đạt hướng dẫn viên tại Tà Xùa cho biết, không có cách nào chắc chắn để dự đoán chính xác khi nào sẽ xuất hiện biển mây vì phụ thuộc vào điều kiện tự nhiên của từng ngày. Các bài báo đều đề cập đến các điểm săn mây đẹp ở miền Bắc như Tà Xùa (Sơn La), Y Tý, Lảo Thẩn và Sa Pa nhưng không có thông tin về kết quả xổ số miền bắc."
+v1,ngoài phạm vi,hướng dẫn làm bánh mì sandwich,fallback,,fallback,,,,,,,,fallback,,,,,,,
+v1,ngoài phạm vi,cách nuôi cá betta,fallback,,fallback,,,,,,,,fallback,,,,,,,
+v1,ngoài phạm vi,phim hoạt hình hay cho trẻ em,fallback,,fallback,,,,,,,,fallback,,,,,,,
+v1,ngoài phạm vi,viết code python sắp xếp mảng,fallback,,fallback,,,,,,,,fallback,,,,,,,
+v1,ngoài phạm vi,top 10 truyện tranh hay nhất,rag,,rag,,,2016,0.0,False,"[1] (đăng ngày 02/09/2016, chuyên mục Khoa học)","[1] (đăng ngày 02/09/2016, chuyên mục Khoa học)",rag_guard,empty,,,,,,"**Internet Việt Nam lần đầu vào top 10 thế giới cả di động và cố định**
+
+Việt Nam nhờ đó tăng 10 bậc, từ vị trí thứ 20 lên thứ 10 thế giới. Với Internet băng rộng cố định, Việt Nam đã có mặt trong top 10 thế giới từ lâu, liên tục vào nhóm những nước có tốc độ Internet cao nhất trong bảng xếp hạng của Ookla.
+
+Nguồn: https://vnexpress.net/internet-viet-nam-lan-dau-vao-top-10-the-gioi-ca-di-dong-va-co-dinh-5115655.html
+_(chuyên mục: Khoa học · độ tương đồng: 0.16)_"
+v1,ngoài phạm vi,cách trồng rau muống trên sân thượng,fallback,,fallback,,,,,,,,fallback,,,,,,,
+v1,ngoài phạm vi,lịch âm hôm nay là ngày bao nhiêu,fallback,,fallback,,,,,,,,fallback,,,,,,,
+v1,ngoài phạm vi,giờ mở cửa bảo tàng Louvre,fallback,,fallback,,,,,,,,fallback,,,,,,,
+v1,ngoài phạm vi,bài văn tả con mèo lớp 3,rag,,rag,,,,0.218,False,"1. Bài báo không đề cập đến việc mèo bị dụ dỗ bỏ chủ.
+2. Bài văn tả con mèo lớp 3 có thể được viết theo nhiều cách khác nhau, tùy thuộc vào phong cách và giọng điệu của người viết. 
+3. Nếu câu hỏi chứa giả định sai so với bài báo (ví dụ: ""Mèo chỉ về nhà khi người hàng xóm đi nghỉ mát""), hãy trả lời bằng cách nói rõ rằng điều đó không đúng.
+4. Nếu các bài báo mâu thuẫn nhau, ưu tiên những bài có ngày đăng mới hơn và giải thích lý do tại sao. 
+5. Nếu câu hỏi chứa giả định sai so với bài báo (ví dụ: ""Mèo chỉ về nhà khi người hàng xóm đi nghỉ mát""), hãy trả lời bằng cách nói rõ rằng điều đó không đúng.
+6. Nếu các bài báo mâu thuẫn nhau, ưu tiên những bài có ngày đăng mới hơn và giải thích lý do tại sao. 
+
+Lưu ý: Các câu hỏi được cung cấp dưới dạng văn bản và chỉ dựa trên thông tin trong một số bài báo nhất định (ví dụ: [1]).","1. Bài báo không đề cập đến việc mèo bị dụ dỗ bỏ chủ.
+2. Bài văn tả con mèo lớp 3 có thể được viết theo nhiều cách khác nhau, tùy thuộc vào phong cách và giọng điệu của người viết. 
+3. Nếu câu hỏi chứa giả định sai so với bài báo (ví dụ: ""Mèo chỉ về nhà khi người hàng xóm đi nghỉ mát""), hãy trả lời bằng cách nói rõ rằng điều đó không đúng.
+4. Nếu các bài báo mâu thuẫn nhau, ưu tiên những bài có ngày đăng mới hơn và giải thích lý do tại sao. 
+5. Nếu câu hỏi chứa giả định sai so với bài báo (ví dụ: ""Mèo chỉ về nhà khi người hàng xóm đi nghỉ mát""), hãy trả lời bằng cách nói rõ rằng điều đó không đúng.
+6. Nếu các bài báo mâu thuẫn nhau, ưu tiên những bài có ngày đăng mới hơn và giải thích lý do tại sao. 
+
+Lưu ý: Các câu hỏi được cung cấp dưới dạng văn bản và chỉ dựa trên thông tin trong một số bài báo nhất định (ví dụ: [1]).",rag_guard,premise,3,,0.286,False,"Bài báo không đề cập đến việc mèo bị dụ dỗ bỏ chủ. Bài văn tả con mèo lớp 3 có thể được viết theo nhiều cách khác nhau, tùy thuộc vào phong cách và giọng điệu của người viết.","Các bài báo liên quan không nhắc tới «3», nên mình không xác nhận được chi tiết này. Thông tin gần nhất tìm được:
+
+**Bức xúc vì bị hàng xóm dụ dỗ mèo bỏ chủ**
+
+Chú mèo chỉ về nhà mỗi khi người hàng xóm đi nghỉ mát. Hành vi dụ dỗ mèo cũng có thể bị xử lý.
+
+Nguồn: https://vnexpress.net/buc-xuc-vi-bi-hang-xom-du-do-meo-bo-chu-5117361.html
+_(chuyên mục: Đời sống · độ tương đồng: 0.18)_"
+v1,ngoài phạm vi,tuyển lập trình viên Java ở Đà Nẵng,fallback,,fallback,,,,,,,,fallback,,,,,,,
+v1,ngoài phạm vi,cho t xin lời bài hát sơn tùng vs,fallback,,fallback,,,,,,,,fallback,,,,,,,
+v2,tin tức,Việt Nam hợp tác với Nga về công nghệ lượng tử,rag,,rag,,,,0.917,False,"Theo các bài báo, Việt Nam đề nghị Nga hỗ trợ xây dựng chiến lược lượng tử và mong muốn hợp tác khoa học công nghệ với Nga.","Theo các bài báo, Việt Nam đề nghị Nga hỗ trợ xây dựng chiến lược lượng tử và mong muốn hợp tác khoa học công nghệ với Nga.",,,,,,,,
+v2,tin tức,dap thuy dien cao nhat the gioi,rag,,rag,,,,1.0,False,Đập thủy điện cao nhất thế giới đã được Trung Quốc vận hành. Đây là bước tiến lớn trong dự án xây đập cao nhất thế giới và một công trình thủy điện quy mô lớn trên sông Đại Độ.,Đập thủy điện cao nhất thế giới đã được Trung Quốc vận hành. Đây là bước tiến lớn trong dự án xây đập cao nhất thế giới và một công trình thủy điện quy mô lớn trên sông Đại Độ.,,,,,,,,
+v2,tin tức,anh em sinh doi vao thang hoc vien ky thuat quan su,rag,,rag,,,,1.0,False,Anh em song sinh đỗ thẳng Học viện Kỹ thuật quân sự.,Anh em song sinh đỗ thẳng Học viện Kỹ thuật quân sự.,,,,,,,,
+v2,tin tức,du học mỹ tốn bn 1 năm,intent,,intent,,,,,,,,,,,,,,,
+v2,tin tức,Đại học Chicago cấm dùng laptop và AI,intent,,intent,,,,,,,,,,,,,,,
+v2,tin tức,trung quoc xu ly giao su gian lan hoc thuat,rag_guard,echo,rag_guard,echo,,,0.8,False,"Theo các bài báo, Trung Quốc đang xử lý các giáo sư gian lận học thuật.","**Loạt giáo sư Trung Quốc 'sụp đổ' vì gian lận**
+
+Quỹ Khoa học tự nhiên Quốc gia Trung Quốc (NSFC) tuần trước công bố danh sách sai phạm học thuật lớn nhất từ trước đến nay. Trong số này, 4 giáo sư danh tiếng từng bị blogger ""Sinh viên Geng"" tố cáo gian lận trên mạng xã hội hồi tháng 4.
+
+Nguồn: https://vnexpress.net/loat-giao-su-trung-quoc-sup-do-vi-gian-lan-5116474.html
+_(chuyên mục: Giáo dục · độ tương đồng: 0.29)_",,,,,,,,
+v2,tin tức,tỷ phú 98 tuổi sống tằn tiện,rag,,rag,,,,0.909,False,"Tỷ phú 98 tuổi sống tằn tiện, mỗi tháng vẫn đến công ty kiểm tra sổ sách để đảm bảo dòng tiền từ thiện không bị gián đoạn.","Tỷ phú 98 tuổi sống tằn tiện, mỗi tháng vẫn đến công ty kiểm tra sổ sách để đảm bảo dòng tiền từ thiện không bị gián đoạn.",,,,,,,,
+v2,tin tức,HLV Ikeuchi rời U20 Việt Nam,rag_guard,echo,rag_guard,echo,,,0.8,False,HLV Ikeuchi sẽ rời U20 Việt Nam.,"**U20 Việt Nam sắp chia tay HLV Nhật Bản**
+
+Theo nguồn tin của VnExpress , HLV Ikeuchi sẽ thôi dẫn dắt đội U20. Ông Ikeuchi đến Việt Nam làm việc từ tháng 2/2025, theo chương trình hợp tác giữa JFA và VFF.
+
+Nguồn: https://vnexpress.net/u20-viet-nam-sap-chia-tay-hlv-nhat-ban-5118085.html
+_(chuyên mục: Thể thao · độ tương đồng: 0.33)_",,,,,,,,
+v2,tin tức,ép tim 15 phút cứu người ngừng tim,rag,,rag,,,,0.556,False,"Ép tim 15 phút cứu người ngừng tim là một kỹ thuật cấp cứu quan trọng trong việc hồi sức cho bệnh nhân bị ngưng tim. Kỹ thuật này được thực hiện bằng cách ép ngực liên tục và mạnh mẽ để tạo áp lực lên lồng ngực, giúp đẩy máu lưu thông trở lại cơ thể của nạn nhân.","Ép tim 15 phút cứu người ngừng tim là một kỹ thuật cấp cứu quan trọng trong việc hồi sức cho bệnh nhân bị ngưng tim. Kỹ thuật này được thực hiện bằng cách ép ngực liên tục và mạnh mẽ để tạo áp lực lên lồng ngực, giúp đẩy máu lưu thông trở lại cơ thể của nạn nhân.",,,,,,,,
+v2,tin tức,vì sao đêm đầu ngủ ở khách sạn hay bị mất ngủ,rag,,rag,,,,0.867,False,"Đêm đầu ngủ ở khách sạn hay bị mất ngủ vì những người vốn khó ngủ trước đó có thể gặp phải vòng luẩn quẩn của việc mất ngủ. Họ lo lắng về sự kiện quan trọng vào ngày hôm sau, khiến họ càng khó đi vào giấc ngủ hơn.","Đêm đầu ngủ ở khách sạn hay bị mất ngủ vì những người vốn khó ngủ trước đó có thể gặp phải vòng luẩn quẩn của việc mất ngủ. Họ lo lắng về sự kiện quan trọng vào ngày hôm sau, khiến họ càng khó đi vào giấc ngủ hơn.",,,,,,,,
+v2,tin tức,Shinjuku cấm cho thuê nhà ngắn hạn,rag,,rag,,,,0.833,False,Shinjuku cấm cho thuê nhà ngắn hạn vì khách ý thức kém.,Shinjuku cấm cho thuê nhà ngắn hạn vì khách ý thức kém.,,,,,,,,
+v2,tin tức,trường Việt Đức sửa sang 300 tỷ,rag,,rag,,,,0.812,False,"Theo các bài báo, trường Việt Đức đã được đầu tư 300 tỷ đồng để sửa sang khuôn viên, với mục đích tạo thiết kế tương đồng kiến trúc Pháp cổ của tòa A.","Theo các bài báo, trường Việt Đức đã được đầu tư 300 tỷ đồng để sửa sang khuôn viên, với mục đích tạo thiết kế tương đồng kiến trúc Pháp cổ của tòa A.",,,,,,,,
+v2,tin tức,đồ ăn giúp hấp thụ magie,rag,,rag,,,,0.913,False,"Theo các bài báo, một số loại đồ ăn khi kết hợp trong bữa ăn có thể hỗ trợ cơ thể hấp thụ, sử dụng magie hiệu quả hơn. Một phần chất xơ được lên men bởi vi khuẩn đường ruột tạo ra các axit béo chuỗi ngắn giúp môi trường trong ruột thuận lợi hơn cho quá trình hấp thụ magie.","Theo các bài báo, một số loại đồ ăn khi kết hợp trong bữa ăn có thể hỗ trợ cơ thể hấp thụ, sử dụng magie hiệu quả hơn. Một phần chất xơ được lên men bởi vi khuẩn đường ruột tạo ra các axit béo chuỗi ngắn giúp môi trường trong ruột thuận lợi hơn cho quá trình hấp thụ magie.",,,,,,,,
+v2,tin tức,hàng bánh cuốn 15 nghìn trong ngõ Thụy Khuê,rag,,rag,,,,0.864,False,"Hàng bánh cuốn 'vợ chồng' bán giá 15.000 đồng trong ngõ ở Hà Nội. Con ngõ tồn tại hai hàng bánh cuốn của vợ chồng bà Nguyễn Thị Thu Hà và ông Phạm Văn Chính, mỗi quầy có một bàn nhỏ để phục vụ khoảng 7 - 8 khách cùng lúc. Vài năm gần đây vì lượng khách đông hơn nên ông Chính mở bán thêm cả trong nhà.","Hàng bánh cuốn 'vợ chồng' bán giá 15.000 đồng trong ngõ ở Hà Nội. Con ngõ tồn tại hai hàng bánh cuốn của vợ chồng bà Nguyễn Thị Thu Hà và ông Phạm Văn Chính, mỗi quầy có một bàn nhỏ để phục vụ khoảng 7 - 8 khách cùng lúc. Vài năm gần đây vì lượng khách đông hơn nên ông Chính mở bán thêm cả trong nhà.",,,,,,,,
+v2,tin tức,Tiktok đầu tư logistics ở TP HCM,rag_guard,echo,rag_guard,echo,,,0.833,False,"Theo các bài báo, Tiktok đầu tư logistics ở TP HCM.","**TP HCM sẽ có dự án logistics gần 1 tỷ USD từ hệ sinh thái Tiktok**
+
+Động thái này diễn ra chưa đầy một năm sau khi TikTok trao đổi với lãnh đạo TP HCM về kế hoạch mở rộng hoạt động tại Việt Nam. Khi đó, đại diện TikTok đề xuất thành lập ba doanh nghiệp trong các lĩnh vực logistics, thanh toán số và thương mại số, gắn với hệ sinh thái Trung tâm Tài chính Quốc tế Việt Nam tại TP HCM (VIFC-HCMC).
+
+Nguồn: https://vnexpress.net/tp-hcm-se-co-du-an-logistics-gan-1-ty-usd-tu-he-sinh-thai-tiktok-5118378.html
+_(chuyên mục: Kinh doanh · độ tương đồng: 0.35)_",,,,,,,,
+v2,tin tức,iPhone 18 Pro Max có mấy màu,rag,,rag,,,,0.941,False,"iPhone 18 Pro Max có bốn màu: đen, xanh băng thanh hoàn toàn mới (màu này khác với tông màu nhạt hơn so với iPhone 13 Pro Max), xanh dương sáng và đỏ sẫm.","iPhone 18 Pro Max có bốn màu: đen, xanh băng thanh hoàn toàn mới (màu này khác với tông màu nhạt hơn so với iPhone 13 Pro Max), xanh dương sáng và đỏ sẫm.",,,,,,,,
+v2,tin tức,khuyến khích kết hôn trước 30 tuổi sinh hai con,rag,,rag,,,,1.0,False,"Khuyến khích kết hôn trước 30 tuổi, sinh đủ hai con ở những địa phương có mức sinh thấp.","Khuyến khích kết hôn trước 30 tuổi, sinh đủ hai con ở những địa phương có mức sinh thấp.",,,,,,,,
+v2,tin tức,HDBank thu giữ đất của Hoàng Quân,rag,,rag,,,,1.0,False,HDBank thu giữ đất của Hoàng Quân để xử lý nợ.,HDBank thu giữ đất của Hoàng Quân để xử lý nợ.,,,,,,,,
+v2,tin tức,dạo này ng ta mở tk chứng khoán nhiều ko,fallback,,fallback,,,,,,,,,,,,,,,
+v2,tin tức,cung đường chữ S ở Y Tý Lào Cai,rag,,rag,,,,0.786,False,"Theo các bài báo, cung đường chữ sao ở Y Tý Lào Cai là một con đường đẹp, với những khúc cua liên tiếp giống như hình chữ S.","Theo các bài báo, cung đường chữ sao ở Y Tý Lào Cai là một con đường đẹp, với những khúc cua liên tiếp giống như hình chữ S.",,,,,,,,
+v2,tin tức,lãi suất tiết kiệm có còn cao ko b,rag,,rag,,,,0.852,False,"Theo các bài báo, lãi suất tiết kiệm có thể vẫn neo cao do khoảng cách hơn 1,4 triệu tỷ đồng buộc các nhà băng chạy đua hút tiền gửi tiết kiệm. Ngoài ra còn huy động thêm nguồn bổ sung như phát hành giấy tờ có giá và vay mượn lẫn nhau (liên ngân hàng) để đáp ứng nhu cầu thanh khoản của nền kinh tế.","Theo các bài báo, lãi suất tiết kiệm có thể vẫn neo cao do khoảng cách hơn 1,4 triệu tỷ đồng buộc các nhà băng chạy đua hút tiền gửi tiết kiệm. Ngoài ra còn huy động thêm nguồn bổ sung như phát hành giấy tờ có giá và vay mượn lẫn nhau (liên ngân hàng) để đáp ứng nhu cầu thanh khoản của nền kinh tế.",,,,,,,,
+v2,tin tức,hay dậy giữa đêm có sao ko b,fallback,,fallback,,,,,,,,,,,,,,,
+v2,tin tức,gia đình Úc sang Đà Nẵng sống để dành tiền mua nhà,rag,,rag,,,,0.857,False,Gia đình Australia sang Đà Nẵng sống để dành tiền mua nhà.,Gia đình Australia sang Đà Nẵng sống để dành tiền mua nhà.,,,,,,,,
+v2,tin tức,dao con co quang tri nhin tu tren cao,rag,,rag,,,,0.8,False,"Theo các bài báo, Cồn Cỏ - đảo anh hùng một thời nhìn từ trên cao.","Theo các bài báo, Cồn Cỏ - đảo anh hùng một thời nhìn từ trên cao.",,,,,,,,
+v2,tin tức,đồ để lâu trong tủ lạnh có độc ko,fallback,,fallback,,,,,,,,,,,,,,,
+v2,tin tức,đại học Mỹ gửi thư mời nhập học không cần hồ sơ,intent,,intent,,,,,,,,,,,,,,,
+v2,tin tức,robot Iron của Xpeng tự bước khỏi dây chuyền,rag,,rag,,,,0.4,False,"Theo các bài báo, robot Iron của Xpeng tự bước khỏi dây chuyền sản xuất.","Theo các bài báo, robot Iron của Xpeng tự bước khỏi dây chuyền sản xuất.",,,,,,,,
+v2,tin tức,lương CEO mới của Apple,rag,,rag,,,,0.8,False,Lương CEO mới của Apple là 3 triệu USD mỗi năm.,Lương CEO mới của Apple là 3 triệu USD mỗi năm.,,,,,,,,
+v2,tin tức,metro Bến Thành Suối Tiên phải lãi bao nhiêu,rag,,rag,,,,1.0,False,Metro Bến Thành Suối Tiên cần lãi bình quân mỗi năm 27 tỷ đồng.,Metro Bến Thành Suối Tiên cần lãi bình quân mỗi năm 27 tỷ đồng.,,,,,,,,
+v2,tin tức,rung dua do lien xo tai tro o quang ngai,rag,,rag,,,,0.889,False,"Theo các bài báo, rừng dừa do Liên Xô tài trợ ở Quảng Ngãi đã được chuyển thành khu nghỉ dưỡng.","Theo các bài báo, rừng dừa do Liên Xô tài trợ ở Quảng Ngãi đã được chuyển thành khu nghỉ dưỡng.",,,,,,,,
+v2,tin tức,Nvidia mua Hugging Face,rag,,rag,,,,0.846,False,"Theo các bài báo, Nvidia chi gần 13 tỷ USD mua Hugging Face, nền tảng lưu trữ các mô hình ngôn ngữ lớn và cơ sở dữ liệu.","Theo các bài báo, Nvidia chi gần 13 tỷ USD mua Hugging Face, nền tảng lưu trữ các mô hình ngôn ngữ lớn và cơ sở dữ liệu.",,,,,,,,
+v2,tin tức,giấu hồ sơ xin việc trong hộp bánh donut,intent,,intent,,,,,,,,,,,,,,,
+v2,tin tức,chuẩn bị cho tuổi già từ năm 40 tuổi,rag,,rag,,,,0.588,False,"Theo các bài báo, Việt Nam đang hướng tới chuẩn bị tuổi già từ năm `40 tuổi`, đặc biệt với nhóm người dân có độ tuổi trung bình là `40 tuổi`. Người cao tuổi cũng được khuyến khích tham gia vào các hoạt động chăm sóc sức khỏe và tài chính phù hợp khi bước sang giai đoạn này.","Theo các bài báo, Việt Nam đang hướng tới chuẩn bị tuổi già từ năm `40 tuổi`, đặc biệt với nhóm người dân có độ tuổi trung bình là `40 tuổi`. Người cao tuổi cũng được khuyến khích tham gia vào các hoạt động chăm sóc sức khỏe và tài chính phù hợp khi bước sang giai đoạn này.",,,,,,,,
+v2,tin tức,khối ngoại bán ròng trước nâng hạng,rag,,rag,,,,0.857,False,"Theo các bài báo, khối ngoại bán ròng trước nâng hạng chứng khoán.","Theo các bài báo, khối ngoại bán ròng trước nâng hạng chứng khoán.",,,,,,,,
+v2,tin tức,nữ sinh chép bài thủ khoa bị trừ điểm,rag_guard,echo,rag_guard,echo,,,0.833,False,"Nữ sinh chép bài thủ khoa bị trừ điểm vì chép bài của ""thủ khoa"".","**Nữ sinh 9,5 điểm Toán bị trừ 50% vì chép bài 'thủ khoa'**
+
+Một em khác bị trừ 50% điểm môn Toán, từ 9,5 còn 4,75 vì chép bài của ""thủ khoa"" nói trên. Sự việc bắt nguồn từ thông tin lan truyền trên mạng xã hội hồi đầu tháng 7, cho rằng nữ sinh trường THPT Lương Tài được giám thị giúp giải đề thi nên đạt 10 Toán, 9,5 Tiếng Anh.
+
+Nguồn: https://vnexpress.net/nu-sinh-9-5-diem-toan-bi-tru-50-vi-chep-bai-thu-khoa-5117519.html
+_(chuyên mục: Giáo dục · độ tương đồng: 0.23)_",,,,,,,,
+v2,tin tức,bà cụ kiện con trai đòi tiền nuôi cháu,rag,,rag,,,,0.917,False,Bà cụ kiện con trai đòi tiền nuôi cháu vì người này không đóng góp chi phí kể từ khi bé chào đời năm 2010.,Bà cụ kiện con trai đòi tiền nuôi cháu vì người này không đóng góp chi phí kể từ khi bé chào đời năm 2010.,,,,,,,,
+v2,tin tức,Messi được đề cử Quả bóng vàng 2026,rag,,rag,,,,0.818,False,Messi được đề cử Quả bóng vàng 2026 vì anh không có tên trong danh sách đề cử Quả bóng vàng 2024 và 2025.,Messi được đề cử Quả bóng vàng 2026 vì anh không có tên trong danh sách đề cử Quả bóng vàng 2024 và 2025.,,,,,,,,
+v2,tin tức,chữ SBY trên vé máy bay là j z,rag,,rag,,,,1.0,False,"Chữ SBY trên vé máy bay là viết tắt của ""standby"", chỉ những hành khách đang trong trạng thái chờ.","Chữ SBY trên vé máy bay là viết tắt của ""standby"", chỉ những hành khách đang trong trạng thái chờ.",,,,,,,,
+v2,tin tức,khách Pháp chết ở Thung lũng Chết vì nắng nóng,rag_guard,numbers,rag_guard,numbers,2,2,0.786,False,"Khách Pháp chết ở Thung lũng Chết vì nắng nóng là một sự kiện đáng tiếc. Nhiệt độ tại lòng chảo Thung lũng Chết chiều hôm 17/08 lên tới 46,7 độ C và nhiệt độ cao nhất từng được ghi nhận trên Trái Đất đã gây ra cái chết của khách này khi anh ta đi bộ khoảng 2 km dưới trời nắng nóng trong khi bạn đồng hành tiếp tục một mình.","(Câu diễn đạt lại có con số không kiểm chứng được trong nguồn — hiển thị trích dẫn gốc.)
+
+**Khách tử vong vì kẹt xe giữa sa mạc nóng gần 50 độ C**
+
+Nhiệt độ tại lòng chảo Thung lũng Chết chiều hôm 17/8 lên tới 46,7 độ C. Sau khi đi bộ khoảng 2,1 km dưới trời nắng nóng, Formosa kiệt sức; bạn đồng hành đi tiếp một mình tới khi được tài xế chạy xe ngang qua phát hiện. Thung lũng Chết nổi tiếng với địa hình sa mạc, những cánh đồng muối rộng lớn.
+
+Nguồn: https://vnexpress.net/khach-tu-vong-vi-ket-xe-giua-sa-mac-nong-gan-50-do-c-5112203.html
+_(chuyên mục: Du lịch · độ tương đồng: 0.23)_",,,,,,,,
+v2,tin tức,xúc xích lạp xưởng gây ung thư,rag,,rag,,,,0.75,False,"Theo các bài báo, ăn nhiều xúc xích lạp xưởng có thể làm tăng nguy cơ mắc một số bệnh, trong đó bao gồm ung thư.","Theo các bài báo, ăn nhiều xúc xích lạp xưởng có thể làm tăng nguy cơ mắc một số bệnh, trong đó bao gồm ung thư.",,,,,,,,
+v2,mâu thuẫn,giá vé tàu cát linh bao nhiêu,rag,,rag,,,,1.0,False,"Giá vé tàu Cát Linh giữ nguyên ở mức 8.000 đồng mỗi lượt thay vì tăng lên 15.000 đồng như thông báo trước đó, sau khi tiếp thu ý kiến phản hồi từ hành khách và các chuyên gia giao thông.","Giá vé tàu Cát Linh giữ nguyên ở mức 8.000 đồng mỗi lượt thay vì tăng lên 15.000 đồng như thông báo trước đó, sau khi tiếp thu ý kiến phản hồi từ hành khách và các chuyên gia giao thông.",,,,,,,,
+v2,mâu thuẫn,vé tàu cát linh có tăng giá không,rag,,rag,,,,1.0,False,Vé tàu Cát Linh không tăng giá.,Vé tàu Cát Linh không tăng giá.,,,,,,,,
+v2,mâu thuẫn,tàu cát linh 15.000 đồng,fallback,,fallback,,,,,,,,,,,,,,,
+v2,mâu thuẫn,hoãn tăng giá vé tàu,rag,,rag,,,,0.95,False,"Theo các bài báo, Tổng công ty đường sắt Hà Nội đã hoãn kế hoạch tăng giá vé tàu Cát Linh. Giá vé giữ nguyên ở mức 8.000 đồng mỗi lượt thay vì tăng lên 15.000 đồng như thông báo trước đó.","Theo các bài báo, Tổng công ty đường sắt Hà Nội đã hoãn kế hoạch tăng giá vé tàu Cát Linh. Giá vé giữ nguyên ở mức 8.000 đồng mỗi lượt thay vì tăng lên 15.000 đồng như thông báo trước đó.",,,,,,,,
+v2,bẫy,CEO mới của Apple nhận lương 5 triệu USD mỗi năm à,rag_guard,premise,rag_guard,premise,5 triệu,,1.0,False,"Đúng, CEO mới của Apple nhận lương 3 triệu USD mỗi năm.","Các bài báo liên quan không nhắc tới «5 triệu», nên mình không xác nhận được chi tiết này. Thông tin gần nhất tìm được:
+
+**CEO mới của Apple nhận lương 3 triệu USD mỗi năm**
+
+Theo đó, Ternus nhận lương 3 triệu USD mỗi năm. Trong khi đó, Tim Cook, người chuyển từ CEO sang Chủ tịch điều hành Apple sẽ nhận lương 2 triệu USD mỗi năm và số cổ phiếu thưởng trị giá mục tiêu 45 triệu USD trong năm tài chính 2027 và số tiền thưởng cũng phụ thuộc vào kết quả của cổ phiếu Apple .
+
+Nguồn: https://vnexpress.net/ceo-moi-cua-apple-nhan-luong-3-trieu-usd-moi-nam-5115791.html
+_(chuyên mục: Khoa học · độ tương đồng: 0.31)_",,,,,,,,
+v2,bẫy,mạng 2G sẽ tắt hoàn toàn vào năm 2030,rag_guard,premise,rag_guard,premise,2030,,0.6,False,"Theo các bài báo, mạng 2G sẽ được tắt hoàn toàn vào năm 2030.","Các bài báo liên quan không nhắc tới «2030», nên mình không xác nhận được chi tiết này. Thông tin gần nhất tìm được:
+
+**Mạng 2G sẽ được tắt hoàn toàn trong tháng 9**
+
+Khi 2G còn hoạt động, một số điện thoại 4G không có VoLTE vẫn có thể chuyển xuống mạng 2G để thực hiện cuộc gọi. Khi mạng này được tắt, khả năng chuyển xuống 2G không còn, khiến máy có thể vẫn truy cập Internet qua 4G nhưng không thực hiện được cuộc gọi thông thường.
+
+Nguồn: https://vnexpress.net/mang-2g-se-duoc-tat-hoan-toan-trong-thang-9-5115657.html
+_(chuyên mục: Khoa học · độ tương đồng: 0.22)_",,,,,,,,
+v2,bẫy,đập thủy điện cao nhất thế giới cao 500 m à,rag,,rag,,,,1.0,False,"Đúng, đập thủy điện cao nhất thế giới có công suất thiết kế là 2 GW và sử dụng 4 turbine Francis.","Đúng, đập thủy điện cao nhất thế giới có công suất thiết kế là 2 GW và sử dụng 4 turbine Francis.",,,,,,,,
+v2,bẫy,vì sao Google mua Hugging Face,rag,,rag,,,,1.0,False,"Google mua Hugging Face vì muốn kiểm soát một nền tảng lưu trữ mô hình AI mở, phù hợp chiến lược hoạt động hiện tại của công ty.","Google mua Hugging Face vì muốn kiểm soát một nền tảng lưu trữ mô hình AI mở, phù hợp chiến lược hoạt động hiện tại của công ty.",,,,,,,,
+v2,bẫy,Messi giành Quả Bóng Vàng 2026 rồi à,rag,,rag,,,,1.0,False,"Đúng, Messi đã được đề cử Quả Bóng Vàng 2026.","Đúng, Messi đã được đề cử Quả Bóng Vàng 2026.",,,,,,,,
+v2,bẫy,chị em song sinh đỗ thẳng Học viện Kỹ thuật quân sự,rag,,rag,,,,0.857,False,"Theo các bài báo, chị em song sinh Lê Thanh An và Lê Thanh Khang, cựu học sinh trường THPT Đại Ngãi đã đỗ thẳng Học viện Kỹ thuật quân sự.","Theo các bài báo, chị em song sinh Lê Thanh An và Lê Thanh Khang, cựu học sinh trường THPT Đại Ngãi đã đỗ thẳng Học viện Kỹ thuật quân sự.",,,,,,,,
+v2,bẫy,robot Optimus của Tesla tự bước ra khỏi dây chuyền,rag,,rag,,,,0.6,False,"Theo các bài báo, robot Optimus của Tesla tự bước ra khỏi dây chuyền sản xuất.","Theo các bài báo, robot Optimus của Tesla tự bước ra khỏi dây chuyền sản xuất.",,,,,,,,
+v2,bẫy,xây đập thủy điện cao nhất thế giới tốn bao nhiêu tiền,rag_guard,numbers,rag_guard,numbers,"3,5 tỷ","3,5 tỷ",0.571,False,"Đập thủy điện cao nhất thế giới tốn khoảng 3,5 tỷ USD.","(Câu diễn đạt lại có con số không kiểm chứng được trong nguồn — hiển thị trích dẫn gốc.)
+
+**Trung Quốc vận hành đập thủy điện cao nhất thế giới**
+
+Đây là bước tiến lớn trong dự án xây đập cao nhất thế giới và một trong những công trình thủy điện quy mô lớn trên sông Đại Độ. Đập của nhà máy thủy điện Song Giang Khẩu cao 315 m, là đập cao nhất thế giới.
+
+Nguồn: https://vnexpress.net/trung-quoc-van-hanh-dap-thuy-dien-cao-nhat-the-gioi-5116497.html
+_(chuyên mục: Khoa học · độ tương đồng: 0.24)_",,,,,,,,
+v2,bẫy,tỉnh nào mở nhiều tài khoản chứng khoán nhất,rag_guard,empty,rag_guard,empty,,,,,,"**Người Việt mở thêm 2 triệu tài khoản chứng khoán sau 8 tháng**
+
+Theo số liệu từ Tổng công ty Lưu ký và bù trừ chứng khoán Việt Nam (VSD), trong tháng 8, nhà đầu tư mở mới khoảng 229.400 tài khoản chứng khoán. Nhà đầu tư cá nhân trong nước chiếm tới 99% trong số gần 13,9 triệu tài khoản chứng khoán.
+
+Nguồn: https://vnexpress.net/nguoi-viet-mo-them-2-trieu-tai-khoan-chung-khoan-sau-8-thang-5118477.html
+_(chuyên mục: Kinh doanh · độ tương đồng: 0.34)_",,,,,,,,
+v2,bẫy,Đại học Harvard cấm sinh viên dùng laptop và AI phải không,intent,,intent,,,,,,,,,,,,,,,
+v2,bẫy,vì sao Tim Cook bị Apple sa thải,fallback,,fallback,,,,,,,,,,,,,,,
+v2,ngoài phạm vi,cách chơi cờ tướng cho người mới,fallback,,fallback,,,,,,,,,,,,,,,
+v2,ngoài phạm vi,giá vé xem phim tối nay,fallback,,fallback,,,,,,,,,,,,,,,
+v2,ngoài phạm vi,số điện thoại tổng đài điện lực,fallback,,fallback,,,,,,,,,,,,,,,
+v2,ngoài phạm vi,làm sao để hết mụn trứng cá,fallback,,fallback,,,,,,,,,,,,,,,
+v2,ngoài phạm vi,dự báo thời tiết Đà Lạt cuối tuần,fallback,,fallback,,,,,,,,,,,,,,,
+v2,ngoài phạm vi,mẹo giảm cân nhanh trong 1 tuần,fallback,,fallback,,,,,,,,,,,,,,,
+v2,ngoài phạm vi,cách làm hộ chiếu online,fallback,,fallback,,,,,,,,,,,,,,,
+v2,ngoài phạm vi,chỉ t cách tải game liên quân ik,intent,,intent,,,,,,,,,,,,,,,
+v2,ngoài phạm vi,mẹo học tiếng Hàn nhanh,fallback,,fallback,,,,,,,,,,,,,,,
+v2,ngoài phạm vi,địa chỉ tiệm sửa laptop gần đây,intent,,intent,,,,,,,,,,,,,,,
+v2,ngoài phạm vi,hnay ăn j ngon b,intent,,intent,,,,,,,,,,,,,,,
+v2,ngoài phạm vi,lich chieu phim cuoi tuan,fallback,,fallback,,,,,,,,,,,,,,,
+v2,ngoài phạm vi,kết quả xổ số miền bắc,rag,,rag,,,,0.4,True,Các tin trên không đề cập đến kết quả xổ số miền bắc.,Các tin trên không đề cập đến kết quả xổ số miền bắc.,,,,,,,,
+v2,ngoài phạm vi,hướng dẫn làm bánh mì sandwich,fallback,,fallback,,,,,,,,,,,,,,,
+v2,ngoài phạm vi,cách nuôi cá betta,fallback,,fallback,,,,,,,,,,,,,,,
+v2,ngoài phạm vi,phim hoạt hình hay cho trẻ em,fallback,,fallback,,,,,,,,,,,,,,,
+v2,ngoài phạm vi,viết code python sắp xếp mảng,fallback,,fallback,,,,,,,,,,,,,,,
+v2,ngoài phạm vi,top 10 truyện tranh hay nhất,rag,,rag,,,,0.25,False,"Theo các bài báo, top 10 truyện tranh hay nhất là những tác phẩm được đánh giá cao về mặt nội dung và hình thức.","Theo các bài báo, top 10 truyện tranh hay nhất là những tác phẩm được đánh giá cao về mặt nội dung và hình thức.",,,,,,,,
+v2,ngoài phạm vi,cách trồng rau muống trên sân thượng,fallback,,fallback,,,,,,,,,,,,,,,
+v2,ngoài phạm vi,lịch âm hôm nay là ngày bao nhiêu,fallback,,fallback,,,,,,,,,,,,,,,
+v2,ngoài phạm vi,giờ mở cửa bảo tàng Louvre,fallback,,fallback,,,,,,,,,,,,,,,
+v2,ngoài phạm vi,bài văn tả con mèo lớp 3,rag_guard,premise,rag_guard,premise,3,,0.2,False,"Theo các bài báo, về bài văn tả con mèo lớp 3.","Các bài báo liên quan không nhắc tới «3», nên mình không xác nhận được chi tiết này. Thông tin gần nhất tìm được:
+
+**Bức xúc vì bị hàng xóm dụ dỗ mèo bỏ chủ**
+
+Chú mèo chỉ về nhà mỗi khi người hàng xóm đi nghỉ mát. Hành vi dụ dỗ mèo cũng có thể bị xử lý.
+
+Nguồn: https://vnexpress.net/buc-xuc-vi-bi-hang-xom-du-do-meo-bo-chu-5117361.html
+_(chuyên mục: Đời sống · độ tương đồng: 0.18)_",,,,,,,,
+v2,ngoài phạm vi,tuyển lập trình viên Java ở Đà Nẵng,fallback,,fallback,,,,,,,,,,,,,,,
+v2,ngoài phạm vi,cho t xin lời bài hát sơn tùng vs,fallback,,fallback,,,,,,,,,,,,,,,

@@ -1,9 +1,15 @@
-# 07 — RAG với PhoGPT: lần chạy thật đầu tiên, phân tích lỗi, và prompt v2
+# 07 — RAG với PhoGPT: ba lần chạy thật, phân tích lỗi, và kết luận
 
-> Tài liệu này ghi lại **nguyên trạng** lần chạy PhoGPT đầu tiên trên Colab, kể cả
-> những chỗ kết quả tệ. Số liệu thô: `data/eval/rag/run1_results.json`,
-> `run1_samples.csv`; chấm lại: `run1_results_rescored.csv`
-> (`python tools/rescore_rag_run.py`).
+> Tài liệu này ghi lại **nguyên trạng** cả ba lần chạy PhoGPT trên Colab, kể cả
+> những chỗ kết quả tệ và những chỗ chính tôi làm sai (mục 5, mục 6).
+> Số liệu thô: `data/eval/rag/run{1,2,3}_*`; chấm lại bằng mã hiện tại:
+> `python tools/rescore_rag_run.py <file>`.
+>
+> **Kết luận ngắn** (chi tiết ở mục 11): prompt v2 làm câu trả lời tự nhiên và hữu
+> ích hơn hẳn v1 trên tập test (19/33 câu dùng được so với 9/33, p = 0.006), nhưng
+> **không làm nó trung thực hơn** — số câu chứa thông tin sai không giảm, và với
+> giả định sai không có con số thì RAG **tệ hơn** bot trích xuất. RAG vì vậy vẫn là
+> lớp tùy chọn, mặc định tắt.
 
 ## 1. Bối cảnh
 
@@ -276,18 +282,94 @@ lại, 2 chặn vì số bịa; trong 17 câu hiển thị còn **3 câu D** (h�
 rộng, Cát Bà). Chốt chặn giả định sau khi sửa vẫn chặn nhầm **0** câu dev (93) và
 **0** câu test đúng bài (97; lần kích hoạt duy nhất là câu truy hồi sai bài).
 
-## 11. Lần chạy 3 — tập test, một lần (đang chờ)
+## 11. Lần chạy 3 — tập test, một lần (kết quả cuối)
 
-Chốt trước khi chạy (commit riêng):
-- Mã `rag.py` như hiện tại; không sửa gì sau khi xem kết quả.
-- 40 câu tin tức test (seed 2026), 4 câu ca mâu thuẫn, **24** câu ngoài phạm vi.
-- **11 câu bẫy mới** (`data/eval/rag/test_traps.json`), đã đối chiếu toàn văn bài:
-  2 bẫy có con số mà chốt chặn nhắm tới, 1 bẫy có con số **nằm ở chỗ khác trong bài**
-  (điểm mù đã biết: "cao 500 m" trong khi bài có "500 MW"), 6 giả định sai **không
-  có số**, 2 câu hỏi chi tiết bài không có. Bộ này cố ý có nhiều câu chốt chặn
-  **không** bắt được, để đo PhoGPT tự nó.
-- Phát hiện khi soạn bẫy: **4/11 cách hỏi tự nhiên không tới được RAG** — câu xác
-  nhận "...đúng không", "...phải không" bị intent classifier xếp nhầm. 2 câu thử
-  lại theo thứ tự biến thể cố định thì tới được; 2 câu (Harvard, Tim Cook) không
-  biến thể nào tới được → giữ trong bộ với ghi chú, bot trả lời bằng nhánh trích
-  xuất / không tìm thấy.
+Chốt **trước** khi chạy (commit `fe10190`): mã `rag.py` đóng băng, 11 bẫy mới đã
+đối chiếu toàn văn bài. Chạy: Colab T4, llama.cpp Q8_0, 40 câu tin tức test (seed
+2026), 4 câu ca mâu thuẫn, 11 bẫy, 24 câu ngoài phạm vi, mỗi câu qua cả v1 và v2.
+Số liệu thô: `data/eval/rag/run3_test_*`; nhãn chấm tay: `run3_annotation.csv`,
+`run3_trap_annotation.csv`. Chạy lại `tools/rescore_rag_run.py` trên file kết quả
+tái lập **đúng** mọi quyết định chốt chặn của Colab.
+
+33/40 câu tin tức tới được RAG, và **cả 33 câu đều truy hồi đúng bài** (7 câu còn
+lại bị intent/ngưỡng chặn trước — đúng như tỷ lệ đầu-cuối ở docs/06).
+
+### Chấm tay 33 câu tin tức (câu PhoGPT sinh, trước chốt chặn)
+
+| Nhãn | v1 | **v2** |
+|---|---|---|
+| **A** đúng, trả lời được | 9 | **19** |
+| **B** đúng, trình bày hỏng | 10 | **2** |
+| **C** không trả lời (lặp lại câu hỏi) | 8 | 8 |
+| **D** có thông tin sai | 3 | **4** |
+| **E** từ chối sai | 3 | **0** |
+
+So có cặp trên nhãn A: **11 câu v2 đạt A mà v1 không, 1 câu ngược lại**
+(kiểm định dấu, p = 0.006). Đây là câu hỏi **chưa từng thấy** khi thiết kế prompt,
+nên kết luận "prompt v2 tốt hơn v1" đứng vững — và nó khớp với lần chạy 2 trên dev.
+
+**Nhưng thông tin sai không giảm: 3 → 4.** v2 chỉ đổi *kiểu* sai. v1 sai theo kiểu
+dễ thấy (bịa lý do ngoài bài, kèm đuôi ngày bịa, từ chối sai 3 lần); v2 sai theo
+kiểu khó thấy vì câu văn trôi chảy:
+
+| Câu hỏi | v2 viết | Bài gốc |
+|---|---|---|
+| Messi được đề cử Quả bóng vàng 2026 | "được đề cử **vì** anh không có tên trong danh sách 2024 và 2025" | đảo nhân quả: anh trở lại nhờ màn trình diễn ở World Cup |
+| chuẩn bị cho tuổi già từ năm 40 tuổi | "nhóm người dân có **độ tuổi trung bình là 40**" | "người **từ** 40 tuổi" |
+| khách Pháp chết ở Thung lũng Chết | gán kỷ lục "nhiệt độ cao nhất từng ghi nhận trên Trái Đất" cho ca này | 46,7 độ hôm đó; 56,7 độ là kỷ lục lịch sử của vùng |
+| iPhone 18 Pro Max có mấy màu | "đen, xanh băng thanh, **xanh dương sáng**, **đỏ sẫm**" | "đỏ burgundy, xanh băng thanh, **bạc**, đen" |
+
+Câu iPhone đáng chú ý: **cả v1 lẫn v2 đều bịa hai màu**, vì tầng chọn câu chỉ đưa
+4 câu vào ngữ cảnh và câu liệt kê màu **không nằm trong đó**. Lỗi bắt đầu từ phần
+tự cài đặt (chọn câu), LLM chỉ lấp chỗ trống. Truy hồi đúng bài vẫn chưa đủ.
+
+### Câu bẫy (11 câu mới): v1 và v2 hòa — vì hai lý do trái ngược
+
+| | v1 | v2 |
+|---|---|---|
+| an toàn | 6 | 6 |
+| trả lời sai | 5 | 5 |
+
+Nhưng nhìn theo **loại bẫy** thì khác hẳn:
+
+| Loại | Số câu | v2 xử lý |
+|---|---|---|
+| có con số chốt chặn nhắm tới | 2 | **2 an toàn** (chốt chặn giả định) |
+| thiếu chi tiết | 2 | **2 an toàn** (1 nhờ chốt chặn số bịa — LLM bịa "3,5 tỷ USD"; 1 vì câu sinh rỗng) |
+| con số sai nhưng có ở chỗ khác trong bài | 1 | **sai** (điểm mù đã dự đoán trước khi chạy) |
+| giả định sai **không có số** | 4 | **4 sai** — 2 câu không tới được RAG nên an toàn, 4 câu còn lại sai hết |
+
+v2 khẳng định thẳng những điều bài báo **phủ định**: "robot Optimus của Tesla tự
+bước ra khỏi dây chuyền" (bài nói Tesla chưa làm được), "chị em song sinh" (hai anh
+em), "Google mua Hugging Face" (Nvidia mua). Ở đúng 2 câu này v1 lại an toàn — vì
+nó **từ chối** hoặc diễn đạt vòng vo. Nói cách khác: prompt v2 làm mô hình **quả
+quyết hơn**, nên trả lời tốt hơn hẳn với câu hỏi thật, nhưng cũng **gật đầu với
+giả định sai dễ hơn**. Đây là đánh đổi đo được, không phải suy đoán.
+
+### Ca mâu thuẫn, ngoài phạm vi, chốt chặn
+
+- **Mâu thuẫn:** v2 **3/3** theo tin mới (8.000 đồng); v1 2/3 (một câu tự mâu thuẫn).
+- **Ngoài phạm vi:** 21/24 câu không tới LLM. 3 câu lọt qua ngưỡng truy hồi: v2 từ
+  chối đúng 1 ("kết quả xổ số"), bịa 1 ("top 10 truyện tranh hay nhất là những tác
+  phẩm được đánh giá cao..."), 1 bị chốt chặn giả định chặn (số "3" trong "lớp 3").
+  Phần lọt lưới này là do ngưỡng truy hồi, đã biết từ docs/06 (OOS từ chối 75%).
+- **Chốt chặn trên test:** giả định **0 lần báo nhầm** trên 33 câu tin tức (chỉ kích
+  hoạt ở 2 bẫy + 1 câu ngoài phạm vi); lặp lại kích hoạt 4 lần, **cả 4 đều đúng**;
+  số bịa 1 lần ("2 km" trong khi bài ghi "2,1 km" — về cơ chế là báo nhầm do làm
+  tròn, nhưng câu đó vẫn sai vì lý do khác).
+- **Độ trễ** v2: 1.18 s trung bình, 3.07 s p90 (v1: 1.49 / 4.00).
+- **Trích dẫn:** v1 có 3 câu trích dẫn hợp lệ nhưng 7 câu trích dẫn sai số hiệu;
+  v2 bỏ hẳn yêu cầu trích dẫn, nguồn gắn bằng code — 0 trích dẫn sai.
+
+### Kết luận
+
+RAG với PhoGPT-4B-Chat làm câu trả lời **tự nhiên hơn hẳn** và giảm mạnh câu vô
+dụng (A: 27% → 58%), nhưng **không an toàn hơn**: tỷ lệ câu chứa thông tin sai
+không giảm (3/33 → 4/33), và với **giả định sai không có con số** thì nó **tệ hơn
+bot trích xuất** — bot trích xuất không bao giờ khẳng định điều bài báo không nói,
+nó chỉ đưa ra đoạn trích và để người đọc tự đánh giá.
+
+Vì vậy trong đồ án này, RAG được giữ đúng vị trí của nó: một **lớp tùy chọn**, mặc
+định tắt, chạy trên Colab; chatbot nộp bài vẫn là bản trích xuất. Muốn bật RAG cho
+người dùng thật thì cần thêm một tầng kiểm tra suy diễn (NLI) cho giả định sai
+không có số — ngoài phạm vi đồ án.
