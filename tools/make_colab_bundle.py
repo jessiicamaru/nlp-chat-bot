@@ -19,6 +19,7 @@ INCLUDE = [
     "data/eval/dev.json",
     "data/eval/test.json",
     "data/eval/conflict_case.json",
+    "data/eval/rag/*_traps.json",
     "requirements.txt",
 ]
 

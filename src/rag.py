@@ -25,6 +25,8 @@ nằm ngoài phạm vi "from scratch" — ghi rõ trong báo cáo.
    giả định sai ("Đúng.", "lợi nhuận năm 2020 là 27 tỷ đồng").
 3. (v2) Chốt chặn SỐ BỊA: câu trả lời chứa con số không có trong nguồn -> không
    hiển thị câu sinh ra, hiển thị câu trích xuất gốc thay thế.
+4. (v2, sau lần chạy 2) Câu sinh RỖNG sau làm sạch, hoặc chỉ LẶP LẠI câu hỏi
+   ("Các tin trên cho biết về vụ đắm tàu Costa Concordia.") -> hiển thị trích xuất.
 
 Hai chốt chặn là quy tắc tất định (regex + so khớp), kiểm thử được mà không cần
 GPU — lấy tinh thần Lab01 (regex, trích xuất thực thể) làm hàng rào cho LLM.
@@ -44,9 +46,10 @@ from __future__ import annotations
 import re
 import time
 from dataclasses import dataclass, field
+from functools import lru_cache
 
 from config import CONFIG_RETRIEVAL
-from preprocess import load_stopwords, normalize_basic, tokenize
+from preprocess import load_stopwords, normalize_basic, strip_accents, tokenize
 
 # Mẫu prompt chính thức của PhoGPT-4B-Chat (github.com/VinAIResearch/PhoGPT,
 # khớp với phogpt_4b_chat_preset.json trong repo GGUF của VinAI).
@@ -173,6 +176,12 @@ _ECHO_LINE = re.compile(
 _LIST_MARKER = re.compile(r"^\s*(\d+[.)]|[-*•])\s+")
 _SENT_SPLIT = re.compile(r"(?<=[.!?])\s+")
 _WORD = re.compile(r"\w+")
+# Nhãn "Tin 1:" chép từ định dạng ngữ cảnh v2 — lần chạy 2 bị chốt chặn số bịa
+# bắt nhầm vì chữ số "1" trong nhãn. Và mở đầu "Các tin trên cho biết (rằng)"
+# chép từ câu hỏi đã chuyển đổi: người dùng không thấy "các tin trên" nên đổi
+# thành "Theo các bài báo,".
+_TIN_LABEL = re.compile(r"\btin \d+\s*:\s*", re.I)
+_FRAME_PREFIX = re.compile(r"^các tin trên cho biết\s*(rằng|là)?\s*[:,]?\s*", re.I)
 
 # Từ vựng của phần hướng dẫn. Một dòng gần như toàn từ trong đây ("Trả lời
 # ngắn gọn bằng tiếng Việt tự nhiên.") là mô hình lặp lại quy tắc, bắt được cả
@@ -203,6 +212,7 @@ def clean_generation(text: str, version: str = DEFAULT_PROMPT_VERSION,
     if version == "v1":
         return text.strip()
 
+    text = text.replace("```", " ")
     paragraphs: list[list[str]] = [[]]
     for line in text.strip().splitlines():
         if not line.strip():
@@ -216,7 +226,7 @@ def clean_generation(text: str, version: str = DEFAULT_PROMPT_VERSION,
     first = next((p for p in paragraphs if p), [])
 
     out, seen = [], set()
-    for sent in _SENT_SPLIT.split(" ".join(first)):
+    for sent in _SENT_SPLIT.split(_TIN_LABEL.sub("", " ".join(first))):
         key = re.sub(r"\W+", " ", sent.lower()).strip()
         if not key or key in seen:
             continue
@@ -224,7 +234,46 @@ def clean_generation(text: str, version: str = DEFAULT_PROMPT_VERSION,
         out.append(sent.strip())
         if len(out) == max_sentences:
             break
-    return " ".join(out).strip()
+    answer = re.sub(r"\s+", " ", " ".join(out)).strip()
+    if _FRAME_PREFIX.match(answer):
+        rest = _FRAME_PREFIX.sub("", answer)
+        sents = _SENT_SPLIT.split(rest)
+        # "Các tin trên cho biết về X. Vụ nổ có sức mạnh..." -> câu đầu rỗng, bỏ đi.
+        if len(sents) > 1 and sents[0].lower().startswith("về "):
+            return " ".join(sents[1:])
+        first_word = rest.split(" ", 1)[0] if rest else ""
+        # Chỉ viết thường hư từ ("Hơn 1.700" -> "hơn 1.700"); giữ nguyên "TP HCM", "Trung Quốc".
+        if first_word.lower() in _single_stopwords():
+            rest = rest[:1].lower() + rest[1:]
+        answer = f"Theo các bài báo, {rest}" if rest else ""
+    return answer
+
+
+@lru_cache(maxsize=1)
+def _single_stopwords() -> frozenset[str]:
+    return frozenset(w for w in load_stopwords() if " " not in w and "_" not in w)
+
+
+# Âm tiết của câu hỏi đã chuyển đổi ("Các tin trên cho biết gì về X?") và của
+# mở đầu "Theo các bài báo," — lặp lại chúng không phải là thông tin.
+_FRAME_SYLLABLES = {"cac", "tin", "tren", "cho", "biet", "gi", "ve", "rang", "theo", "bai", "bao"}
+
+
+def adds_information(answer: str, question: str) -> bool:
+    """Câu trả lời có nói thêm được gì ngoài chính câu hỏi không?
+
+    Lần chạy 2 (v2): "Các tin trên cho biết về vụ đắm tàu Costa Concordia." —
+    đúng ngữ pháp, không sai gì, nhưng rỗng. Một âm tiết được tính là "thông tin
+    mới" nếu nó không có trong câu hỏi (so không dấu, vì câu hỏi có thể gõ không
+    dấu) và không phải stopword (so CÓ dấu — bỏ dấu thì "dễ"/"để" trùng nhau).
+    Con số mới luôn là thông tin ("mua hơn 20 tấn vàng" trả lời được "mua thêm vàng").
+    """
+    stop = _single_stopwords()
+    known = {strip_accents(s) for s in _WORD.findall(question.lower())} | _FRAME_SYLLABLES
+    for syl in _WORD.findall(answer.lower()):
+        if strip_accents(syl) not in known and (syl.isdigit() or syl not in stop):
+            return True
+    return False
 
 
 # ---------------------------------------------------------------------------
@@ -286,7 +335,15 @@ def unsupported_premises(question: str, source_texts: list[str]) -> list[str]:
     corpus_codes = _codes(corpus)
     corpus_numbers = _number_pool(corpus)
     missing = [c for c in sorted(_codes(question)) if c not in corpus_codes]
-    for raw, forms in _numbers(question):
+    for m in _NUMBER.finditer(_CODE.sub(" ", _CLOCK.sub(r"\1 giờ \2", question))):
+        num, unit = m.group(1), m.group(2)
+        forms = _number_forms(num, unit)
+        if unit:
+            # "5 triệu" phải khớp GIÁ TRỊ 5.000.000 — không được khớp một chữ số 5
+            # bất kỳ trong bài (bài nào cũng có số 5 ở đâu đó).
+            forms = {f for f in forms if f != _norm_number(num) and f != _fmt(float(
+                num.replace(".", "").replace(",", ".")))} or forms
+        raw = m.group(0).strip()
         if not (forms & corpus_numbers) and raw not in missing:
             missing.append(raw)
     return missing
@@ -446,7 +503,7 @@ class RagReply:
     checks: dict = field(default_factory=dict)   # chấm trên llm_text, không phải text
     llm_text: str = ""              # câu PhoGPT sinh (đã làm sạch), kể cả khi bị chặn
     raw_generation: str = ""        # nguyên văn PhoGPT sinh, chưa làm sạch
-    guard: str | None = None        # None | "premise" | "numbers" | "empty"
+    guard: str | None = None        # None | "premise" | "empty" | "echo" | "numbers"
     guard_detail: list[str] = field(default_factory=list)
 
 
@@ -509,6 +566,12 @@ class RagChatbot:
                     f"được chi tiết này. Thông tin gần nhất tìm được:\n\n{reply.text}")
         elif self.guards and not llm_text:
             guard, text = "empty", reply.text
+        elif (self.guards and not is_question(understood)
+              and not adds_information(llm_text, frame_question(understood))):
+            # Chỉ áp cho câu dạng từ khóa (đã được chuyển thành "Các tin trên cho
+            # biết gì về X?"). Câu hỏi có/không được phép dùng lại chữ của câu hỏi:
+            # "vé tàu cát linh có tăng giá không" -> "Vé tàu Cát Linh không tăng giá."
+            guard, text = "echo", reply.text
         elif self.guards and checks.get("unsupported_numbers"):
             guard, detail = "numbers", checks["unsupported_numbers"]
             text = ("(Câu diễn đạt lại có con số không kiểm chứng được trong nguồn — "

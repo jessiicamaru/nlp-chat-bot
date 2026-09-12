@@ -99,7 +99,14 @@ như thông báo trước đó." Nhưng: 1 câu gán lý do của bài cũ ("nh�
 vận hành") cho quyết định hoãn; 2 câu kèm đuôi ngày bịa. Câu thứ 4 ("tàu cát linh
 15.000 đồng") không tới được PhoGPT — xem mục 6.
 
-**Bẫy** (6 câu hỏi chi tiết mà bài không có): **0/6** xử lý đúng.
+**Bẫy** (hỏi chi tiết mà bài không có): **0/5** xử lý đúng.
+
+> **Đính chính (sau lần chạy 2):** ban đầu có 6 câu bẫy. Câu "vì sao kem Tràng
+> Tiền phải đóng cửa" bị ghi nhầm là bẫy — bài **có** nêu lý do: cơ sở 35 Tràng
+> Tiền "hoàn thành sứ mệnh lịch sử" sau 68 năm, việc chuyển đổi nằm trong kế hoạch
+> phát triển hệ thống. Lỗi do lúc kiểm tra chỉ tìm các chuỗi "lý do", "vì" thay vì
+> đọc cả bài. Câu này được giữ lại như câu hỏi **hợp lệ** (`dev_traps.json`,
+> type `hợp_lệ`). Bài học áp dụng cho bộ bẫy test: đọc toàn văn từng bài.
 
 | Câu bẫy | PhoGPT v1 |
 |---|---|
@@ -108,7 +115,7 @@ vận hành") cho quyết định hoãn; 2 câu kèm đuôi ngày bịa. Câu th
 | đảo Hải Nam miễn visa **từ năm 2015** phải không | "Đúng." |
 | AirPods 5 có chống nước chuẩn **IP68** không | chỉ in ra một dòng `[1] (đăng 10/09/2016, ...)` |
 | Messi mua CLB Eldense với giá bao nhiêu | đầu mục chép lại + "Câu hỏi chứa giả định sai" |
-| vì sao kem Tràng Tiền phải đóng cửa | chép lại nguyên danh sách quy tắc của prompt |
+| *(hợp lệ)* vì sao kem Tràng Tiền phải đóng cửa | chép lại nguyên danh sách quy tắc — trả lời hỏng một câu hỏi có đáp án |
 
 Quy tắc số 6 trong prompt ("nếu câu hỏi chứa giả định sai, hãy chỉ ra") **không có
 tác dụng**: mô hình 4B có xu hướng đồng ý với người hỏi.
@@ -176,15 +183,15 @@ lần** sau khi chốt, để báo cáo.
 
 | | v1 như đã chạy | v1 + hậu xử lý v2 + chốt chặn |
 |---|---|---|
-| Bẫy xử lý an toàn | 0/6 | **6/6** — 4 chốt chặn giả định (IP68, 2020, 30, 2015), 2 câu rỗng sau làm sạch → trích xuất |
+| Bẫy xử lý an toàn | 0/5 | **5/5** — 4 chốt chặn giả định (IP68, 2020, 30, 2015), Messi rỗng sau làm sạch → trích xuất |
 | Câu tin tức hiển thị còn số bịa | 6/21 | **0/18** (3 câu bị thay bằng trích xuất; 3 câu hết số bịa vì dòng đuôi bị cắt) |
 | Câu D còn được hiển thị | 8 | **5** (Panama, Cát Bà, Costa, bác sĩ trẻ, sản phụ khoa) |
 | Câu C (lặp truy vấn) | 3 | 3 — hậu xử lý không sửa được; cần prompt mới |
 
-Đọc kỹ con số "6/6 bẫy": 4 câu được chặn **bởi thiết kế** (chúng có con số, đúng
-loại chốt chặn nhắm tới); 2 câu còn lại an toàn **vì may** — đầu ra quá hỏng nên làm
-sạch xong không còn gì. Với một đầu ra trôi chảy mà sai ("Kem Tràng Tiền đóng cửa
-vì hết hợp đồng thuê"), không chốt chặn nào bắt được.
+Đọc kỹ con số "5/5 bẫy": 4 câu được chặn **bởi thiết kế** (chúng có con số, đúng
+loại chốt chặn nhắm tới); câu Messi an toàn **vì may** — đầu ra quá hỏng nên làm
+sạch xong không còn gì. Với một đầu ra trôi chảy mà sai, không chốt chặn nào bắt
+được — lần chạy 2 xác nhận đúng điều này (mục 10).
 
 ## 9. Giới hạn
 
@@ -197,14 +204,90 @@ vì hết hợp đồng thuê"), không chốt chặn nào bắt được.
 4. Làm sạch câu sinh dùng mẫu regex rút ra từ **chính các đầu ra dev** của lần 1 —
    đo trên cùng các câu đó (mục 8) là lạc quan. Lần chạy 2 mới là phép đo trên
    đầu ra chưa thấy.
+5. **Câu hỏi xác nhận bị chặn trước khi tới RAG.** "...đúng không", "...phải
+   không" hay bị intent classifier xếp vào intent hội thoại — đúng loại câu mà
+   người dùng dùng để kiểm tra một giả định. Đây là điểm yếu của phần tự cài đặt
+   (docs/06), không phải của PhoGPT.
 
-## 10. Lần chạy 2 (đang chờ)
+## 10. Lần chạy 2 — v1 và v2 trên cùng mô hình (dev)
 
-Notebook `dist/RAG_PhoGPT_Colab.ipynb` (bản mới) chạy **cùng 40 câu dev** qua **v1
-và v2** trên **Q8_0**, ghi lại cả câu PhoGPT định trả lời khi bị chốt chặn
-(`generate_when_guarded`), xuất `rag_results_run2.json` / `rag_samples_run2.csv`.
+Cấu hình: Colab T4, llama.cpp, GGUF **Q8_0**, cùng 40 câu dev như lần 1; mỗi câu chạy
+qua v1 (prompt cũ, không chốt chặn, 256 token) và v2 (160 token). Khi chốt chặn
+giả định chặn, PhoGPT **vẫn được gọi** để ghi lại nó định nói gì. Số liệu thô:
+`data/eval/rag/run2_results.json`; chấm lại bằng mã hiện tại:
+`run2_results_rescored.csv`.
 
-Câu hỏi lần 2 trả lời được:
-- Riêng **prompt** v2 (tách khỏi hậu xử lý) có giảm câu C/D không?
-- Q8_0 so với Q4_K_M: v1-trên-Q8_0 so với v1 lần 1.
-- Tập **test** chỉ chạy **một lần** sau khi prompt đã chốt trên dev.
+### Chấm tay 21 câu tin tức (cùng thang A–E như mục 4)
+
+| | v1 · Q4_K_M (lần 1) | v1 · Q8_0 (lần 2) | **v2 · Q8_0 (lần 2)** |
+|---|---|---|---|
+| **A** đúng, trả lời được | 3 | 4 | **10** |
+| **B** đúng, trình bày hỏng | 5 | 3 | 3 |
+| **C** không trả lời (lặp truy vấn) | 3 | 4 | 3 |
+| **D** có thông tin sai | 8 | 7 | **5** |
+| **E** từ chối sai | 2 | 3 | **0** |
+
+Câu PhoGPT sinh, **trước** mọi chốt chặn. Đọc bảng:
+
+- **Lượng tử hóa không phải vấn đề.** v1 trên Q4_K_M và trên Q8_0 cho phân bố lỗi
+  gần như nhau. Lỗi nằm ở prompt, không ở độ chính xác số của trọng số.
+- **Prompt v2 giúp thật.** So có cặp từng câu: 6 câu v2 đạt A mà v1 không, 0 câu
+  ngược lại (kiểm định dấu p ≈ 0.03). Từ chối sai biến mất (Bali, Mỹ Mở rộng,
+  Estonia giờ trả lời đúng). **Nhưng** v2 được thiết kế từ đầu ra lần 1 trên chính
+  các câu này, và người chấm biết câu nào là v2 — con số này **lạc quan**. Phép đo
+  không thiên lệch là lần chạy 3 trên tập test.
+- **v2 vẫn sai 5/21 câu.** Không cần con số để sai:
+
+| Câu hỏi | v2 viết | Bài gốc |
+|---|---|---|
+| hàng nhập dưới 100 nghìn có được miễn thuế | "hàng nhập **dưới** 100 nghìn đồng có thể không còn được miễn thuế" | hạ ngưỡng miễn thuế xuống 100.000 → hàng **trên** 100.000 mất miễn thuế. Mô hình lấy chữ của câu hỏi đảo nghĩa câu trả lời (v1 cũng sai y hệt) |
+| bán kết Mỹ Mở rộng nữ có bốn hạt giống | "... Wimbledon 2009 và đây cũng chính là năm Sabalenka lọt vào vòng đấu này" | nửa sau bịa |
+| du khách mắc kẹt trên đảo Cát Bà | "sau khi bão số 4 **đổ bộ**" | bài không nói bão đã đổ bộ (lỗi nhẹ) |
+| vụ nổ tên lửa blue origin | "Chornobyl năm **196**" | 1986 — chốt chặn số bịa **bắt được** |
+| bác sĩ nội trú chọn sản phụ khoa | trả lời như thể bài nói về bác sĩ nội trú | truy hồi sai bài — chốt chặn số bịa chặn được, nhưng **vì may** (xem dưới) |
+
+### Chốt chặn trong lần chạy 2 — cả đúng lẫn sai
+
+| Chốt chặn | Kích hoạt đúng | Kích hoạt sai / may |
+|---|---|---|
+| Giả định (bẫy) | **4/4** bẫy có con số: PhoGPT v2 định trả lời "Có, ... chuẩn IP68", "Không nên giữ ... quá 30 ngày", "Đúng." — đều sai, đều bị chặn | 0 |
+| Số bịa | Blue Origin "196"; bẫy Messi "khoảng 1,5 triệu euro" (bịa hoàn toàn) | "học sinh bị bắt nạt": câu trả lời **đúng** nhưng có nhãn "Tin 1:" chép từ ngữ cảnh → chữ số "1" bị coi là số bịa. "sản phụ khoa": chặn vì "1 bé gái" (bài viết "một bé gái") — câu đáng chặn nhưng chặn vì lý do sai |
+
+Trên bẫy (5 câu thật), PhoGPT v2 **tự nó** chỉ xử lý đúng 1/5 (metro: không nhận
+số của năm 2020). Có chốt chặn: **5/5** an toàn. Câu Tràng Tiền (hợp lệ): cả v1 lẫn
+v2 trên Q8_0 đều trả lời **đúng** theo bài.
+
+**Ca mâu thuẫn:** v2 đúng 3/3 (theo tin mới, 8.000 đồng, kể cả lý do hoãn lấy đúng
+từ bài mới); v1 trên Q8_0 có 1 câu tự mâu thuẫn ("Không ... 8.000" rồi "Đúng vậy").
+**Độ trễ** v2: trung bình 1.5 s, p90 2.8 s (v1: 1.6 s / 4.9 s).
+
+### Sửa sau lần chạy 2 (chỉ hậu xử lý — không đổi chữ nào của prompt)
+
+| Lỗi quan sát được | Sửa |
+|---|---|
+| Nhãn "Tin 1:" làm chốt chặn số bịa bắt nhầm | Bỏ nhãn "Tin N:" khi làm sạch |
+| "Các tin trên cho biết về vụ đắm tàu Costa Concordia." — rỗng | **Chốt chặn lặp lại**: câu không thêm âm tiết nội dung nào ngoài câu hỏi → trích xuất. Chỉ áp cho câu dạng từ khóa — câu hỏi có/không được dùng lại chữ của câu hỏi ("Vé tàu Cát Linh không tăng giá." là câu trả lời đúng; bản đầu của chốt chặn đã chặn nhầm câu này khi chấm lại, nên phải thu hẹp) |
+| Mở đầu "Các tin trên cho biết..." (người dùng không thấy "các tin trên") | Đổi thành "Theo các bài báo,"; không viết thường danh từ riêng ("tP HCM" là lỗi đã gặp) |
+| Ký tự ``` lọt vào câu trả lời | Bỏ |
+| (suy luận, không từ dữ liệu) "5 triệu" khớp với một chữ số 5 bất kỳ trong bài | Số có đơn vị chỉ khớp theo **giá trị** (5.000.000) |
+
+Chấm lại đầu ra v2 lần 2 bằng mã đã sửa: 17/21 câu hiển thị câu sinh, 2 chặn vì lặp
+lại, 2 chặn vì số bịa; trong 17 câu hiển thị còn **3 câu D** (hàng nhập, Mỹ Mở
+rộng, Cát Bà). Chốt chặn giả định sau khi sửa vẫn chặn nhầm **0** câu dev (93) và
+**0** câu test đúng bài (97; lần kích hoạt duy nhất là câu truy hồi sai bài).
+
+## 11. Lần chạy 3 — tập test, một lần (đang chờ)
+
+Chốt trước khi chạy (commit riêng):
+- Mã `rag.py` như hiện tại; không sửa gì sau khi xem kết quả.
+- 40 câu tin tức test (seed 2026), 4 câu ca mâu thuẫn, **24** câu ngoài phạm vi.
+- **11 câu bẫy mới** (`data/eval/rag/test_traps.json`), đã đối chiếu toàn văn bài:
+  2 bẫy có con số mà chốt chặn nhắm tới, 1 bẫy có con số **nằm ở chỗ khác trong bài**
+  (điểm mù đã biết: "cao 500 m" trong khi bài có "500 MW"), 6 giả định sai **không
+  có số**, 2 câu hỏi chi tiết bài không có. Bộ này cố ý có nhiều câu chốt chặn
+  **không** bắt được, để đo PhoGPT tự nó.
+- Phát hiện khi soạn bẫy: **4/11 cách hỏi tự nhiên không tới được RAG** — câu xác
+  nhận "...đúng không", "...phải không" bị intent classifier xếp nhầm. 2 câu thử
+  lại theo thứ tự biến thể cố định thì tới được; 2 câu (Harvard, Tim Cook) không
+  biến thể nào tới được → giữ trong bộ với ghi chú, bot trả lời bằng nhánh trích
+  xuất / không tìm thấy.

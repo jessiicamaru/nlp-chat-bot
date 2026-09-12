@@ -20,8 +20,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 from chatbot import NewsChatbot
 from normalizer import TeencodeNormalizer, prepare_user_text
 from rag import (PHOGPT_TEMPLATE, REFUSAL_PHRASE, EchoBackend, LLMBackend, RagChatbot,
-                 build_prompt, clean_generation, faithfulness_report, frame_question,
-                 is_question, unsupported_premises)
+                 adds_information, build_prompt, clean_generation, faithfulness_report,
+                 frame_question, is_question, unsupported_premises)
 
 
 class MustNotBeCalled(LLMBackend):
@@ -163,6 +163,46 @@ def bo_dong_chep_lai_quy_tac():
     assert clean_generation(raw2) == "Vụ đắm tàu xảy ra năm 2012."
 
 
+# --- Làm sạch: lỗi của lần chạy 2 (đầu ra v2 thật) -------------------------
+@test
+def bo_nhan_tin_va_dau_code():
+    raw = 'Tin 1: Gần 20 % học sinh Việt bị bắt nạt. Tin 2: Khoảng 59 % học sinh chưa đạt.'
+    assert clean_generation(raw) == "Gần 20 % học sinh Việt bị bắt nạt. Khoảng 59 % học sinh chưa đạt."
+    assert clean_generation("``` Vé tàu Cát Linh không tăng giá.") == "Vé tàu Cát Linh không tăng giá."
+
+
+@test
+def mo_dau_cac_tin_tren_doi_thanh_theo_cac_bai_bao():
+    assert clean_generation("Các tin trên cho biết rằng hơn 1.700 du khách vẫn ở lại đảo.") \
+        == "Theo các bài báo, hơn 1.700 du khách vẫn ở lại đảo."
+    # Không viết thường danh từ riêng / viết tắt ("tP HCM" là lỗi thật đã gặp)
+    assert clean_generation("Các tin trên cho biết TP HCM đã triển khai thí điểm.") \
+        == "Theo các bài báo, TP HCM đã triển khai thí điểm."
+    # Câu đầu rỗng "về X." bị bỏ khi phía sau có nội dung
+    raw = "Các tin trên cho biết về vụ nổ tên lửa Blue Origin. Vụ nổ tương đương 131 tấn TNT."
+    assert clean_generation(raw) == "Vụ nổ tương đương 131 tấn TNT."
+
+
+@test
+def nhan_dien_cau_tra_loi_chi_lap_lai_cau_hoi():
+    q = frame_question("vụ đắm tàu Costa Concordia")
+    assert not adds_information(clean_generation("Các tin trên cho biết về vụ đắm tàu Costa Concordia."), q)
+    assert adds_information("Trung Quốc mua hơn 20 tấn vàng dự trữ.", frame_question("trung quoc mua them vang du tru"))
+    assert adds_information("Robot chó Lynx chạy trên sa mạc khắc nghiệt.", frame_question("robot chó Lynx chạy trên sa mạc"))
+    assert not adds_information("Huawei Mate XT2 gập ba.", frame_question("Huawei Mate XT2 gập ba"))
+
+
+@test
+def chot_chan_lap_lai_chi_ap_cho_cau_tu_khoa():
+    r = ask(RagChatbot(_BOT, Fixed("Các tin trên cho biết về vụ đắm tàu Costa Concordia.")),
+            "vụ đắm tàu Costa Concordia")
+    assert r.guard == "echo" and r.text == r.extractive_text, (r.guard, r.text[:80])
+    # Câu hỏi có/không: trả lời bằng chính chữ của câu hỏi là hợp lệ
+    r = ask(RagChatbot(_BOT, Fixed("Đảo Hải Nam có miễn visa cho khách Việt.")),
+            "đảo hải nam có miễn visa cho khách việt không")
+    assert r.route == "rag" and r.guard is None, (r.route, r.guard)
+
+
 # --- Kiểm tra độ trung thành ----------------------------------------------
 @test
 def phat_hien_so_bia():
@@ -251,6 +291,10 @@ def chot_chan_gia_dinh_ham_thuan():
     assert unsupported_premises("năm 2015 có gì", ["Bài viết về năm 2016"]) == ["2015"]
     assert unsupported_premises("giá 15.000 đồng", ["giá 15000 đồng"]) == []
     assert unsupported_premises("chuẩn IP68", ["chuẩn ip68 chống nước"]) == []
+    # Số có đơn vị khớp theo GIÁ TRỊ, không khớp chữ số trần ở chỗ khác trong bài
+    assert unsupported_premises("mở 5 triệu tài khoản", ["mở 2 triệu tài khoản trong 5 tháng"]) == ["5 triệu"]
+    assert unsupported_premises("mở 2 triệu tài khoản", ["mở 2.000.000 tài khoản"]) == []
+    assert unsupported_premises("dưới 100 nghìn", ["trên 100.000 đồng"]) == []
 
 
 @test

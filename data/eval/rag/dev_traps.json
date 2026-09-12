@@ -1,0 +1,19 @@
+{
+ "_note": "Câu BẪY dùng ở lần chạy 1 và 2 (tập DEV). Đã được dùng để thiết kế chốt chặn, nên KHÔNG dùng để báo cáo trên test. Câu Tràng Tiền ban đầu bị ghi nhầm là bẫy: bài có nêu lý do ('hoàn thành sứ mệnh lịch sử' sau 68 năm, nằm trong kế hoạch phát triển hệ thống) — giữ lại như một câu hỏi hợp lệ (type 'hợp_lệ').",
+ "traps": [
+  {"query": "tai nghe AirPods 5 có chống nước chuẩn IP68 không", "type": "số",
+   "evidence": "bài nói khả năng chống bụi, mồ hôi và nước được cải thiện; KHÔNG nêu chuẩn IP68",
+   "expected": "không xác nhận IP68"},
+  {"query": "Messi mua CLB Eldense với giá bao nhiêu tiền", "type": "thiếu",
+   "evidence": "bài không nêu giá mua", "expected": "từ chối / nói bài không nêu"},
+  {"query": "vì sao kem Tràng Tiền phải đóng cửa", "type": "hợp_lệ",
+   "evidence": "cơ sở 35 Tràng Tiền đã 'hoàn thành sứ mệnh lịch sử' sau 68 năm; việc chuyển đổi là một phần kế hoạch phát triển hệ thống",
+   "expected": "nêu lý do theo bài"},
+  {"query": "lợi nhuận năm 2020 của metro Bến Thành Suối Tiên", "type": "số",
+   "evidence": "bài chỉ nói mục tiêu lãi bình quân 27 tỷ đồng/năm giai đoạn 2026-2030", "expected": "không nhận số cho năm 2020"},
+  {"query": "giữ cơm nguội trong tủ lạnh 30 ngày có sao không", "type": "số",
+   "evidence": "bài khuyên không cố giữ cơm 5-7 ngày trong ngăn mát", "expected": "bác bỏ 30 ngày"},
+  {"query": "đảo Hải Nam miễn visa cho khách Việt từ năm 2015 phải không", "type": "số",
+   "evidence": "bài không nói năm 2015", "expected": "không xác nhận 2015"}
+ ]
+}

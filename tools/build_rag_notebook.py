@@ -27,7 +27,7 @@ def code(text):
 
 
 md(r"""
-# RAG với PhoGPT-4B-Chat — Chatbot tin tức tiếng Việt (lần chạy 2: so sánh prompt v1 / v2)
+# RAG với PhoGPT-4B-Chat — Chatbot tin tức tiếng Việt (lần chạy 3: tập TEST, chạy MỘT lần)
 
 Notebook này thêm bước **sinh câu trả lời tự nhiên** lên trên chatbot trích xuất
 đã xây from scratch:
@@ -39,12 +39,16 @@ câu hỏi ─> [truy hồi TF-IDF tự cài đặt] ─> 1–3 bài báo ─> [
 **Nguyên tắc an toàn:** PhoGPT chỉ được gọi khi phần truy hồi đã tìm được bài báo
 vượt ngưỡng. Câu ngoài phạm vi bị từ chối **trước** khi tới PhoGPT.
 
-**Lần chạy này** chạy CÙNG một bộ câu hỏi (giống lần 1) qua hai phiên bản prompt
-trên CÙNG một mô hình, để so sánh công bằng:
+**Lần chạy này** là phép đo cuối trên tập **TEST** — câu hỏi chưa từng dùng khi
+thiết kế prompt và chốt chặn (lần 1, 2 chạy trên dev). Mỗi câu chạy qua hai phiên
+bản trên CÙNG một mô hình để so sánh có cặp:
 
 - **v1** — prompt của lần chạy đầu (6 quy tắc đánh số), không chốt chặn.
 - **v2** — prompt ngắn, câu từ khóa được chuyển thành câu hỏi, làm sạch phần mô
-  hình chép lại prompt, thêm hai chốt chặn tất định. Lý do từng thay đổi: `docs/07`.
+  hình chép lại prompt, các chốt chặn tất định. Lý do từng thay đổi: `docs/07`.
+
+Câu bẫy của lần này là bộ **mới** (`data/eval/rag/test_traps.json`), viết và chốt
+trước khi chạy.
 
 ## Cách chạy (khoảng 10–15 phút)
 
@@ -52,11 +56,11 @@ trên CÙNG một mô hình, để so sánh công bằng:
 2. **Runtime → Run all**.
 3. Khi ô số 2 hỏi, **chọn file `rag_bundle.zip`** (bản MỚI) để tải lên.
 4. Chờ chạy xong. Ô cuối cùng sẽ **tải về** 2 file kết quả:
-   `rag_results_run2.json` và `rag_samples_run2.csv`.
+   `rag_results_run3_test.json` và `rag_samples_run3_test.csv`.
 5. Chép 2 file đó vào thư mục `final-project/local/`.
 
-> Lần này dùng bản GGUF **Q8_0** (~3.9 GB, gần như không mất chất lượng) thay cho
-> Q4_K_M (4 bit) của lần 1. Tải về máy Colab, không tốn dung lượng máy bạn.
+> Mô hình: bản GGUF **Q8_0** (~3.9 GB), giống lần 2. Tải về máy Colab, không tốn
+> dung lượng máy bạn.
 """)
 
 md(r"""
@@ -69,10 +73,11 @@ BACKEND = "llamacpp"    # "llamacpp" | "transformers" | "auto" (lần 1: transfo
 GGUF_FILE = "PhoGPT-4B-Chat-Q8_0.gguf"     # lần 1 dùng "PhoGPT-4B-Chat-Q4_K_M.gguf"
 PROMPT_VERSIONS = ["v1", "v2"]
 MAX_NEW_TOKENS = {"v1": 256, "v2": 160}  # v1 giữ đúng như lần 1; v2 chỉ cần 2-3 câu
-EVAL_SPLIT = "dev"      # "dev" khi còn đang chỉnh prompt; đổi sang "test" CHỈ MỘT LẦN khi đã chốt
-N_EVAL = 25             # số câu hỏi tin tức lấy mẫu (cùng SEED -> cùng 25 câu như lần 1)
+EVAL_SPLIT = "test"     # lần 1-2: "dev". Lần này: "test" — chạy MỘT lần, không chỉnh gì sau khi xem
+N_EVAL = 40             # số câu hỏi tin tức lấy mẫu từ tập (seed cố định)
+N_OOS = None            # None = mọi câu ngoài phạm vi của tập (không tốn GPU: LLM không được gọi)
 SEED = 2026
-RUN_TAG = "run2"        # hậu tố tên file kết quả, để không đè file lần trước
+RUN_TAG = "run3_test"   # hậu tố tên file kết quả, để không đè file lần trước
 # ------------------------
 
 import os, sys, time, json, random, zipfile, subprocess
@@ -252,21 +257,12 @@ import pandas as pd
 split = json.loads((PROJECT / "data" / "eval" / f"{EVAL_SPLIT}.json").read_text(encoding="utf-8"))
 rng = random.Random(SEED)
 news = rng.sample(split["retrieval"], min(N_EVAL, len(split["retrieval"])))
-oos = rng.sample(split["out_of_scope"], min(5, len(split["out_of_scope"])))
+oos = split["out_of_scope"] if N_OOS is None else rng.sample(split["out_of_scope"], N_OOS)
 
-# Câu BẪY: đã kiểm tra thủ công rằng chi tiết được hỏi KHÔNG có trong bài báo tương ứng.
-# Cách diễn đạt được chọn để câu hỏi ĐI TỚI được PhoGPT. Hai cách hỏi tự nhiên hơn
-# ("... lãi bao nhiêu trong năm 2020", "... 30 ngày đúng không") bị intent
-# classifier hiểu nhầm thành "thống kê kho dữ liệu" và "đồng ý" — ghi nhận là
-# điểm yếu của intent classifier (xem báo cáo), không phải của RAG.
-traps = [
-    ("tai nghe AirPods 5 có chống nước chuẩn IP68 không", "bài nói chống nước được cải thiện, KHÔNG nêu chuẩn IP68"),
-    ("Messi mua CLB Eldense với giá bao nhiêu tiền", "bài không nêu giá mua"),
-    ("vì sao kem Tràng Tiền phải đóng cửa", "bài không nêu lý do đóng cửa"),
-    ("lợi nhuận năm 2020 của metro Bến Thành Suối Tiên", "bài chỉ nói mục tiêu 2026-2030"),
-    ("giữ cơm nguội trong tủ lạnh 30 ngày có sao không", "GIẢ ĐỊNH SAI: bài khuyên không giữ 5-7 ngày"),
-    ("đảo Hải Nam miễn visa cho khách Việt từ năm 2015 phải không", "GIẢ ĐỊNH SAI: bài không nói năm 2015"),
-]
+# Câu BẪY: mỗi tập có bộ riêng, chi tiết đã đối chiếu với toàn văn bài báo
+# (trường "evidence"). Bẫy dev đã dùng để thiết kế chốt chặn nên không dùng cho test.
+traps = json.loads((PROJECT / "data" / "eval" / "rag" / f"{EVAL_SPLIT}_traps.json")
+                   .read_text(encoding="utf-8"))["traps"]
 
 case = json.loads((PROJECT / "data" / "eval" / "conflict_case.json").read_text(encoding="utf-8"))
 print(f"tin tức: {len(news)} | mâu thuẫn: {len(case['queries'])} | bẫy: {len(traps)} | "
@@ -299,7 +295,7 @@ def trap_verdict(r):
         return "không qua RAG (truy hồi không tìm thấy)"
     if r.guard == "premise":
         return "ĐÚNG (chốt chặn giả định)"
-    if r.guard in ("numbers", "empty"):
+    if r.guard in ("numbers", "empty", "echo"):
         return "AN TOÀN (hiển thị trích xuất)"
     if r.checks.get("refused"):
         return "ĐÚNG (từ chối)"
@@ -310,13 +306,14 @@ def trap_verdict(r):
 
 rows = []
 
-def run(version, group, question, chatbot, gold=None, note="", style=""):
+def run(version, group, question, chatbot, gold=None, note="", style="", trap=None):
     chatbot.bot.reset()
     r = chatbot.respond(question)
     is_rag = r.route.startswith("rag")
     row = {
         "prompt": version,
         "nhóm": group, "câu hỏi": question, "kiểu gõ": style, "ghi chú": note,
+        "loại bẫy": (trap or {}).get("type", ""), "kỳ vọng": (trap or {}).get("expected", ""),
         "route": r.route, "rag": r.text if is_rag else "",
         "chốt chặn": r.guard or "", "chi tiết chốt chặn": ", ".join(r.guard_detail),
         "câu LLM": r.llm_text, "câu LLM nguyên văn": r.raw_generation,
@@ -350,8 +347,8 @@ for version in PROMPT_VERSIONS:
             print(f"  [{version}] tin tức {i}/{len(news)}  ({time.time() - t_all:.0f}s)")
     for q in case["queries"]:
         run(version, "mâu thuẫn", q, conflict_rag)
-    for q, note in traps:
-        run(version, "bẫy", q, news_rag, note=note)
+    for t in traps:
+        run(version, "bẫy", t["query"], news_rag, note=t["evidence"], trap=t)
     for x in oos:
         run(version, "ngoài phạm vi", x["text"], news_rag, style=x.get("style", ""))
 print(f"Xong {len(rows)} lượt trong {time.time() - t_all:.0f}s")
@@ -413,7 +410,7 @@ print(pd.DataFrame(summary["by_prompt"]).to_string())
 
 code(r"""
 pd.set_option("display.max_colwidth", 160)
-cols = ["prompt", "nhóm", "câu hỏi", "rag", "chốt chặn", "số bịa", "đánh giá tự động"]
+cols = ["prompt", "nhóm", "loại bẫy", "câu hỏi", "câu LLM", "chốt chặn", "số bịa", "đánh giá tự động"]
 df_res[df_res["nhóm"] != "tin tức"][cols]
 """)
 

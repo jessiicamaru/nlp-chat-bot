@@ -108,30 +108,46 @@ nó đi thì chatbot vẫn chạy nguyên như cũ. Đây là phần **duy nhấ
 tiền huấn luyện — nằm ngoài phạm vi from scratch.
 
 **Nguyên tắc an toàn:** PhoGPT chỉ được gọi khi truy hồi đã tìm được bằng chứng
-vượt ngưỡng; câu ngoài phạm vi bị từ chối **trước** khi tới mô hình. Thêm hai
+vượt ngưỡng; câu ngoài phạm vi bị từ chối **trước** khi tới mô hình. Thêm các
 **chốt chặn tất định**: câu hỏi nêu con số/mã hiệu mà bài báo không hề nhắc
 («năm 2015», «IP68») thì không cho mô hình trả lời; câu sinh ra có số không có
-trong nguồn thì hiển thị câu trích xuất thay thế.
+trong nguồn, hoặc chỉ lặp lại câu hỏi, thì hiển thị câu trích xuất thay thế.
 
-**Kết quả lần chạy thật đầu tiên (Colab T4, 21 câu tin tức dev) — tệ, và được ghi
-lại đầy đủ** ở [docs/07](docs/07-rag-phogpt.md): chỉ 3/21 câu vừa đúng vừa trả lời
-được, 8/21 có thông tin sai (đảo nhân quả, gắn sai năm, bịa cho khớp câu hỏi),
-0/6 câu bẫy được xử lý đúng — mô hình 4B đồng ý với giả định sai ("Đúng."). Điểm
-tốt: ca tin mâu thuẫn trả lời theo tin mới 3/3, câu ngoài phạm vi không bao giờ tới
-mô hình. Prompt v2 + hai chốt chặn được thiết kế từ các lỗi đó; chốt chặn giả định
-chặn nhầm **0** câu hợp lệ trên cả dev (93 câu) lẫn test (97 câu). Lần chạy 2
-(so sánh v1/v2) đang chờ.
+**Hai lần chạy thật trên Colab T4, ghi lại đầy đủ** ở [docs/07](docs/07-rag-phogpt.md).
+Chấm tay 21 câu tin tức (tập dev), câu PhoGPT sinh trước mọi chốt chặn:
+
+| | v1 · Q4_K_M (lần 1) | v1 · Q8_0 (lần 2) | **v2 · Q8_0 (lần 2)** |
+|---|---|---|---|
+| đúng, trả lời được | 3 | 4 | **10** |
+| đúng nhưng trình bày hỏng | 5 | 3 | 3 |
+| không trả lời (lặp lại câu hỏi) | 3 | 4 | 3 |
+| **có thông tin sai** | **8** | **7** | **5** |
+| từ chối sai | 2 | 3 | **0** |
+
+Lần 1 rất tệ: chép lại quy tắc trong prompt, bịa ngày tháng, và **0/5 câu bẫy**
+được xử lý đúng — mô hình 4B đồng ý với giả định sai ("Đúng."). Prompt v2 + các
+chốt chặn được thiết kế từ chính các lỗi đó; lần 2 tốt hơn rõ (6 câu v2 đạt mức
+"đúng, trả lời được" mà v1 không, 0 câu ngược lại), nhưng con số này **lạc quan**
+vì v2 được thiết kế trên chính các câu hỏi đó. Lượng tử hóa không phải nguyên
+nhân: v1 trên Q8_0 cũng sai như trên Q4_K_M.
+
+Điểm ổn định qua cả hai lần: ca tin mâu thuẫn trả lời theo **tin mới** 3/3, câu
+ngoài phạm vi **không bao giờ** tới mô hình, và chốt chặn giả định chặn nhầm **0**
+câu hợp lệ trên cả dev (93 câu) lẫn test (97 câu). Điểm còn lại: lỗi không có con
+số thì không chốt chặn nào bắt được (đảo nghĩa "dưới/trên 100 nghìn", bịa thêm một
+vế cho câu trả lời đúng). Lần chạy 3 trên tập **test** với bộ bẫy mới đang chờ.
 
 ```powershell
 python tools/make_colab_bundle.py   # tạo dist/rag_bundle.zip (mã nguồn + dữ liệu)
-python tests/test_rag.py            # 25 kiểm thử RAG, không cần GPU (backend giả lập)
+python tests/test_rag.py            # 29 kiểm thử RAG, không cần GPU (backend giả lập)
 python tools/rescore_rag_run.py     # chấm lại một lần chạy Colab bằng mã hiện tại
 ```
 
 Chạy trên Colab: mở `dist/RAG_PhoGPT_Colab.ipynb` trong Colab → Runtime → T4 GPU
 → Run all → tải lên `dist/rag_bundle.zip` khi được hỏi. Notebook chạy cùng bộ câu
 hỏi qua prompt v1 và v2, tự chấm độ trung thành (số bịa), ca tin mâu thuẫn, câu
-bẫy và câu ngoài phạm vi, rồi tải về `rag_results_run2.json` + `rag_samples_run2.csv`.
+bẫy (bộ riêng cho từng tập, `data/eval/rag/*_traps.json`) và câu ngoài phạm vi,
+rồi tải file kết quả về máy.
 
 ---
 
@@ -180,7 +196,7 @@ final-project/
 │   └── 07-rag-phogpt.md
 ├── tests/test_vectorizer.py         # TF-IDF vs sklearn, BM25 vs tham chiếu
 ├── tests/test_chatbot.py            # 21 kiểm thử hồi quy
-├── tests/test_rag.py                # 25 kiểm thử RAG (không cần GPU)
+├── tests/test_rag.py                # 29 kiểm thử RAG (không cần GPU)
 ├── tools/build_eval_sets.py         # sinh tập dev/test
 ├── tools/build_notebook.py          # sinh notebook báo cáo
 ├── tools/build_rag_notebook.py      # sinh notebook RAG cho Colab
