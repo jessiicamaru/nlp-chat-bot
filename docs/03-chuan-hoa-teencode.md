@@ -160,8 +160,10 @@ của token thực sự quan trọng:
 
 | Câu | Điểm top-1 |
 |---|---|
-| `giá iphone` | **0.167** (đạt ngưỡng 0.12) |
+| `giá iphone` | **0.167** (đạt ngưỡng lúc đó, 0.12) |
 | `biết gì về vụ iphone không bạn` | **0.100** (trượt) |
+
+*(Ngưỡng hiện hành là 0.13 trên cosine thuần, dò trên dev — docs/06.)*
 
 Cùng một ý định, chỉ khác cách diễn đạt hội thoại.
 
@@ -222,6 +224,8 @@ câu người dùng
     v
 [0] TeencodeNormalizer      <- MỚI: "bt" -> "biết", "k" -> "không"
     |                          phải chạy TRƯỚC tách từ
+    |                          (sau đó, nếu câu gốc không dấu thì bỏ dấu lại —
+    |                           thêm vào ở đợt sau, xem docs/05 lỗi 2)
     v
 [1] entities.extract()         NER + Regex + nhận diện chuyên mục
     |

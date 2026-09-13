@@ -2,7 +2,7 @@
 intent_classifier.py — Phân loại ý định (intent) bằng Multinomial Naive Bayes tự cài đặt.
 
 Vì sao chọn Naive Bayes cho bài toán này:
-  - Tập train rất nhỏ (~150 câu, 14 intent). Mô hình phức tạp sẽ overfit ngay.
+  - Tập train rất nhỏ (164 câu, 14 intent). Mô hình phức tạp sẽ overfit ngay.
   - Naive Bayes hội tụ nhanh với ít dữ liệu và cho ra XÁC SUẤT, nhờ đó ta đặt
     được ngưỡng tin cậy: dưới ngưỡng thì chuyển sang retrieval thay vì đoán bừa.
   - Toàn bộ mô hình chỉ là hai bảng đếm -> giải thích được từng dự đoán.
@@ -114,7 +114,12 @@ class IntentClassifier:
 
     Hai nhược điểm này bù trừ cho nhau, nên ta lấy trung bình có trọng số.
     Trọng số `w_nb` và ngưỡng chấp nhận được dò bằng `evaluate.py` trên tập
-    test viết riêng, chứ không chọn bằng cảm tính.
+    DEV, chứ không chọn bằng cảm tính.
+
+    Kết quả dò hiện hành là w_nb = 1.0, tức NAIVE BAYES THUẦN: trên dev 55 câu,
+    ensemble không còn thắng (docs/06, mục 4.2). Tín hiệu cosine được giữ trong
+    mã để thí nghiệm tái lập được. Hệ quả ghi nhận: câu rất ngắn như "thanks
+    nhé" (0.18) lại rơi xuống dưới ngưỡng 0.25 — đúng loại lỗi ensemble từng sửa.
     """
 
     def __init__(self, alpha: float = 0.3, ngram_range=TFIDF_NGRAM_RANGE, w_nb: float = INTENT_W_NB):

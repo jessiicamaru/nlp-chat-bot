@@ -1,9 +1,11 @@
 # Core NLP
 underthesea>=9.5.0            # tách từ / POS / NER tiếng Việt (dùng từ Lab 01)
 
-# Data
+# Data / tính toán (vectorizer.py tự cài đặt trên NumPy + SciPy sparse)
 pandas>=2.2
 numpy>=1.26
+scipy>=1.11
+joblib>=1.3                   # cache index truy hồi ra đĩa
 
 # Machine learning (chỉ dùng để ĐỐI CHIẾU với bản tự cài đặt)
 scikit-learn>=1.5
@@ -21,3 +23,7 @@ uvicorn>=0.30
 jupyter>=1.0
 ipykernel>=6.29
 matplotlib>=3.8
+
+# Lớp RAG tùy chọn (docs/07) — CHỈ cài trên Google Colab, notebook
+# notebooks/RAG_PhoGPT_Colab.ipynb tự cài: llama-cpp-python, huggingface_hub.
+# Không cần cho chatbot lõi.

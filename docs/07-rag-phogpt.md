@@ -141,9 +141,15 @@ dùng regex `(.)\1{2,}` — gộp **cả chữ số**: `15.000 → 15.0`, `2000 
   câu test; dò lại tham số trên dev cho **đúng bộ tham số cũ**. Vì vậy các số trên
   tập test ở docs/06 **không đổi** — không cần xem lại tập test.
 - Câu mâu thuẫn "tàu cát linh 15.000 đồng" nay giữ đúng con số, nhưng vẫn không
-  tới PhoGPT: intent classifier xếp nó vào "ngoài phạm vi" (thêm "giá vé" vào
-  câu thì truy hồi đúng). Đây là điểm yếu intent đã biết (docs/06), không sửa ở đây
-  vì sửa intent cần tập test mới.
+  tới PhoGPT. Nguyên nhân là **ngưỡng truy hồi**: bài đúng được xếp đầu nhưng có
+  cosine chỉ 0.096 < 0.13, nên bot trả lời "không tìm thấy" (thêm "giá vé" vào câu
+  thì cosine vượt ngưỡng).
+
+  > **Đính chính (khi kiểm tra tài liệu trước khi viết báo cáo):** bản trước của mục
+  > này ghi nguyên nhân là "intent classifier xếp nó vào ngoài phạm vi". Kiểm tra
+  > lại bằng `bot.respond()` cho thấy câu này **không** được intent classifier
+  > nhận nhãn nào (intent rỗng, độ tin cậy 0) — nó rơi xuống nhánh truy hồi và
+  > trượt ngưỡng. Kết luận "không tới được PhoGPT" không đổi, chỉ nguyên nhân sai.
 
 ## 7. Prompt v2 và hai chốt chặn
 
@@ -162,8 +168,8 @@ Mỗi thay đổi ứng với một lỗi **quan sát được** ở lần chạ
 | Lượng tử 4 bit | GGUF **Q8_0** (T4 thừa bộ nhớ) |
 
 Hai chốt chặn là **quy tắc tất định** — regex + so khớp số theo giá trị (tinh thần
-Lab01) — nên kiểm thử được hoàn toàn không cần GPU (`tests/test_rag.py`, 25 test,
-các chuỗi đầu vào chép nguyên từ đầu ra thật của lần chạy 1).
+Lab01) — nên kiểm thử được hoàn toàn không cần GPU (`tests/test_rag.py`, 25 test
+lúc đó, nay 29; các chuỗi đầu vào chép nguyên từ đầu ra thật của lần chạy 1 và 2).
 
 v1 được **giữ nguyên trong code** (`prompt_version="v1"`, không chốt chặn) để lần
 chạy 2 so sánh v1/v2 trên cùng mô hình, cùng phiên.

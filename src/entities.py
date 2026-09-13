@@ -1,7 +1,7 @@
 """
 entities.py — Trích xuất thực thể và slot từ câu người dùng.
 
-Kế thừa Lab 01: dùng `ner()` / `pos_tag()` của underthesea cho thực thể mở
+Kế thừa Lab 01: dùng `ner()` của underthesea (nhãn BIO) cho thực thể mở
 (người, địa điểm, tổ chức) và dùng Regex cho các định dạng cố định
 (email, số điện thoại, ngày tháng, URL, số + đơn vị).
 

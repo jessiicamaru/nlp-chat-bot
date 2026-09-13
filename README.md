@@ -1,8 +1,9 @@
 # Chatbot tin tức tiếng Việt — Đồ án cuối kỳ NLP
 
 Chatbot tiếng Việt xây dựng **from scratch** bằng TF-IDF, cosine similarity và
-Naive Bayes tự cài đặt — **không dùng mô hình ngôn ngữ lớn**, không gọi
-`sklearn` trong runtime.
+Naive Bayes tự cài đặt — lõi **không dùng mô hình ngôn ngữ lớn**, không gọi
+`sklearn` trong runtime. Một lớp RAG với PhoGPT được thử nghiệm riêng như phần
+mở rộng **tùy chọn, mặc định tắt** (xem mục RAG bên dưới).
 
 Bot trả lời câu hỏi về tin tức dựa trên kho **381 bài báo VnExpress** thuộc
 8 chuyên mục, do chính dự án thu thập.
@@ -29,7 +30,7 @@ Chi tiết phương pháp và lịch sử sửa đổi: [docs/06](docs/06-danh-g
 | **Đầu-cuối** | câu tin tức → đúng bài | **77.0%** (94/122) | 69–84% |
 | **Đầu-cuối** | câu ngoài phạm vi → bot từ chối | **75.0%** (18/24) | 55–88% |
 | Chuẩn hóa teencode | ERR trên ViLexNorm test | **67.8%** | — |
-| Xếp hạng độ mới | tin mới phủ định tin cũ | **đúng cả 4 cách hỏi** | — |
+| Xếp hạng độ mới | tin mới phủ định tin cũ | **bài mới xếp đầu ở cả 4 cách hỏi** (1 cách hỏi dưới ngưỡng chấp nhận) | — |
 | Tốc độ | khởi động (có cache) / một câu hỏi | **1.1s / 24ms** | — |
 
 > **Đính chính:** các phiên bản trước của README ghi Recall@1 96.8%, MRR 0.984,
@@ -65,6 +66,7 @@ python src/api.py
 # Kiểm thử và đánh giá
 python tests/test_vectorizer.py     # đối chiếu TF-IDF với sklearn + BM25 với cài đặt tham chiếu
 python tests/test_chatbot.py        # 21 kiểm thử hồi quy, mỗi cái ứng với một lỗi thật
+python tests/test_rag.py            # 29 kiểm thử lớp RAG, không cần GPU
 python src/evaluate.py              # dò trên DEV, báo cáo trên TEST (Recall@k, MRR, F1, KTC 95%)
 python tools/build_eval_sets.py     # tái tạo tập dev/test (seed cố định)
 python src/normalizer.py            # học + đánh giá từ điển teencode (ERR)
@@ -77,9 +79,12 @@ python src/crawler.py --per-category 20 --only "Công nghệ" "Thể thao"
 
 ## Báo cáo
 
-`notebooks/FinalProject_Chatbot_23IT036.ipynb` — notebook đã chạy và lưu output,
-gồm đầy đủ lý thuyết, thực nghiệm, đánh giá, phân tích lỗi, và **Phần K** —
-thí nghiệm RAG với PhoGPT cùng kết luận rút ra từ ba lần chạy thật.
+- **Báo cáo đồ án:** [`report/BaoCao_DoAnCuoiKy_23IT036_VI.md`](report/BaoCao_DoAnCuoiKy_23IT036_VI.md)
+  (tiếng Việt) và [`report/Report_FinalProject_23IT036_EN.md`](report/Report_FinalProject_23IT036_EN.md)
+  (tiếng Anh) — phương pháp, tiến trình từng giai đoạn kèm số liệu, kết quả, phân tích lỗi.
+- `notebooks/FinalProject_Chatbot_23IT036.ipynb` — notebook đã chạy và lưu output,
+  gồm đầy đủ lý thuyết, thực nghiệm, đánh giá, phân tích lỗi, và **Phần K** —
+  thí nghiệm RAG với PhoGPT cùng kết luận rút ra từ ba lần chạy thật.
 
 ---
 
@@ -179,16 +184,21 @@ final-project/
 │   └── web/index.html       # giao diện chat
 ├── data/
 │   ├── raw/corpus_raw.csv           # 381 bài báo
-│   ├── intents/intents_vi.json      # 14 intent, ~150 pattern
+│   ├── intents/intents_vi.json      # 14 intent, 164 pattern
 │   ├── eval/dev.json                # tập DEV — để dò tham số
 │   ├── eval/test.json               # tập TEST — chỉ để báo cáo
 │   ├── eval/conflict_case.json      # ca tin mâu thuẫn (ràng buộc cứng)
 │   ├── eval/test_report_v*.txt      # báo cáo từng lần xem tập test
-│   ├── eval/rag/run1_*.json|csv     # kết quả thật lần chạy PhoGPT 1 (Colab)
+│   ├── eval/tuned_params.json       # tham số dò trên dev
+│   ├── eval/test_results.json       # số liệu báo cáo trên test
+│   ├── eval/rag/run{1,2,3}_*        # kết quả thật 3 lần chạy PhoGPT trên Colab
+│   ├── eval/rag/*_traps.json        # câu bẫy dev / test (bộ test chốt trước khi chạy)
+│   ├── eval/rag/run3_*annotation.csv  # nhãn chấm tay lần chạy 3 (tập test)
 │   ├── resources/vietnamese-stopwords.txt
 │   ├── resources/teencode_lexicon.json  # học được từ ViLexNorm
 │   └── resources/vilexnorm/         # corpus chuẩn hóa (CC BY-NC-SA 4.0)
-├── notebooks/FinalProject_Chatbot_23IT036.ipynb   # BÁO CÁO
+├── report/                                        # BÁO CÁO đồ án (VI + EN)
+├── notebooks/FinalProject_Chatbot_23IT036.ipynb   # notebook báo cáo (đã chạy)
 ├── notebooks/RAG_PhoGPT_Colab.ipynb              # RAG trên Colab
 ├── docs/
 │   ├── 01-nghien-cuu-du-an-tham-khao.md
@@ -215,7 +225,7 @@ final-project/
 
 | Lab | Nội dung | Dùng ở đâu |
 |---|---|---|
-| **Lab 01** | `sent_tokenize`, `word_tokenize`, `pos_tag`, `ner`, Regex | Tách câu chọn snippet; trích thực thể (`entities.py`) |
+| **Lab 01** | `sent_tokenize`, `word_tokenize`, `ner`, Regex | Tách câu chọn snippet (`retriever.py`), tách từ (`preprocess.py`), trích thực thể (`entities.py`) |
 | **Lab 02** | requests + BeautifulSoup, validation | `crawler.py` — mở rộng corpus lên 381 bài |
 | **Lab 03** | `preprocess_vi(text, config)`, stopwords | `preprocess.py` — pipeline dùng chung |
 | **Lab 04** | BoW, n-gram, TF-IDF, cosine similarity | `vectorizer.py`, `retriever.py`, `intent_classifier.py` |
@@ -230,8 +240,8 @@ hình khác nhau — khớp tới sai số ~1e-16. sklearn **chỉ** xuất hi�
 
 **2. Hiểu được câu gõ không dấu.** `word_tokenize` tách sai hoàn toàn trên text
 không dấu (`"tin ve dao hai nam"` → `['ve_dao','hai','nam']`). Giải pháp: dựng
-index phụ ở mức **âm tiết**, chỉ dùng khi câu hỏi không có dấu. Thay đổi này
-còn làm Recall@3 tăng lên **100%**.
+index phụ ở mức **âm tiết**, chỉ dùng khi câu hỏi không có dấu. Trên tập test,
+câu không dấu đạt Recall@1 **95.5%** (21/22) — ngang câu có dấu (95.3%).
 
 **3. Đánh giá trung thực.** Tham số dò trên tập DEV, báo cáo một lần trên tập
 TEST tách riêng; nhãn đúng theo URL bài báo; mọi tỷ lệ kèm khoảng tin cậy 95%;
@@ -249,8 +259,9 @@ nhãn) với ba điều kiện an toàn. ERR 67.8% trên split test chưa từng
 
 **7. Không trả lời bằng thông tin lỗi thời.** Với hai bài mâu thuẫn cách nhau
 9 ngày, TF-IDF thuần trả về bài **cũ đã sai** (0.4956 vs 0.4098) kèm dẫn nguồn
-thật. Đã thêm xếp hạng theo độ mới `score = cosine × (1 + α·recency)` — sửa
-được ca này ở **cả 4 cách hỏi**. Độ mới chỉ dùng để **xếp hạng**; việc **chấp
+thật. Đã thêm xếp hạng theo độ mới `score = cosine × (1 + α·recency)` — bài mới
+được xếp đầu ở **cả 4 cách hỏi** (một cách hỏi, "tàu cát linh 15.000 đồng", có
+cosine dưới ngưỡng chấp nhận nên bot trả lời "không tìm thấy" thay vì trả bài). Độ mới chỉ dùng để **xếp hạng**; việc **chấp
 nhận** trả lời dựa trên cosine thuần. Trên tập dev lớn, độ mới là một **đánh
 đổi** nhỏ (mất ~0.001 MRR), không phải cải tiến miễn phí như từng tưởng. Mọi
 câu trả lời đều kèm **ngày đăng**. Xem [docs/05](docs/05-do-moi-va-thong-tin-loi-thoi.md).
@@ -274,10 +285,10 @@ chép nguyên văn). Lựa chọn kiến trúc dựa trên số liệu, không p
 
 1. **Không hiểu từ đồng nghĩa** — TF-IDF so khớp trên mặt chữ; "xe hơi" không
    tìm ra bài dùng "ô tô". Đây là hạn chế cốt lõi của mô hình túi từ.
-2. **Không suy luận, không sinh văn bản, không diễn đạt lại** — bot trích xuất
-   100%, chỉ trả về câu đã có sẵn trong corpus. Không thành phần nào có khả năng
-   tạo ra từ chưa có trong dữ liệu. Đây là giới hạn **kiến trúc**, đã kiểm chứng
-   bằng thực nghiệm ở [docs/04](docs/04-thi-nghiem-sinh-van-ban.md).
+2. **Không suy luận, không sinh văn bản, không diễn đạt lại** — bot lõi trích
+   xuất 100%, chỉ trả về câu đã có sẵn trong corpus. Đây là giới hạn **kiến
+   trúc**, đã kiểm chứng bằng thực nghiệm ở [docs/04](docs/04-thi-nghiem-sinh-van-ban.md).
+   Lớp RAG tùy chọn diễn đạt lại được, nhưng không trung thực hơn (docs/07).
 3. **Kho tri thức tĩnh** — muốn cập nhật phải chạy lại crawler.
 4. **Hai intent chồng lấn** (`huong_dan` / `liet_ke_chuyen_muc`) vẫn nhầm lẫn.
 5. **Tham chiếu chỉ neo vào lượt gần nhất** — "bài thứ hai ấy" chưa giải được.
@@ -289,6 +300,11 @@ chép nguyên văn). Lựa chọn kiến trúc dựa trên số liệu, không p
    cách diễn đạt đời thường ("ừm", "thanks nhé") có độ tin cậy dưới ngưỡng.
 8. **Khoảng cách thành phần → đầu-cuối** — truy hồi đúng 93.4% nhưng đầu-cuối
    chỉ 77.0%, chủ yếu do ngưỡng chấp nhận (đánh đổi để không trả lời bừa).
+9. **Tầng chọn câu có thể bỏ sót câu trả lời** — truy hồi đúng bài nhưng chỉ vài
+   câu có cosine cao nhất được đưa ra; thí nghiệm RAG gặp ca câu liệt kê màu
+   iPhone không nằm trong các câu được chọn (docs/07, mục 11).
+10. **Câu hỏi xác nhận bị định tuyến sai** — "...đúng không", "...phải không" hay
+   bị intent classifier xếp nhầm, nên không tới được nhánh truy hồi.
 
 Phân tích chi tiết các lỗi thật kèm nguyên nhân: xem **Phần J** của notebook.
 

@@ -38,7 +38,7 @@ Chatbot trả lời câu hỏi về tin tức dựa trên kho bài báo VnExpres
 
 | Lab | Nội dung đã học | Dùng ở đâu trong đồ án |
 |---|---|---|
-| **Lab 01** | `sent_tokenize`, `word_tokenize`, `pos_tag`, `ner`, Regex | Tách câu để chọn snippet; NER + Regex trích thực thể (`entities.py`) |
+| **Lab 01** | `sent_tokenize`, `word_tokenize`, `ner`, Regex | Tách câu để chọn snippet; NER + Regex trích thực thể (`entities.py`) |
 | **Lab 02** | Crawl web bằng `requests` + `BeautifulSoup`, validation | Mở rộng corpus lên 381 bài / 8 chuyên mục (`crawler.py`) |
 | **Lab 03** | `normalize_basic`, `segment_vi`, stopwords, `preprocess_vi(text, config)` | Pipeline tiền xử lý dùng chung (`preprocess.py`) |
 | **Lab 04** | Bag of Words, n-gram, TF-IDF, cosine similarity | **Phần lõi**: `vectorizer.py`, `retriever.py`, `intent_classifier.py` |
@@ -373,6 +373,12 @@ $$\text{score}(c) = w \cdot P_{NB}(c) + (1-w)\cdot \max_{p \in c}\cos(\vec q, \v
 - NB: tổng hợp bằng chứng từ **mọi** term, có cơ sở xác suất — nhưng phẳng với câu ngắn.
 - Cosine: trả lời "đã từng thấy câu nào giống thế này chưa?" — rất nhạy với câu
   ngắn, nhưng chỉ nhìn **một** pattern nên dễ bị từ chung chung đánh lừa.
+
+> **Kết quả dò trên DEV lật lại lựa chọn này:** trọng số tốt nhất là $w = 1.0$,
+> tức **Naive Bayes thuần** — trên 55 câu dev, ensemble không còn thắng (ô đánh
+> giá bên dưới, pha 1.1). Tín hiệu cosine vẫn nằm trong mã để thí nghiệm tái lập
+> được, nhưng hiện không đóng góp vào điểm. Hệ quả: câu rất ngắn như
+> "thanks nhé" lại rơi xuống dưới ngưỡng trên tập test (Phần I, Phần J case 5).
 """)
 
 code(r"""
@@ -908,7 +914,7 @@ lại khi corpus lớn lên đáng kể.
 
 | Thành phần | Thời gian |
 |---|---|
-| Intent classifier (150 pattern) | 0.64s |
+| Intent classifier (164 pattern) | 0.64s |
 | Học từ điển teencode (8.372 cặp) | 0.47s |
 | **Dựng index truy hồi** | **20.5s** ← chiếm gần hết |
 | Tổng khởi động lần đầu | 21.3s |
@@ -1305,8 +1311,11 @@ có cặp). Kết quả p = 1.0 → giữ TF-IDF.
 | 2 | Sau hai sửa lỗi do **kiểm thử hồi quy** phát hiện | Không |
 | 3 | Sau khi thêm BM25 | **Có** — quy tắc chọn phương pháp |
 
-Vì tập test đã bị xem 3 lần, mọi cải tiến tiếp theo (đặc biệt cho intent) phải
-được đo trên một **tập test mới**.
+Sau lần 3, tham số chatbot không đổi nữa. Tập test chỉ được dùng thêm cho lớp
+RAG (Phần K; docs/06 liệt kê đủ), và mỗi lần chạy lại notebook này thì ô đánh giá
+ở Phần E tính lại báo cáo test với **đúng** bộ tham số đã chốt — không quyết định
+nào dựa trên các lần tính lại đó. Dù vậy, mọi cải tiến tiếp theo (đặc biệt cho
+intent) phải được đo trên một **tập test mới**.
 """)
 
 # ---------------------------------------------------------------- PART J ----
@@ -1362,8 +1371,8 @@ error_analysis = pd.DataFrame([
         "Input": "cảm ơn nhé",
         "Sai": "NB thuần chỉ cho 0.189 -> rơi xuống dưới ngưỡng",
         "Nguyên nhân": "Câu quá ngắn; softmax trên 14 lớp với vector chuẩn hóa L2 cho phân phối phẳng",
-        "Xử lý": "Ensemble NB + cosine tới pattern gần nhất -> 0.470",
-        "Trạng thái": "ĐÃ SỬA",
+        "Xử lý": "Ensemble NB + cosine tới pattern gần nhất -> 0.470. Nhưng khi dò lại trên DEV, w_nb=1.0 (NB thuần) thắng nên ensemble bị tắt; trên TEST 'thanks nhé' chỉ còn 0.18 và bị từ chối",
+        "Trạng thái": "TỒN TẠI (sửa rồi mất khi dò lại)",
     },
     {
         "STT": 6,
@@ -1425,7 +1434,7 @@ error_analysis = pd.DataFrame([
         "Input": "giá vé tàu cát linh bao nhiêu (2 bài mâu thuẫn, cách nhau 9 ngày)",
         "Sai": "Trả về bài CŨ đã lỗi thời (0.4956) thay vì bài mới đúng (0.4098), kèm dẫn nguồn thật",
         "Nguyên nhân": "published_at được crawl và lưu nhưng KHÔNG dùng khi xếp hạng. TF-IDF chỉ đo trùng lặp từ ngữ; tiêu đề bài cũ chứa đúng từ trong câu hỏi",
-        "Xử lý": "score' = cosine x (1 + alpha x recency), dò được alpha=0.6 / nửa chu kỳ 7 ngày. Nhân chứ không cộng để bài không liên quan vẫn ở 0",
+        "Xử lý": "score' = cosine x (1 + alpha x recency), dò được alpha=0.6 / nửa chu kỳ 7 ngày (dò lại trên dev: 3 ngày). Nhân chứ không cộng để bài không liên quan vẫn ở 0",
         "Trạng thái": "ĐÃ SỬA",
     },
     {
@@ -1673,7 +1682,7 @@ md(r"""
 4. **Kho tri thức tĩnh.** 381 bài tại thời điểm crawl. Muốn cập nhật phải chạy
    lại crawler và dựng lại index.
 
-5. **Tập intent nhỏ** (14 intent, ~150 pattern). Hai intent chồng lấn ngữ nghĩa
+5. **Tập intent nhỏ** (14 intent, 164 pattern). Hai intent chồng lấn ngữ nghĩa
    (`huong_dan` / `liet_ke_chuyen_muc`) vẫn nhầm lẫn.
 
 6. **Tham chiếu chỉ neo vào lượt gần nhất.** "bài thứ hai ấy" hoặc "cái lúc nãy
@@ -1681,7 +1690,7 @@ md(r"""
 
 8. **Intent classifier là điểm yếu lớn nhất** — 61.5% trên test. Câu ngắn,
    cách nói đời thường có độ tin cậy dưới ngưỡng. Cần thêm pattern và/hoặc hiệu
-   chỉnh xác suất; phải đo trên một tập test **mới** vì tập hiện tại đã bị xem 3 lần.
+   chỉnh xác suất; phải đo trên một tập test **mới** vì tập hiện tại đã được dùng nhiều lần.
 
 7. **Không phát hiện mâu thuẫn giữa các bài.** Xếp hạng theo độ mới chỉ *giảm
    nhẹ* vấn đề: bot ưu tiên bài mới khi hai bài gần ngang nhau, nhưng nếu bài cũ

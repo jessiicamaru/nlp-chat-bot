@@ -141,15 +141,26 @@ Lý do: corpus có nhiều bài cùng chủ đề đăng cách nhau vài ngày (
 đưa tin nhiều lần về một sự việc). Trước đây bài nào trúng từ khóa hơn thì
 thắng, kể cả khi đó là bài cũ hơn và ít đầy đủ hơn.
 
-### Sau khi sửa: cả 4 cách hỏi đều đúng
+### Sau khi sửa: cả 4 cách hỏi đều xếp bài mới lên đầu
 
 ```text
 0.6883  [NGÀY 10 — mới, ĐÚNG]   <- bot trả lời bài này
-0.6565  [NGÀY 1  — cũ, SAI]
+0.5664  [NGÀY 1  — cũ, SAI]
 ```
 
+*(Notebook Phần G4 dựng lại hai bài ngay trong ô lệnh. Cùng thí nghiệm nhưng dùng
+`data/eval/conflict_case.json` — bộ dùng trong `evaluate.py` và kiểm thử hồi quy —
+cho 0.4956 / 0.4098 khi tắt độ mới và 0.6556 / 0.5328 khi bật, với cấu hình hiện
+hành nửa chu kỳ 3 ngày, α = 0.6. Hai bộ số khác nhau vì hai bản dựng khác nhau,
+kết luận như nhau.)*
+
 Kể cả câu `"tàu cát linh 15.000 đồng"` — **trích đúng con số của tin cũ** — nay
-cũng trả về bài nói con số đó đã bị hoãn.
+cũng xếp bài nói con số đó đã bị hoãn lên đầu.
+
+> **Lưu ý (kiểm lại khi viết báo cáo):** đây là kết quả ở mức **xếp hạng**. Qua
+> `bot.respond()`, câu này có cosine chỉ 0.096 — dưới ngưỡng chấp nhận 0.13 —
+> nên bot trả lời "không tìm thấy" thay vì trả bài. Ba cách hỏi còn lại đều được
+> trả lời bằng bài mới.
 
 ---
 

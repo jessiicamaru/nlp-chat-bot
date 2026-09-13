@@ -90,9 +90,11 @@ CONFIG_RETRIEVAL = {
 # nhất còn chặn được 100% — tối đa hóa số câu trả lời được mà vẫn không đoán bừa.
 RETRIEVAL_THRESHOLD = 0.13
 
-# Ngưỡng điểm ensemble để chấp nhận nhãn intent từ classifier.
-# Dò lưới (w_nb x threshold): w_nb=0.8, threshold=0.25 cho điểm cân bằng
-# tốt nhất — accuracy 88.5%, safety 87.5%.
+# Ngưỡng điểm để chấp nhận nhãn intent từ classifier.
+# Dò lưới (w_nb x threshold) trên DEV: w_nb=1.0, threshold=0.25 cho điểm cân
+# bằng tốt nhất — accuracy 82.2%, safety 92.7% (data/eval/test_report_v3.txt).
+# Trên TEST: accuracy 61.5% (16/26) — điểm yếu lớn nhất của hệ thống (docs/06).
+# (Lịch sử: lần dò cũ bị rò rỉ chọn w_nb=0.8 và báo cáo 88.5%.)
 INTENT_THRESHOLD = 0.25
 
 # Khi người dùng đã tự nêu chuyên mục ("tin du lịch ninh bình"), tập ứng viên
@@ -103,6 +105,8 @@ CATEGORY_SCOPED_THRESHOLD_FACTOR = 0.6
 
 # Trọng số của Naive Bayes trong ensemble; phần còn lại (1 - w_nb) là tín hiệu
 # cosine tới pattern gần nhất. Xem giải thích trong intent_classifier.py.
+# Giá trị 1.0 (dò trên dev) nghĩa là hiện dùng NAIVE BAYES THUẦN — tín hiệu
+# cosine vẫn được cài đặt nhưng không đóng góp vào điểm.
 INTENT_W_NB = 1.0
 
 # Số document trả về tối đa cho một truy vấn.
@@ -148,9 +152,12 @@ QUERY_FRAME_WORDS = {
 # khi hai bài liên quan xấp xỉ nhau thì bài mới thắng. Bài cũ nhưng liên quan
 # hơn hẳn vẫn phải thắng — nếu không, bot sẽ chỉ trả tin mới nhất bất kể hỏi gì.
 #
-# Cả hai giá trị dưới đây được dò bằng `python src/evaluate.py`, tối ưu đồng
-# thời hai mục tiêu: (a) không làm giảm Recall@1/MRR, (b) xử lý được ca tin mới
-# phủ định tin cũ. Bảng quét (half-life x alpha):
+# Cả hai giá trị dưới đây được dò bằng `python src/evaluate.py` trên DEV, với
+# RÀNG BUỘC CỨNG là ca tin mới phủ định tin cũ phải đúng, rồi chọn MRR cao nhất.
+# Bảng quét hiện hành: data/eval/test_report_v3.txt (PHA 1.3).
+#
+# (Lịch sử — lần dò CŨ trên tập 31 câu bị rò rỉ, giữ để đối chiếu.)
+# Bảng quét (half-life x alpha):
 #
 #   half-life  alpha   Recall@1  MRR     ca tin mâu thuẫn
 #          30   0.35      93.5%  0.968   SAI (trả tin cũ)
@@ -158,17 +165,18 @@ QUERY_FRAME_WORDS = {
 #           3   0.60      93.5%  0.968   ĐÚNG
 #           7   0.60      96.8%  0.984   ĐÚNG   <- chọn
 #
-# Đáng chú ý: thêm độ mới còn LÀM TỐT LÊN chất lượng truy hồi, chứ không chỉ là
-# đánh đổi. Đo trên CÙNG tập test 31 truy vấn, chỉ bật/tắt yếu tố độ mới:
-#   tắt (alpha=0) -> Recall@1 93.5%, MRR 0.968
-#   bật (alpha=0.6) -> Recall@1 96.8%, MRR 0.984
+# Kết luận cũ "thêm độ mới LÀM TỐT LÊN truy hồi" (93.5% -> 96.8% trên 31 câu)
+# đã bị BÁC BỎ khi đo trên dev 112 câu: độ mới không cải thiện nhất quán, và
+# mọi cấu hình xử lý đúng ca tin mâu thuẫn đều thấp hơn nhẹ (MRR 0.957–0.964
+# so với 0.965 khi tắt). Độ mới là một ĐÁNH ĐỔI có chủ đích (docs/06, mục 4.1).
 FRESHNESS_ALPHA = 0.6
 
 # Nửa chu kỳ suy giảm: sau ngần này ngày, điểm độ mới còn một nửa.
-# 7 ngày — đủ ngắn để phân biệt hai bài cách nhau vài ngày (chính là tình huống
-# tin mới phủ định tin cũ), nhưng chưa ngắn tới mức vùi lấp bài liên quan hơn
-# chỉ vì nó cũ hơn một tuần. Với 30 ngày, hai bài cách nhau 9 ngày chỉ chênh
-# nhau 5% điểm thưởng — không đủ để lật thứ hạng.
+# 3 ngày (dò trên dev; lần dò cũ bị rò rỉ từng chọn 7). Đủ ngắn để hai bài cách
+# nhau vài ngày — đúng tình huống tin mới phủ định tin cũ — nhận hệ số thưởng
+# khác hẳn nhau. Với 30 ngày, hai bài cách nhau 9 ngày chỉ chênh nhau ~7% hệ số
+# thưởng, không đủ để lật thứ hạng. Vì ngưỡng CHẤP NHẬN áp lên cosine thuần,
+# nửa chu kỳ ngắn không làm bài cũ bị loại khỏi câu trả lời (docs/06, mục 5.1).
 FRESHNESS_HALFLIFE_DAYS = 3.0
 
 # Thư mục cache index đã dựng (tránh phải tách từ lại 381 bài mỗi lần khởi động).

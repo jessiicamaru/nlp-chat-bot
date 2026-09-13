@@ -23,12 +23,19 @@ TF-IDF có sẵn trên GitHub để quyết định **kế thừa gì** và **t�
 - **Danh sách stopword tiếng Việt** từ `stopwords/vietnamese-stopwords`.
 
 ### Tự viết hoàn toàn
-- `vectorizer.py` — BoW, n-gram, TF-IDF, chuẩn hóa L2, cosine similarity (NumPy + SciPy).
-- `intent_classifier.py` — Multinomial Naive Bayes + ensemble với cosine.
-- `retriever.py` — truy hồi hai tầng (bài báo → câu).
+- `vectorizer.py` — BoW, n-gram, TF-IDF, chuẩn hóa L2, cosine similarity, BM25 (NumPy + SciPy).
+- `intent_classifier.py` — Multinomial Naive Bayes + tín hiệu cosine tới pattern gần nhất.
+- `retriever.py` — truy hồi hai tầng (bài báo → câu), hai index, xếp hạng theo độ mới.
 - `preprocess.py` — pipeline tiếng Việt, kể cả xử lý câu không dấu.
-- `entities.py`, `dialogue.py`, `chatbot.py`, `crawler.py`, `evaluate.py`.
-- Toàn bộ tập intent tiếng Việt và tập test.
+- `normalizer.py` — thuật toán học từ điển teencode (dữ liệu học lấy từ ViLexNorm).
+- `generator.py` — n-gram language model cho thí nghiệm đối chứng.
+- `entities.py`, `dialogue.py`, `dates.py`, `chatbot.py`, `crawler.py`, `evaluate.py`.
+- Toàn bộ tập intent tiếng Việt (14 intent, 164 pattern) và tập đánh giá dev/test.
+
+### Dùng mô hình có sẵn (ngoài phạm vi "from scratch", ghi rõ)
+- **underthesea** — `word_tokenize`, `sent_tokenize`, `ner` (đúng như các lab).
+- **PhoGPT-4B-Chat** (VinAI) — chỉ trong lớp RAG **tùy chọn, mặc định tắt**
+  (`rag.py`, docs/07). Không mô-đun lõi nào phụ thuộc vào nó.
 
 ### Khác biệt chính so với mọi dự án tham khảo
 
@@ -38,6 +45,8 @@ TF-IDF có sẵn trên GitHub để quyết định **kế thừa gì** và **t�
 2. **Xử lý câu gõ không dấu** — không dự án tham khảo nào giải quyết, dù đây là
    cách gõ rất phổ biến của người Việt.
 3. **Ngưỡng dò bằng thực nghiệm** — các dự án tham khảo đặt ngưỡng bằng số
-   "đẹp" tùy chọn; đồ án này quét lưới trên tập test riêng.
-4. **Có đánh giá định lượng** — Recall@k, MRR, macro-F1. Các dự án tham khảo
-   chỉ demo định tính.
+   "đẹp" tùy chọn; đồ án này quét lưới trên tập **DEV** và báo cáo một lần trên
+   tập **TEST** tách riêng (docs/06). Bản đầu của đồ án từng dò và báo cáo trên
+   cùng một tập — lỗi đó đã được sửa và ghi lại.
+4. **Có đánh giá định lượng** — Recall@k, MRR, macro-F1, khoảng tin cậy Wilson
+   95%, kiểm định dấu có cặp. Các dự án tham khảo chỉ demo định tính.

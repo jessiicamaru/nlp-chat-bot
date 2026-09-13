@@ -73,7 +73,7 @@ diễn đạt lại, không chép tiêu đề. Cách tốt nhất vẫn là nh�
 **Intent classifier là điểm yếu thật sự**, không phải truy hồi. Cả 10 câu sai
 đều cùng một kiểu: độ tin cậy **thấp hơn ngưỡng** (0.14–0.25) nên bị từ chối,
 dù nhãn dự đoán có thể đúng. Các câu này ngắn và cách diễn đạt không có trong
-~150 pattern huấn luyện: `"ừm"`, `"đúng vậy"`, `"thanks nhé"`, `"ngu thế"`.
+164 pattern huấn luyện: `"ừm"`, `"đúng vậy"`, `"thanks nhé"`, `"ngu thế"`.
 
 **Teencode là chỗ yếu của truy hồi** — 78.6%, nhưng chỉ có 14 câu nên khoảng
 tin cậy rất rộng (52–92%). Các từ như `vc` (việc), `ntn` (như thế nào) không có
@@ -232,6 +232,23 @@ nhau có ý nghĩa (khoảng tin cậy chồng lấn gần như hoàn toàn).
 
 Báo cáo chi tiết từng lần: `data/eval/test_report_v1.txt`, `_v2.txt`, `_v3.txt`.
 
+### Những lần tập TEST được dùng về sau, cho lớp RAG (docs/07)
+
+Sau lần 3, tham số của chatbot **không đổi nữa** (sửa lỗi gộp chữ số của bộ chuẩn
+hóa teencode chỉ chạm 0/178 câu test, và dò lại trên dev cho đúng bộ tham số cũ —
+docs/07, mục 6). Tập test chỉ được dùng thêm để đánh giá lớp RAG:
+
+| Lần | Việc | Có đổi gì dựa trên test không? |
+|---|---|---|
+| 4 | Đo chốt chặn giả định có chặn nhầm câu hợp lệ không (không cần LLM) | Không |
+| 5 | Đo lại chỉ số trên sau khi sửa quy tắc so số có đơn vị (quy tắc sửa từ suy luận, không từ dữ liệu test) | Không |
+| 6 | Lần chạy RAG 3 trên Colab: 40 câu tin tức + 24 câu ngoài phạm vi, mã đóng băng ở commit `fe10190`, bẫy mới chốt trước | Không — kết quả chỉ được báo cáo |
+
+Ngoài ra, notebook báo cáo (Phần E) chạy lại toàn bộ `evaluate.py` mỗi khi notebook
+được thực thi lại, nên báo cáo test được **tính lại** với đúng bộ tham số đã chốt.
+Các lần tính lại cho ra `test_results.json` giống hệt từng byte và không dẫn tới
+quyết định nào.
+
 ## 8. Việc nên làm tiếp (theo mức ưu tiên do số liệu chỉ ra)
 
 1. **Intent classifier** — điểm yếu lớn nhất (61.5%). Thêm pattern cho câu ngắn
@@ -242,3 +259,12 @@ Báo cáo chi tiết từng lần: `data/eval/test_report_v1.txt`, `_v2.txt`, `_
    (`vc`, `ntn`, `tk`, `ks`...).
 3. **BM25F** — thay mẹo lặp tiêu đề bằng trọng số trường thật sự.
 4. **Tập đánh giá do người khác viết** — giảm thiên kiến người-xây-bot-tự-chấm.
+
+Hai việc được thêm vào sau thí nghiệm RAG (docs/07):
+
+5. **Tầng chọn câu** — hiện lấy cố định vài câu có cosine cao nhất. Câu hỏi "iPhone
+   18 Pro Max có mấy màu" truy hồi đúng bài nhưng câu liệt kê màu không nằm trong
+   các câu được chọn. Lỗi này ảnh hưởng cả bot trích xuất lẫn RAG.
+6. **Câu hỏi xác nhận** ("...đúng không", "...phải không") — 4/11 câu bẫy viết tự
+   nhiên không tới được nhánh truy hồi vì bị intent classifier xếp nhầm. Đây là
+   thêm một bằng chứng cho mục 1.

@@ -6,20 +6,28 @@ Luồng xử lý một lượt chat:
     câu người dùng
         |
         v
-    [1] preprocess_vi          (Lab 03)
+    [0] prepare_user_text      chuẩn hóa teencode (học từ ViLexNorm), giữ nguyên
+        |                      "hệ quy chiếu dấu" nếu câu gốc không dấu
+        v
+    [1] entities.extract       NER + Regex + nhận diện chuyên mục (Lab 01)
         |
         v
-    [2] IntentClassifier       (TF-IDF + Naive Bayes tự cài đặt)
+    [2] IntentClassifier       (TF-IDF + Naive Bayes tự cài đặt, Lab 03 + 04)
         |
-        +-- conf >= INTENT_THRESHOLD --> thực thi action của intent
-        |                                (reply / help / stats / browse /
-        |                                 summarize / source / retrieve)
+        +-- conf >= INTENT_THRESHOLD và action != retrieve
+        |       --> thực thi action (reply / help / list_categories / stats /
+        |           browse_category / summarize / source)
         |
-        +-- conf <  INTENT_THRESHOLD --> [3] NewsRetriever
-                                             (TF-IDF + cosine similarity)
-                                              |
-                                              +-- score >= threshold --> trả lời có dẫn nguồn
-                                              +-- score <  threshold --> fallback
+        +-- ngược lại --> [3] NewsRetriever
+                              chọn index có dấu / không dấu (âm tiết)
+                              XẾP HẠNG: cosine (hoặc BM25) x (1 + alpha*recency)
+                              CHẤP NHẬN: cosine thuần >= RETRIEVAL_THRESHOLD
+                              (x CATEGORY_SCOPED_THRESHOLD_FACTOR nếu đã nêu mục)
+                              |
+                              +-- đạt  --> 2 câu sát nhất của bài + ngày đăng + nguồn
+                              +-- không --> fallback
+
+Lớp RAG tùy chọn (rag.py) bọc bên ngoài lớp này và chỉ chạy khi [3] đã có bằng chứng.
 
 Thiết kế then chốt: **luôn có ngưỡng tin cậy**. Chatbot chỉ trả lời khi có
 căn cứ định lượng; không đủ căn cứ thì nói thẳng là không biết. Điều này tránh

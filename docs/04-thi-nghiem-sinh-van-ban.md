@@ -144,7 +144,11 @@ Kiến trúc hiện tại đã sẵn sàng cho hướng này — `NewsRetriever`
 phần "R" của RAG. Phần còn thiếu là "G", và nó nằm ngoài phạm vi "from scratch"
 của đồ án vì đòi hỏi mô hình tiền huấn luyện cùng tài nguyên tính toán lớn.
 
-Ghi nhận ở phần **hướng phát triển**, không cài đặt trong phạm vi này.
+> **Cập nhật sau:** hướng này về sau đã được **thử thật** như một lớp tùy chọn,
+> dùng PhoGPT-4B-Chat trên Google Colab — xem [docs/07](07-rag-phogpt.md). Kết
+> quả: câu trả lời tự nhiên hơn hẳn nhưng **không trung thực hơn** bản trích xuất
+> (trên tập test, số câu chứa thông tin sai không giảm), nên kết luận của tài
+> liệu này — chatbot lõi dùng truy hồi — vẫn giữ nguyên.
 
 ## Cách chạy lại
 
