@@ -21,11 +21,18 @@ Luồng xử lý một lượt chat:
         +-- ngược lại --> [3] NewsRetriever
                               chọn index có dấu / không dấu (âm tiết)
                               XẾP HẠNG: cosine (hoặc BM25) x (1 + alpha*recency)
+                                        recency tính theo bài MỚI NHẤT trong các
+                                        bài đang cạnh tranh, không theo cả corpus
                               CHẤP NHẬN: cosine thuần >= RETRIEVAL_THRESHOLD
                               (x CATEGORY_SCOPED_THRESHOLD_FACTOR nếu đã nêu mục)
                               |
                               +-- đạt  --> 2 câu sát nhất của bài + ngày đăng + nguồn
-                              +-- không --> fallback
+                              +-- không --> [3b] dự phòng gõ sai: cosine từ + cosine
+                                              n-gram ký tự tiêu đề >= FUZZY_THRESHOLD
+                                              |
+                                              +-- đạt  --> trả lời, kèm lời nhắc
+                                              |            "có thể bạn gõ nhầm"
+                                              +-- không --> fallback
 
 Lớp RAG tùy chọn (rag.py) bọc bên ngoài lớp này và chỉ chạy khi [3] đã có bằng chứng.
 
@@ -85,6 +92,7 @@ class BotReply:
                 "score": round(r.score, 4),
                 "cosine": round(r.base_score, 4),
                 "published": r.published_str,
+                "match": r.match,
             }
             for r in self.results
         ]
@@ -106,6 +114,9 @@ class NewsChatbot:
         ranking: str | None = None,
         bm25_k1: float | None = None,
         bm25_b: float | None = None,
+        freshness_reference: str | None = None,
+        fuzzy_threshold: float | None = None,
+        use_fuzzy: bool = True,
     ):
         """Các tham số None -> dùng giá trị mặc định trong config.py.
 
@@ -127,9 +138,13 @@ class NewsChatbot:
             retriever_kwargs["freshness_alpha"] = freshness_alpha
         if freshness_halflife is not None:
             retriever_kwargs["freshness_halflife"] = freshness_halflife
-        for key, val in (("ranking", ranking), ("bm25_k1", bm25_k1), ("bm25_b", bm25_b)):
+        for key, val in (("ranking", ranking), ("bm25_k1", bm25_k1), ("bm25_b", bm25_b),
+                         ("freshness_reference", freshness_reference),
+                         ("fuzzy_threshold", fuzzy_threshold)):
             if val is not None:
                 retriever_kwargs[key] = val
+        if not use_fuzzy:
+            retriever_kwargs["fuzzy_threshold"] = None
         self.retriever = NewsRetriever(**retriever_kwargs)
         self.state = DialogueState()
         self._ready = False
@@ -398,13 +413,21 @@ class NewsChatbot:
     def _format_retrieval(self, results: list[RetrievalResult], route: str) -> BotReply:
         """Định dạng kết quả truy hồi — dùng chung cho cả hai đường vào."""
         top = results[0]
-        lines = [
+        lines = []
+        if top.match == "fuzzy":
+            # Đường dự phòng gõ sai: không khớp chính xác từ nào đủ mạnh, bài được
+            # chọn vì TIÊU ĐỀ gần cách viết của câu hỏi. Nói rõ để người dùng
+            # tự kiểm tra, thay vì trả lời bằng giọng chắc chắn như khớp thật.
+            lines += ["_(Không tìm thấy từ khóa khớp chính xác — có thể bạn gõ nhầm. "
+                      "Bài có tiêu đề gần nhất với câu hỏi:)_", ""]
+        lines += [
             f"**{top.title}**",
             "",
             top.snippet,
             "",
             f"Nguồn: {top.url}",
-            f"_(chuyên mục: {top.category} · độ tương đồng: {top.score:.2f})_",
+            f"_(chuyên mục: {top.category} · độ tương đồng: {top.score:.2f}"
+            + (" · khớp gần đúng" if top.match == "fuzzy" else "") + ")_",
         ]
 
         if len(results) > 1:

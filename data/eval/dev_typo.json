@@ -1,12 +1,30 @@
 {
  "meta": {
-  "split": "dev",
-  "purpose": "DÒ THAM SỐ. Được phép xem và dùng nhiều lần.",
-  "seed": 2026
+  "split": "dev_typo",
+  "purpose": "DÒ THAM SỐ chống gõ sai.",
+  "seed": 2026,
+  "source": "data/eval/dev.json (mỗi truy vấn một lỗi gõ trên một âm tiết nội dung)"
  },
  "retrieval": [
   {
-   "query": "đảo hải nam miễn visa 30 ngày",
+   "query": "thám hiểm Sơn Dòng",
+   "original": "thám hiểm Sơn Đoòng",
+   "gold_urls": [
+    "https://vnexpress.net/chiem-nghiem-tu-cuoc-tham-hiem-son-doong-phut-89-cua-ceo-viet-5119565.html"
+   ],
+   "gold_titles": [
+    "Chiêm nghiệm từ cuộc thám hiểm Sơn Đoòng 'phút 89' của CEO Việt"
+   ],
+   "style": "có dấu",
+   "typo": {
+    "kind": "nguoi_dung_bao_loi",
+    "from": "Đoòng",
+    "to": "Dòng"
+   }
+  },
+  {
+   "query": "đảo ảhi nam miễn visa 30 ngày",
+   "original": "đảo hải nam miễn visa 30 ngày",
    "gold_urls": [
     "https://vnexpress.net/dao-hai-nam-chua-de-hut-khach-viet-du-mien-visa-30-ngay-5112963.html"
    ],
@@ -14,10 +32,15 @@
     "Đảo Hải Nam 'chưa dễ hút khách Việt' dù miễn visa 30 ngày"
    ],
    "style": "có dấu",
-   "origin": "cũ"
+   "typo": {
+    "kind": "dao_chu",
+    "from": "hải",
+    "to": "ảhi"
+   }
   },
   {
-   "query": "du lịch ninh bình dịp quốc khánh",
+   "query": "du lịch ninh bình dịp quuốc khánh",
+   "original": "du lịch ninh bình dịp quốc khánh",
    "gold_urls": [
     "https://vnexpress.net/trai-nghiem-2-ngay-1-diem-tai-ninh-binh-dip-quoc-khanh-5113062.html"
    ],
@@ -25,10 +48,15 @@
     "Trải nghiệm 2 ngày 1 điểm tại Ninh Bình dịp Quốc khánh"
    ],
    "style": "có dấu",
-   "origin": "cũ"
+   "typo": {
+    "kind": "lap_chu",
+    "from": "quốc",
+    "to": "quuốc"
+   }
   },
   {
-   "query": "đi tả van ngắm mùa vàng",
+   "query": "đi tả van ngắm mùw vàng",
+   "original": "đi tả van ngắm mùa vàng",
    "gold_urls": [
     "https://vnexpress.net/ba-ngay-di-ta-van-ngam-mua-vang-dip-2-9-5113014.html"
    ],
@@ -36,10 +64,15 @@
     "Ba ngày đi Tả Van ngắm mùa vàng dịp 2/9"
    ],
    "style": "có dấu",
-   "origin": "cũ"
+   "typo": {
+    "kind": "phim_ke_ben",
+    "from": "mùa",
+    "to": "mùw"
+   }
   },
   {
-   "query": "khách mỹ vi phạm lệnh cấm ở venice",
+   "query": "khách mỹ vi phạm lệnh cấm ở venicẽ",
+   "original": "khách mỹ vi phạm lệnh cấm ở venice",
    "gold_urls": [
     "https://vnexpress.net/coi-tran-chay-bo-khach-my-vi-pham-lenh-cam-o-venice-5112789.html"
    ],
@@ -47,10 +80,15 @@
     "Cởi trần chạy bộ, khách Mỹ vi phạm lệnh cấm ở Venice"
    ],
    "style": "có dấu",
-   "origin": "cũ"
+   "typo": {
+    "kind": "sai_dau_thanh",
+    "from": "venice",
+    "to": "venicẽ"
+   }
   },
   {
-   "query": "lịch nghỉ lễ tết của du lịch việt",
+   "query": "lcịh nghỉ lễ tết của du lịch việt",
+   "original": "lịch nghỉ lễ tết của du lịch việt",
    "gold_urls": [
     "https://vnexpress.net/du-lich-viet-mong-ngong-chot-som-lich-nghi-le-tet-5112775.html"
    ],
@@ -58,10 +96,15 @@
     "Du lịch Việt mong ngóng chốt sớm lịch nghỉ lễ, Tết"
    ],
    "style": "có dấu",
-   "origin": "cũ"
+   "typo": {
+    "kind": "dao_chu",
+    "from": "lịch",
+    "to": "lcịh"
+   }
   },
   {
-   "query": "giá iphone 18 pro tại việt nam",
+   "query": "hiá iphone 18 pro tại việt nam",
+   "original": "giá iphone 18 pro tại việt nam",
    "gold_urls": [
     "https://vnexpress.net/gia-iphone-duo-18-pro-tai-viet-nam-xep-thu-bao-nhieu-the-gioi-5118722.html"
    ],
@@ -69,10 +112,15 @@
     "Giá iPhone Duo, 18 Pro tại Việt Nam xếp thứ bao nhiêu thế giới?"
    ],
    "style": "có dấu",
-   "origin": "cũ"
+   "typo": {
+    "kind": "phim_ke_ben",
+    "from": "giá",
+    "to": "hiá"
+   }
   },
   {
-   "query": "điện thoại gập đầu tiên của apple",
+   "query": "điện thại gập đầu tiên của apple",
+   "original": "điện thoại gập đầu tiên của apple",
    "gold_urls": [
     "https://vnexpress.net/iphone-duo-dien-thoai-gap-dau-tien-cua-apple-5118592.html",
     "https://vnexpress.net/iphone-lan-dau-co-gia-tram-trieu-dong-tai-viet-nam-5118591.html",
@@ -84,10 +132,15 @@
     "Hình dung về iPhone gập trước lễ ra mắt"
    ],
    "style": "có dấu",
-   "origin": "cũ"
+   "typo": {
+    "kind": "thieu_chu",
+    "from": "thoại",
+    "to": "thại"
+   }
   },
   {
-   "query": "apple tăng giá iphone 17",
+   "query": "apple tăng giá ipone 17",
+   "original": "apple tăng giá iphone 17",
    "gold_urls": [
     "https://vnexpress.net/apple-am-tham-tang-gia-iphone-17-va-16-5118604.html"
    ],
@@ -95,10 +148,15 @@
     "Apple âm thầm tăng giá iPhone 17 và 16"
    ],
    "style": "có dấu",
-   "origin": "cũ"
+   "typo": {
+    "kind": "thieu_chu",
+    "from": "iphone",
+    "to": "ipone"
+   }
   },
   {
-   "query": "giá xăng dầu tăng",
+   "query": "goá xăng dầu tăng",
+   "original": "giá xăng dầu tăng",
    "gold_urls": [
     "https://vnexpress.net/gia-xang-dau-moi-nhat-hom-nay-10-9-5118789.html"
    ],
@@ -106,10 +164,15 @@
     "Giá xăng, dầu cùng tăng"
    ],
    "style": "có dấu",
-   "origin": "cũ"
+   "typo": {
+    "kind": "phim_ke_ben",
+    "from": "giá",
+    "to": "goá"
+   }
   },
   {
-   "query": "scb thu hồi nợ trương mỹ lan",
+   "query": "scb thu hồi nợ tương mỹ lan",
+   "original": "scb thu hồi nợ trương mỹ lan",
    "gold_urls": [
     "https://vnexpress.net/scb-thu-hoi-gan-900-ty-dong-no-trong-ban-an-ba-truong-my-lan-5118703.html"
    ],
@@ -117,10 +180,15 @@
     "SCB thu hồi gần 900 tỷ đồng nợ trong bản án bà Trương Mỹ Lan"
    ],
    "style": "có dấu",
-   "origin": "cũ"
+   "typo": {
+    "kind": "thieu_chu",
+    "from": "trương",
+    "to": "tương"
+   }
   },
   {
-   "query": "học sinh việt bị bắt nạt học đường",
+   "query": "học sihn việt bị bắt nạt học đường",
+   "original": "học sinh việt bị bắt nạt học đường",
    "gold_urls": [
     "https://vnexpress.net/gan-20-hoc-sinh-viet-bi-bat-nat-vai-lan-moi-thang-5118569.html"
    ],
@@ -128,10 +196,15 @@
     "Gần 20% học sinh Việt bị bắt nạt 'vài lần mỗi tháng'"
    ],
    "style": "có dấu",
-   "origin": "cũ"
+   "typo": {
+    "kind": "dao_chu",
+    "from": "sinh",
+    "to": "sihn"
+   }
   },
   {
-   "query": "match day đại học y hà nội",
+   "query": "match dy đại học y hà nội",
+   "original": "match day đại học y hà nội",
    "gold_urls": [
     "https://vnexpress.net/dang-sau-su-ra-doi-match-day-o-dai-hoc-y-ha-noi-5118496.html",
     "https://vnexpress.net/nhieu-thi-sinh-ngoai-y-ha-noi-ho-ten-o-top-dau-match-day-5118457.html",
@@ -143,10 +216,15 @@
     "Y Hà Nội kiên định với 'đặc sản' chọn chuyên ngành bác sĩ nội trú"
    ],
    "style": "có dấu",
-   "origin": "cũ"
+   "typo": {
+    "kind": "thieu_chu",
+    "from": "day",
+    "to": "dy"
+   }
   },
   {
-   "query": "học sinh huế thiếu sách giáo khoa",
+   "query": "học sigh huế thiếu sách giáo khoa",
+   "original": "học sinh huế thiếu sách giáo khoa",
    "gold_urls": [
     "https://vnexpress.net/hue-gap-rut-dau-thau-vi-hon-20-hoc-sinh-thieu-sach-giao-khoa-5118577.html"
    ],
@@ -154,10 +232,15 @@
     "Hơn 20% học sinh ở Huế thiếu sách giáo khoa"
    ],
    "style": "có dấu",
-   "origin": "cũ"
+   "typo": {
+    "kind": "phim_ke_ben",
+    "from": "sinh",
+    "to": "sigh"
+   }
   },
   {
-   "query": "robot chó dẫn đường trung quốc",
+   "query": "robot chó dẫn đuờng trung quốc",
+   "original": "robot chó dẫn đường trung quốc",
    "gold_urls": [
     "https://vnexpress.net/cong-ty-trung-quoc-ra-mat-robot-cho-dan-duong-5117128.html"
    ],
@@ -165,10 +248,15 @@
     "Công ty Trung Quốc ra mắt robot chó dẫn đường"
    ],
    "style": "có dấu",
-   "origin": "cũ"
+   "typo": {
+    "kind": "mat_dau_phu",
+    "from": "đường",
+    "to": "đuờng"
+   }
   },
   {
-   "query": "vụ nổ tên lửa blue origin",
+   "query": "vụ nổ tên lửaa blue origin",
+   "original": "vụ nổ tên lửa blue origin",
    "gold_urls": [
     "https://vnexpress.net/vu-no-ten-lua-blue-origin-tao-song-am-lan-khap-nuoc-my-5116865.html"
    ],
@@ -176,10 +264,15 @@
     "Vụ nổ tên lửa Blue Origin tạo sóng âm lan khắp nước Mỹ"
    ],
    "style": "có dấu",
-   "origin": "cũ"
+   "typo": {
+    "kind": "lap_chu",
+    "from": "lửa",
+    "to": "lửaa"
+   }
   },
   {
-   "query": "hạn hán kênh đào panama",
+   "query": "hạn hán kênh đà panama",
+   "original": "hạn hán kênh đào panama",
    "gold_urls": [
     "https://vnexpress.net/han-han-thach-thuc-kenh-dao-panama-5116654.html"
    ],
@@ -187,10 +280,15 @@
     "Hạn hán thách thức kênh đào Panama"
    ],
    "style": "có dấu",
-   "origin": "cũ"
+   "typo": {
+    "kind": "thieu_chu",
+    "from": "đào",
+    "to": "đà"
+   }
   },
   {
-   "query": "champions league man utd",
+   "query": "champions league mab utd",
+   "original": "champions league man utd",
    "gold_urls": [
     "https://vnexpress.net/champions-league-thu-thach-chieu-sau-cua-man-utd-5118560.html",
     "https://vnexpress.net/carrick-man-utd-khong-du-champions-league-chi-de-tan-huong-khong-khi-5118595.html"
@@ -200,10 +298,15 @@
     "Carrick: 'Man Utd không dự Champions League chỉ để tận hưởng không khí'"
    ],
    "style": "không dấu",
-   "origin": "cũ"
+   "typo": {
+    "kind": "phim_ke_ben",
+    "from": "man",
+    "to": "mab"
+   }
   },
   {
-   "query": "asiad 20 khởi tranh",
+   "query": "asiad 20 khởi trnah",
+   "original": "asiad 20 khởi tranh",
    "gold_urls": [
     "https://vnexpress.net/asiad-20-khoi-tranh-hom-nay-5118787.html"
    ],
@@ -211,10 +314,15 @@
     "ASIAD 20 khởi tranh hôm nay"
    ],
    "style": "có dấu",
-   "origin": "cũ"
+   "typo": {
+    "kind": "dao_chu",
+    "from": "tranh",
+    "to": "trnah"
+   }
   },
   {
-   "query": "kẹp tiền để được xạ trị sớm",
+   "query": "kẹp tiề để được xạ trị sớm",
+   "original": "kẹp tiền để được xạ trị sớm",
    "gold_urls": [
     "https://vnexpress.net/nguoi-benh-phan-anh-kep-tien-de-duoc-xa-tri-som-o-benh-vien-e-5118771.html"
    ],
@@ -222,10 +330,15 @@
     "Người bệnh phản ánh 'kẹp tiền để được xạ trị sớm' ở Bệnh viện E"
    ],
    "style": "có dấu",
-   "origin": "cũ"
+   "typo": {
+    "kind": "thieu_chu",
+    "from": "tiền",
+    "to": "tiề"
+   }
   },
   {
-   "query": "ăn chuối sai cách hại tiêu hóa",
+   "query": "ăn chuối sai cách hại tieu hóa",
+   "original": "ăn chuối sai cách hại tiêu hóa",
    "gold_urls": [
     "https://vnexpress.net/sai-lam-khi-an-chuoi-gay-hai-tieu-hoa-qua-tai-than-5118207.html"
    ],
@@ -233,10 +346,15 @@
     "Sai lầm khi ăn chuối gây hại tiêu hóa, quá tải thận"
    ],
    "style": "có dấu",
-   "origin": "cũ"
+   "typo": {
+    "kind": "mat_dau_phu",
+    "from": "tiêu",
+    "to": "tieu"
+   }
   },
   {
-   "query": "cơm nguội để được bao lâu",
+   "query": "cơm nguội để được boa lâu",
+   "original": "cơm nguội để được bao lâu",
    "gold_urls": [
     "https://vnexpress.net/com-nguoi-nen-de-trong-bao-lau-thi-vut-bo-5117815.html"
    ],
@@ -244,10 +362,15 @@
     "Cơm nguội nên để trong bao lâu thì vứt bỏ?"
    ],
    "style": "có dấu",
-   "origin": "cũ"
+   "typo": {
+    "kind": "dao_chu",
+    "from": "bao",
+    "to": "boa"
+   }
   },
   {
-   "query": "tin ve dao hai nam",
+   "query": "tin ve ddao hai nam",
+   "original": "tin ve dao hai nam",
    "gold_urls": [
     "https://vnexpress.net/dao-hai-nam-chua-de-hut-khach-viet-du-mien-visa-30-ngay-5112963.html"
    ],
@@ -255,10 +378,15 @@
     "Đảo Hải Nam 'chưa dễ hút khách Việt' dù miễn visa 30 ngày"
    ],
    "style": "không dấu",
-   "origin": "cũ"
+   "typo": {
+    "kind": "lap_chu",
+    "from": "dao",
+    "to": "ddao"
+   }
   },
   {
-   "query": "gia iphone 18 pro tai viet nam",
+   "query": "gia iphne 18 pro tai viet nam",
+   "original": "gia iphone 18 pro tai viet nam",
    "gold_urls": [
     "https://vnexpress.net/gia-iphone-duo-18-pro-tai-viet-nam-xep-thu-bao-nhieu-the-gioi-5118722.html"
    ],
@@ -266,10 +394,15 @@
     "Giá iPhone Duo, 18 Pro tại Việt Nam xếp thứ bao nhiêu thế giới?"
    ],
    "style": "không dấu",
-   "origin": "cũ"
+   "typo": {
+    "kind": "thieu_chu",
+    "from": "iphone",
+    "to": "iphne"
+   }
   },
   {
-   "query": "hoc sinh viet bi bat nat",
+   "query": "hooc sinh viet bi bat nat",
+   "original": "hoc sinh viet bi bat nat",
    "gold_urls": [
     "https://vnexpress.net/gan-20-hoc-sinh-viet-bi-bat-nat-vai-lan-moi-thang-5118569.html"
    ],
@@ -277,10 +410,15 @@
     "Gần 20% học sinh Việt bị bắt nạt 'vài lần mỗi tháng'"
    ],
    "style": "không dấu",
-   "origin": "cũ"
+   "typo": {
+    "kind": "lap_chu",
+    "from": "hoc",
+    "to": "hooc"
+   }
   },
   {
-   "query": "vu no ten lua blue origin",
+   "query": "vu no ten oua blue origin",
+   "original": "vu no ten lua blue origin",
    "gold_urls": [
     "https://vnexpress.net/vu-no-ten-lua-blue-origin-tao-song-am-lan-khap-nuoc-my-5116865.html"
    ],
@@ -288,10 +426,15 @@
     "Vụ nổ tên lửa Blue Origin tạo sóng âm lan khắp nước Mỹ"
    ],
    "style": "không dấu",
-   "origin": "cũ"
+   "typo": {
+    "kind": "phim_ke_ben",
+    "from": "lua",
+    "to": "oua"
+   }
   },
   {
-   "query": "com nguoi de duoc bao lau",
+   "query": "com nguoi de duoc bao alu",
+   "original": "com nguoi de duoc bao lau",
    "gold_urls": [
     "https://vnexpress.net/com-nguoi-nen-de-trong-bao-lau-thi-vut-bo-5117815.html"
    ],
@@ -299,10 +442,15 @@
     "Cơm nguội nên để trong bao lâu thì vứt bỏ?"
    ],
    "style": "không dấu",
-   "origin": "cũ"
+   "typo": {
+    "kind": "dao_chu",
+    "from": "lau",
+    "to": "alu"
+   }
   },
   {
-   "query": "han han kenh dao panama",
+   "query": "han han kenh rao panama",
+   "original": "han han kenh dao panama",
    "gold_urls": [
     "https://vnexpress.net/han-han-thach-thuc-kenh-dao-panama-5116654.html"
    ],
@@ -310,10 +458,15 @@
     "Hạn hán thách thức kênh đào Panama"
    ],
    "style": "không dấu",
-   "origin": "cũ"
+   "typo": {
+    "kind": "phim_ke_ben",
+    "from": "dao",
+    "to": "rao"
+   }
   },
   {
-   "query": "bt gì về giá xăng k",
+   "query": "bt gì về giá xnăg k",
+   "original": "bt gì về giá xăng k",
    "gold_urls": [
     "https://vnexpress.net/gia-xang-dau-moi-nhat-hom-nay-10-9-5118789.html"
    ],
@@ -321,10 +474,15 @@
     "Giá xăng, dầu cùng tăng"
    ],
    "style": "teencode",
-   "origin": "cũ"
+   "typo": {
+    "kind": "dao_chu",
+    "from": "xăng",
+    "to": "xnăg"
+   }
   },
   {
-   "query": "ko bt gia iphone the nao",
+   "query": "ko bt gia iphone thhe nao",
+   "original": "ko bt gia iphone the nao",
    "gold_urls": [
     "https://vnexpress.net/gia-iphone-duo-18-pro-tai-viet-nam-xep-thu-bao-nhieu-the-gioi-5118722.html",
     "https://vnexpress.net/ly-do-nha-dau-tu-khong-can-lo-lang-du-gia-iphone-gan-2-000-usd-5118756.html",
@@ -344,10 +502,15 @@
     "Dự báo mức tăng giá của iPhone 18 Pro"
    ],
    "style": "teencode",
-   "origin": "cũ"
+   "typo": {
+    "kind": "lap_chu",
+    "from": "the",
+    "to": "thhe"
+   }
   },
   {
-   "query": "cho t hỏi vụ hải nam vs",
+   "query": "cho t hỏi vụ hhải nam vs",
+   "original": "cho t hỏi vụ hải nam vs",
    "gold_urls": [
     "https://vnexpress.net/dao-hai-nam-chua-de-hut-khach-viet-du-mien-visa-30-ngay-5112963.html"
    ],
@@ -355,10 +518,15 @@
     "Đảo Hải Nam 'chưa dễ hút khách Việt' dù miễn visa 30 ngày"
    ],
    "style": "teencode",
-   "origin": "cũ"
+   "typo": {
+    "kind": "lap_chu",
+    "from": "hải",
+    "to": "hhải"
+   }
   },
   {
-   "query": "robot cho dan duong trung quoc",
+   "query": "robot cho wan duong trung quoc",
+   "original": "robot cho dan duong trung quoc",
    "gold_urls": [
     "https://vnexpress.net/cong-ty-trung-quoc-ra-mat-robot-cho-dan-duong-5117128.html"
    ],
@@ -366,30 +534,47 @@
     "Công ty Trung Quốc ra mắt robot chó dẫn đường"
    ],
    "style": "không dấu",
-   "origin": "cũ"
+   "typo": {
+    "kind": "phim_ke_ben",
+    "from": "dan",
+    "to": "wan"
+   }
   },
   {
-   "query": "sao ks ko có phòng 404",
+   "query": "sao ks ko có phògg 404",
+   "original": "sao ks ko có phòng 404",
    "gold_urls": [
     "https://vnexpress.net/ly-do-nhieu-khach-san-khong-co-phong-404-5117276.html"
    ],
    "gold_titles": [
     "Lý do nhiều khách sạn không có phòng 404"
    ],
-   "style": "teencode"
+   "style": "teencode",
+   "typo": {
+    "kind": "phim_ke_ben",
+    "from": "phòng",
+    "to": "phògg"
+   }
   },
   {
-   "query": "đồng hồ trẻ em Huawei có hai camera",
+   "query": "đồng hồ tfẻ em Huawei có hai camera",
+   "original": "đồng hồ trẻ em Huawei có hai camera",
    "gold_urls": [
     "https://vnexpress.net/huawei-watch-kids-x1-dong-ho-tre-em-co-camera-kep-5117387.html"
    ],
    "gold_titles": [
     "Huawei Watch Kids X1 - đồng hồ trẻ em có camera kép"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "phim_ke_ben",
+    "from": "trẻ",
+    "to": "tfẻ"
+   }
   },
   {
-   "query": "Barca thắng Feyenoord 5-1",
+   "query": "Barca thắng Feynoord 5-1",
+   "original": "Barca thắng Feyenoord 5-1",
    "gold_urls": [
     "https://vnexpress.net/barca-de-bep-feyenoord-tran-ra-quan-champions-league-5118594.html",
     "https://vnexpress.net/hlv-feyenoord-barca-manh-nhat-the-gioi-5118607.html",
@@ -400,240 +585,384 @@
     "HLV Feyenoord: 'Barca mạnh nhất thế giới'",
     "Yamal phá kỷ lục của Mbappe ở Champions League"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "thieu_chu",
+    "from": "Feyenoord",
+    "to": "Feynoord"
+   }
   },
   {
-   "query": "microsoft 365 copilot cho doanh nghiep",
+   "query": "microsoft 365 copilot cho doahn nghiep",
+   "original": "microsoft 365 copilot cho doanh nghiep",
    "gold_urls": [
     "https://vnexpress.net/microsoft-365-copilot-ho-tro-doanh-nghiep-nang-nang-suat-5117336.html"
    ],
    "gold_titles": [
     "Microsoft 365 Copilot hỗ trợ doanh nghiệp nâng năng suất"
    ],
-   "style": "không dấu"
+   "style": "không dấu",
+   "typo": {
+    "kind": "dao_chu",
+    "from": "doanh",
+    "to": "doahn"
+   }
   },
   {
-   "query": "rybakina lên top 1 tg r hả",
+   "query": "rybaakina lên top 1 tg r hả",
+   "original": "rybakina lên top 1 tg r hả",
    "gold_urls": [
     "https://vnexpress.net/rybakina-lan-dau-len-so-mot-the-gioi-5118593.html"
    ],
    "gold_titles": [
     "Rybakina lần đầu lên số một thế giới"
    ],
-   "style": "teencode"
+   "style": "teencode",
+   "typo": {
+    "kind": "lap_chu",
+    "from": "rybakina",
+    "to": "rybaakina"
+   }
   },
   {
-   "query": "bán kết Mỹ Mở rộng nữ có bốn hạt giống",
+   "query": "bán iết Mỹ Mở rộng nữ có bốn hạt giống",
+   "original": "bán kết Mỹ Mở rộng nữ có bốn hạt giống",
    "gold_urls": [
     "https://vnexpress.net/top-4-hat-giong-nu-hoi-tu-o-ban-ket-my-mo-rong-sau-51-nam-5118774.html"
    ],
    "gold_titles": [
     "Top 4 hạt giống nữ hội tụ ở bán kết Mỹ Mở rộng sau 51 năm"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "phim_ke_ben",
+    "from": "kết",
+    "to": "iết"
+   }
   },
   {
-   "query": "thành phố Venice nhái ở Đại Liên vắng khách",
+   "query": "thành phố Venice nhái ở Đại Liên ắvng khách",
+   "original": "thành phố Venice nhái ở Đại Liên vắng khách",
    "gold_urls": [
     "https://vnexpress.net/venice-gia-o-trung-quoc-e-khach-5112333.html"
    ],
    "gold_titles": [
     "Venice giả ở Trung Quốc ế khách"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "dao_chu",
+    "from": "vắng",
+    "to": "ắvng"
+   }
   },
   {
-   "query": "robot chạy 100 mét trong 8,64 giây",
+   "query": "robot vhạy 100 mét trong 8,64 giây",
+   "original": "robot chạy 100 mét trong 8,64 giây",
    "gold_urls": [
     "https://vnexpress.net/gioi-han-cua-con-nguoi-boc-lo-qua-ky-luc-nuoc-rut-cua-robot-5114911.html"
    ],
    "gold_titles": [
     "Giới hạn của con người bộc lộ qua kỷ lục nước rút của robot"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "phim_ke_ben",
+    "from": "chạy",
+    "to": "vhạy"
+   }
   },
   {
-   "query": "startup edtech Việt Nam đứng thứ mấy Đông Nam Á",
+   "query": "startup edtch Việt Nam đứng thứ mấy Đông Nam Á",
+   "original": "startup edtech Việt Nam đứng thứ mấy Đông Nam Á",
    "gold_urls": [
     "https://vnexpress.net/startup-cong-nghe-giao-duc-cua-viet-nam-trong-top-dong-nam-a-5115694.html"
    ],
    "gold_titles": [
     "Startup công nghệ giáo dục của Việt Nam trong top Đông Nam Á"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "thieu_chu",
+    "from": "edtech",
+    "to": "edtch"
+   }
   },
   {
-   "query": "bác sĩ trẻ về trạm y tế TP HCM",
+   "query": "bác sĩ trẻ về trạm y tế TP CHM",
+   "original": "bác sĩ trẻ về trạm y tế TP HCM",
    "gold_urls": [
     "https://vnexpress.net/tp-hcm-khep-lai-4-nam-thi-diem-dua-bac-si-tre-ve-tram-y-te-5118782.html"
    ],
    "gold_titles": [
     "TP HCM khép lại 4 năm thí điểm đưa bác sĩ trẻ về trạm y tế"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "dao_chu",
+    "from": "HCM",
+    "to": "CHM"
+   }
   },
   {
-   "query": "khách Việt ngại đi Jeju sau vụ phát hiện thi thể",
+   "query": "khách Việt ngại đi Jeju sau vụ phátt hiện thi thể",
+   "original": "khách Việt ngại đi Jeju sau vụ phát hiện thi thể",
    "gold_urls": [
     "https://vnexpress.net/khach-viet-ne-du-lich-jeju-sau-vu-phat-hien-4-thi-the-5117584.html"
    ],
    "gold_titles": [
     "Khách Việt né du lịch Jeju sau vụ phát hiện 4 thi thể"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "lap_chu",
+    "from": "phát",
+    "to": "phátt"
+   }
   },
   {
-   "query": "Việt Nam có bao nhiêu công ty blockchain",
+   "query": "Việt Nam có bao nhiêu côg ty blockchain",
+   "original": "Việt Nam có bao nhiêu công ty blockchain",
    "gold_urls": [
     "https://vnexpress.net/viet-nam-dung-thu-ba-dong-nam-a-ve-so-cong-ty-blockchain-5118551.html"
    ],
    "gold_titles": [
     "Việt Nam đứng thứ ba Đông Nam Á về số công ty blockchain"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "thieu_chu",
+    "from": "công",
+    "to": "côg"
+   }
   },
   {
-   "query": "người Trung Quốc đi 233 quốc gia trong 33 năm",
+   "query": "người Trung Quốc đi 233 quố gia trong 33 năm",
+   "original": "người Trung Quốc đi 233 quốc gia trong 33 năm",
    "gold_urls": [
     "https://vnexpress.net/danh-33-nam-va-1-5-trieu-usd-du-lich-qua-233-quoc-gia-lanh-tho-5118511.html"
    ],
    "gold_titles": [
     "Dành 33 năm và 1,5 triệu USD du lịch qua 233 quốc gia, lãnh thổ"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "thieu_chu",
+    "from": "quốc",
+    "to": "quố"
+   }
   },
   {
-   "query": "bếp đun giá 5 đô nhờ tín chỉ carbon ở châu Phi",
+   "query": "bbếp đun giá 5 đô nhờ tín chỉ carbon ở châu Phi",
+   "original": "bếp đun giá 5 đô nhờ tín chỉ carbon ở châu Phi",
    "gold_urls": [
     "https://vnexpress.net/nguoi-chau-phi-mua-bep-40-usd-voi-gia-5-usd-nho-tin-chi-carbon-5117540.html"
    ],
    "gold_titles": [
     "Người châu Phi mua bếp 40 USD với giá 5 USD nhờ tín chỉ carbon"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "lap_chu",
+    "from": "bếp",
+    "to": "bbếp"
+   }
   },
   {
-   "query": "uống cf có bị vàng răng ko",
+   "query": "kống cf có bị vàng răng ko",
+   "original": "uống cf có bị vàng răng ko",
    "gold_urls": [
     "https://vnexpress.net/cach-uong-ca-phe-han-che-rang-o-vang-5117502.html"
    ],
    "gold_titles": [
     "Cách uống cà phê hạn chế răng ố vàng"
    ],
-   "style": "teencode"
+   "style": "teencode",
+   "typo": {
+    "kind": "phim_ke_ben",
+    "from": "uống",
+    "to": "kống"
+   }
   },
   {
-   "query": "dịch Ebola ở Congo WHO thiếu tiền",
+   "query": "dịch Ebola ở Congo WHO thiếu ttiền",
+   "original": "dịch Ebola ở Congo WHO thiếu tiền",
    "gold_urls": [
     "https://vnexpress.net/who-canh-bao-het-tien-thieu-nhan-vien-y-te-de-ung-pho-dich-ebola-tai-congo-5118334.html"
    ],
    "gold_titles": [
     "WHO cảnh báo hết tiền, thiếu nhân viên y tế để ứng phó dịch Ebola tại Congo"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "lap_chu",
+    "from": "tiền",
+    "to": "ttiền"
+   }
   },
   {
-   "query": "ong bo lam sieu xe bang go cho con",
+   "query": "ong bo lam sieu xe abng go cho con",
+   "original": "ong bo lam sieu xe bang go cho con",
    "gold_urls": [
     "https://vnexpress.net/ong-bo-bac-ninh-che-tao-30-sieu-xe-bang-go-tang-con-trai-5116034.html"
    ],
    "gold_titles": [
     "Ông bố Bắc Ninh chế tạo 30 siêu xe bằng gỗ tặng con trai"
    ],
-   "style": "không dấu"
+   "style": "không dấu",
+   "typo": {
+    "kind": "dao_chu",
+    "from": "bang",
+    "to": "abng"
+   }
   },
   {
-   "query": "mua giày Nike giả ở Nha Trang",
+   "query": "mua giày Nike giả ở Nha Ttang",
+   "original": "mua giày Nike giả ở Nha Trang",
    "gold_urls": [
     "https://vnexpress.net/mua-giay-o-nha-trang-gui-sang-nga-moi-phat-hien-hang-gia-5118064.html"
    ],
    "gold_titles": [
     "Mua giày ở Nha Trang gửi sang Nga mới phát hiện hàng giả"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "phim_ke_ben",
+    "from": "Trang",
+    "to": "Ttang"
+   }
   },
   {
-   "query": "căn hộ tam giác siêu hẹp ở Tokyo",
+   "query": "căn hộ tam giác siêu hẹp ở Toyko",
+   "original": "căn hộ tam giác siêu hẹp ở Tokyo",
    "gold_urls": [
     "https://vnexpress.net/ben-trong-can-ho-hinh-tam-giac-sieu-mong-o-nhat-5110980.html"
    ],
    "gold_titles": [
     "Bên trong căn hộ hình tam giác 'siêu mỏng' ở Nhật"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "dao_chu",
+    "from": "Tokyo",
+    "to": "Toyko"
+   }
   },
   {
-   "query": "chuột còn sống trong hộp mì ở Hong Kong",
+   "query": "chuột còn sống trong hộp mì ở Nong Kong",
+   "original": "chuột còn sống trong hộp mì ở Hong Kong",
    "gold_urls": [
     "https://vnexpress.net/khach-phat-hien-chuot-song-trong-hop-mi-mua-mang-di-5117699.html"
    ],
    "gold_titles": [
     "Khách phát hiện chuột sống trong hộp mì mua mang đi"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "phim_ke_ben",
+    "from": "Hong",
+    "to": "Nong"
+   }
   },
   {
-   "query": "nợ vay của doanh nghiệp bất động sản",
+   "query": "nợ vaay của doanh nghiệp bất động sản",
+   "original": "nợ vay của doanh nghiệp bất động sản",
    "gold_urls": [
     "https://vnexpress.net/no-vay-cua-doanh-nghiep-bat-dong-san-phinh-to-5117582.html"
    ],
    "gold_titles": [
     "Nợ vay của doanh nghiệp bất động sản phình to"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "lap_chu",
+    "from": "vay",
+    "to": "vaay"
+   }
   },
   {
-   "query": "gián cyborg cứu hộ của nhà khoa học Việt",
+   "query": "gián cyborg cứu hộ của nhà khoa học Vit",
+   "original": "gián cyborg cứu hộ của nhà khoa học Việt",
    "gold_urls": [
     "https://vnexpress.net/nhom-nha-khoa-hoc-viet-bien-gian-thanh-cyborg-cuu-ho-5114953.html"
    ],
    "gold_titles": [
     "Nhóm nhà khoa học Việt biến gián thành 'cyborg' cứu hộ"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "thieu_chu",
+    "from": "Việt",
+    "to": "Vit"
+   }
   },
   {
-   "query": "du khách mắc kẹt trên đảo Cát Bà vì bão số 4",
+   "query": "du khách mác kẹt trên đảo Cát Bà vì bão số 4",
+   "original": "du khách mắc kẹt trên đảo Cát Bà vì bão số 4",
    "gold_urls": [
     "https://vnexpress.net/hon-1-700-du-khach-van-o-tren-dao-cat-ba-5112281.html"
    ],
    "gold_titles": [
     "Hơn 1.700 du khách vẫn ở trên đảo Cát Bà"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "mat_dau_phu",
+    "from": "mắc",
+    "to": "mác"
+   }
   },
   {
-   "query": "robot Unitree tự học cách đánh nhau",
+   "query": "robot Unitree tự học cách đnáh nhau",
+   "original": "robot Unitree tự học cách đánh nhau",
    "gold_urls": [
     "https://vnexpress.net/unitree-trinh-dien-robot-hinh-nguoi-tu-chien-dau-5118417.html"
    ],
    "gold_titles": [
     "Unitree trình diễn robot hình người tự chiến đấu"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "dao_chu",
+    "from": "đánh",
+    "to": "đnáh"
+   }
   },
   {
-   "query": "banh flan co lon gay sot o sai gon",
+   "query": "banh flan co lom gay sot o sai gon",
+   "original": "banh flan co lon gay sot o sai gon",
    "gold_urls": [
     "https://vnexpress.net/xep-hang-mua-banh-flan-khong-lo-tai-tp-hcm-5111630.html"
    ],
    "gold_titles": [
     "Xếp hàng mua bánh flan 'khổng lồ' tại TP HCM"
    ],
-   "style": "không dấu"
+   "style": "không dấu",
+   "typo": {
+    "kind": "phim_ke_ben",
+    "from": "lon",
+    "to": "lom"
+   }
   },
   {
-   "query": "ten lua spectrum cua duc phong ve tinh",
+   "query": "ten lua spectru cua duc phong ve tinh",
+   "original": "ten lua spectrum cua duc phong ve tinh",
    "gold_urls": [
     "https://vnexpress.net/ten-lua-duc-mo-duong-tham-vong-phong-ve-tinh-cua-chau-au-5117120.html"
    ],
    "gold_titles": [
     "Tên lửa Đức mở đường tham vọng phóng vệ tinh của châu Âu"
    ],
-   "style": "không dấu"
+   "style": "không dấu",
+   "typo": {
+    "kind": "thieu_chu",
+    "from": "spectrum",
+    "to": "spectru"
+   }
   },
   {
-   "query": "giá dầu Brent lên 100 đô",
+   "query": "gia dầu Brent lên 100 đô",
+   "original": "giá dầu Brent lên 100 đô",
    "gold_urls": [
     "https://vnexpress.net/gia-dau-the-gioi-vuot-100-usd-5118404.html",
     "https://vnexpress.net/gia-dau-the-gioi-cao-nhat-6-tuan-5117678.html"
@@ -642,60 +971,96 @@
     "Giá dầu thế giới vượt 100 USD",
     "Giá dầu thế giới cao nhất 6 tuần"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "sai_dau_thanh",
+    "from": "giá",
+    "to": "gia"
+   }
   },
   {
-   "query": "gau tan cong du khach gan ho towada",
+   "query": "gau tan cong du khach gan ho towadaa",
+   "original": "gau tan cong du khach gan ho towada",
    "gold_urls": [
     "https://vnexpress.net/du-khach-bi-gau-tan-cong-o-nhat-ban-5112704.html"
    ],
    "gold_titles": [
     "Du khách bị gấu tấn công ở Nhật Bản"
    ],
-   "style": "không dấu"
+   "style": "không dấu",
+   "typo": {
+    "kind": "lap_chu",
+    "from": "towada",
+    "to": "towadaa"
+   }
   },
   {
-   "query": "lợi suất trái phiếu Mỹ kỳ hạn 10 năm",
+   "query": "lợi suất trái phiếu Mỹ kỳ han 10 năm",
+   "original": "lợi suất trái phiếu Mỹ kỳ hạn 10 năm",
    "gold_urls": [
     "https://vnexpress.net/loi-suat-trai-phieu-chinh-phu-my-len-cao-nhat-3-nam-5118685.html"
    ],
    "gold_titles": [
     "Lợi suất trái phiếu chính phủ Mỹ lên cao nhất 3 năm"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "sai_dau_thanh",
+    "from": "hạn",
+    "to": "han"
+   }
   },
   {
-   "query": "Ancelotti gọi cầu thủ mới cho tuyển Brazil",
+   "query": "Ancelotti gọi cầu thủ mới cho ttuyển Brazil",
+   "original": "Ancelotti gọi cầu thủ mới cho tuyển Brazil",
    "gold_urls": [
     "https://vnexpress.net/ancelotti-thay-mau-doi-tuyen-brazil-5118662.html"
    ],
    "gold_titles": [
     "Ancelotti thay máu đội tuyển Brazil"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "lap_chu",
+    "from": "tuyển",
+    "to": "ttuyển"
+   }
   },
   {
-   "query": "dọn rác sông Tô Lịch",
+   "query": "dọn rác song Tô Lịch",
+   "original": "dọn rác sông Tô Lịch",
    "gold_urls": [
     "https://vnexpress.net/nha-sang-lap-ha-noi-xanh-nguoi-dan-nem-rac-khi-chung-toi-don-song-to-lich-5118572.html"
    ],
    "gold_titles": [
     "Nhà sáng lập Hà Nội Xanh: 'Người dân ném rác khi chúng tôi dọn sông Tô Lịch'"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "mat_dau_phu",
+    "from": "sông",
+    "to": "song"
+   }
   },
   {
-   "query": "vụ đắm tàu Costa Concordia",
+   "query": "vụ đắm àtu Costa Concordia",
+   "original": "vụ đắm tàu Costa Concordia",
    "gold_urls": [
     "https://vnexpress.net/tham-hoa-dam-tau-du-lich-gan-15-nam-truoc-vi-tinh-si-dien-cua-thuyen-truong-5112039.html"
    ],
    "gold_titles": [
     "Thảm họa đắm tàu du lịch gần 15 năm trước vì tính sĩ diện của thuyền trưởng"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "dao_chu",
+    "from": "tàu",
+    "to": "àtu"
+   }
   },
   {
-   "query": "gpt-6 astra sieu tri tue",
+   "query": "gpt-6 astra sieu tri yue",
+   "original": "gpt-6 astra sieu tri tue",
    "gold_urls": [
     "https://vnexpress.net/ai-manh-nhat-cua-openai-gay-phan-ung-trai-chieu-5117258.html",
     "https://vnexpress.net/ai-moi-cua-openai-co-the-tu-tim-va-khai-thac-lo-hong-bao-mat-5115861.html"
@@ -704,200 +1069,304 @@
     "AI mạnh nhất của OpenAI gây phản ứng trái chiều",
     "AI mới của OpenAI có thể tự tìm và khai thác lỗ hổng bảo mật"
    ],
-   "style": "không dấu"
+   "style": "không dấu",
+   "typo": {
+    "kind": "phim_ke_ben",
+    "from": "tue",
+    "to": "yue"
+   }
   },
   {
-   "query": "Huawei Mate XT2 gập ba",
+   "query": "Huawei Mate XT2 gp ba",
+   "original": "Huawei Mate XT2 gập ba",
    "gold_urls": [
     "https://vnexpress.net/huawei-ra-smartphone-gap-ba-mate-xt2-mong-3-5-mm-5117620.html"
    ],
    "gold_titles": [
     "Huawei ra smartphone gập ba Mate XT2, mỏng 3,5 mm"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "thieu_chu",
+    "from": "gập",
+    "to": "gp"
+   }
   },
   {
-   "query": "nhà hàng chay ở Hà Nội mùa Vu Lan",
+   "query": "nhà hàng chah ở Hà Nội mùa Vu Lan",
+   "original": "nhà hàng chay ở Hà Nội mùa Vu Lan",
    "gold_urls": [
     "https://vnexpress.net/5-nha-hang-chay-voi-phong-cach-khac-biet-cho-mua-vu-lan-o-ha-noi-5111132.html"
    ],
    "gold_titles": [
     "5 nhà hàng chay với phong cách khác biệt cho mùa Vu Lan ở Hà Nội"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "phim_ke_ben",
+    "from": "chay",
+    "to": "chah"
+   }
   },
   {
-   "query": "casino Phú Quốc báo lỗ",
+   "query": "casino Ph Quốc báo lỗ",
+   "original": "casino Phú Quốc báo lỗ",
    "gold_urls": [
     "https://vnexpress.net/chu-casino-phu-quoc-giam-lo-5117982.html"
    ],
    "gold_titles": [
     "Chủ casino Phú Quốc giảm lỗ"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "thieu_chu",
+    "from": "Phú",
+    "to": "Ph"
+   }
   },
   {
-   "query": "nc nào ồn nhất tg v",
-   "gold_urls": [
-    "https://vnexpress.net/singapore-dung-dau-bang-xep-hang-quoc-gia-on-nhat-the-gioi-5112239.html"
-   ],
-   "gold_titles": [
-    "Singapore đứng đầu bảng xếp hạng quốc gia ồn nhất thế giới"
-   ],
-   "style": "teencode"
-  },
-  {
-   "query": "nem rán bị cháy hai đầu",
+   "query": "nem rn bị cháy hai đầu",
+   "original": "nem rán bị cháy hai đầu",
    "gold_urls": [
     "https://vnexpress.net/vi-sao-nem-ran-thuong-chay-den-hai-dau-5114901.html"
    ],
    "gold_titles": [
     "Vì sao nem rán thường cháy đen hai đầu?"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "thieu_chu",
+    "from": "rán",
+    "to": "rn"
+   }
   },
   {
-   "query": "quy định trên đảo Indian Creek của tỷ phú",
+   "query": "qụy định trên đảo Indian Creek của tỷ phú",
+   "original": "quy định trên đảo Indian Creek của tỷ phú",
    "gold_urls": [
     "https://vnexpress.net/nhung-quy-dinh-khat-khe-tren-dao-ty-phu-5118128.html"
    ],
    "gold_titles": [
     "Những quy định khắt khe trên đảo tỷ phú"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "sai_dau_thanh",
+    "from": "quy",
+    "to": "qụy"
+   }
   },
   {
-   "query": "robot chó Lynx chạy trên sa mạc",
+   "query": "robot hó Lynx chạy trên sa mạc",
+   "original": "robot chó Lynx chạy trên sa mạc",
    "gold_urls": [
     "https://vnexpress.net/robot-cho-chinh-phuc-dia-hinh-sa-mac-khac-nghiet-5118003.html"
    ],
    "gold_titles": [
     "Robot chó chinh phục địa hình sa mạc khắc nghiệt"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "thieu_chu",
+    "from": "chó",
+    "to": "hó"
+   }
   },
   {
-   "query": "chụp ảnh cưới phong cách xuyên không",
+   "query": "chụp ảnh cưới phnog cách xuyên không",
+   "original": "chụp ảnh cưới phong cách xuyên không",
    "gold_urls": [
     "https://vnexpress.net/vo-chong-gen-z-ha-noi-chup-anh-cuoi-phong-cach-xuyen-khong-5116264.html"
    ],
    "gold_titles": [
     "Vợ chồng Gen Z Hà Nội chụp ảnh cưới phong cách 'xuyên không'"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "dao_chu",
+    "from": "phong",
+    "to": "phnog"
+   }
   },
   {
-   "query": "kem Tràng Tiền sắp đóng cửa",
+   "query": "kem Tràng Tiền sắp đóng caử",
+   "original": "kem Tràng Tiền sắp đóng cửa",
    "gold_urls": [
     "https://vnexpress.net/hang-dai-nguoi-xep-hang-mua-kem-trang-tien-truoc-ngay-dong-cua-5117806.html"
    ],
    "gold_titles": [
     "Hàng dài người xếp hàng mua kem Tràng Tiền trước ngày đóng cửa"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "dao_chu",
+    "from": "cửa",
+    "to": "caử"
+   }
   },
   {
-   "query": "hàng nhập dưới 100 nghìn có được miễn thuế",
+   "query": "hàng nhậpp dưới 100 nghìn có được miễn thuế",
+   "original": "hàng nhập dưới 100 nghìn có được miễn thuế",
    "gold_urls": [
     "https://vnexpress.net/hang-nhap-khau-tren-100-000-dong-co-the-khong-con-duoc-mien-thue-5118124.html"
    ],
    "gold_titles": [
     "Hàng nhập khẩu trên 100.000 đồng có thể không còn được miễn thuế"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "lap_chu",
+    "from": "nhập",
+    "to": "nhậpp"
+   }
   },
   {
-   "query": "trung tam du lieu ai ton nuoc",
+   "query": "trung tam du lieu ai ton nuuoc",
+   "original": "trung tam du lieu ai ton nuoc",
    "gold_urls": [
     "https://vnexpress.net/luong-tieu-thu-nuoc-cua-trung-tam-du-lieu-ai-bi-thoi-phong-5116509.html"
    ],
    "gold_titles": [
     "'Lượng tiêu thụ nước của trung tâm dữ liệu AI bị thổi phồng'"
    ],
-   "style": "không dấu"
+   "style": "không dấu",
+   "typo": {
+    "kind": "lap_chu",
+    "from": "nuoc",
+    "to": "nuuoc"
+   }
   },
   {
-   "query": "cựu tuyển thủ Nguyễn Trọng Đại sa sút",
+   "query": "cựu tuyển thủ Ngyễn Trọng Đại sa sút",
+   "original": "cựu tuyển thủ Nguyễn Trọng Đại sa sút",
    "gold_urls": [
     "https://vnexpress.net/nguyen-trong-dai-va-su-sa-nga-cua-cuu-thu-quan-u20-viet-nam-5117869.html"
    ],
    "gold_titles": [
     "Nguyễn Trọng Đại và sự sa ngã của cựu thủ quân U20 Việt Nam"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "thieu_chu",
+    "from": "Nguyễn",
+    "to": "Ngyễn"
+   }
   },
   {
-   "query": "ng việt tốn nhiều tiền cho trà sữa ko",
+   "query": "ng việt tốn nhiều tiền cho teà sữa ko",
+   "original": "ng việt tốn nhiều tiền cho trà sữa ko",
    "gold_urls": [
     "https://vnexpress.net/nguoi-viet-chi-tien-nhieu-hon-de-uong-ca-phe-tra-sua-5118325.html"
    ],
    "gold_titles": [
     "Người Việt chi tiền nhiều hơn để uống cà phê, trà sữa"
    ],
-   "style": "teencode"
+   "style": "teencode",
+   "typo": {
+    "kind": "phim_ke_ben",
+    "from": "trà",
+    "to": "teà"
+   }
   },
   {
-   "query": "thói quen khiến ngáy to hơn",
+   "query": "thói quen khiến ngáyy to hơn",
+   "original": "thói quen khiến ngáy to hơn",
    "gold_urls": [
     "https://vnexpress.net/5-sai-lam-khien-ban-ngay-nang-hon-5118686.html"
    ],
    "gold_titles": [
     "5 sai lầm khiến bạn ngáy nặng hơn"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "lap_chu",
+    "from": "ngáy",
+    "to": "ngáyy"
+   }
   },
   {
-   "query": "khach thuy si di tu vi che gieu le nyepi o bali",
+   "query": "khach thuy si di tu vi che giue le nyepi o bali",
+   "original": "khach thuy si di tu vi che gieu le nyepi o bali",
    "gold_urls": [
     "https://vnexpress.net/du-khach-thuy-si-bi-phat-tu-vi-xuc-pham-ngay-le-linh-thieng-o-bali-5111663.html"
    ],
    "gold_titles": [
     "Du khách Thụy Sĩ bị phạt tù vì xúc phạm ngày lễ linh thiêng ở Bali"
    ],
-   "style": "không dấu"
+   "style": "không dấu",
+   "typo": {
+    "kind": "dao_chu",
+    "from": "gieu",
+    "to": "giue"
+   }
   },
   {
-   "query": "trung quoc mua them vang du tru",
+   "query": "trung quoc mmua them vang du tru",
+   "original": "trung quoc mua them vang du tru",
    "gold_urls": [
     "https://vnexpress.net/trung-quoc-mua-hon-20-tan-vang-du-tru-5118096.html"
    ],
    "gold_titles": [
     "Trung Quốc mua hơn 20 tấn vàng dự trữ"
    ],
-   "style": "không dấu"
+   "style": "không dấu",
+   "typo": {
+    "kind": "lap_chu",
+    "from": "mua",
+    "to": "mmua"
+   }
   },
   {
-   "query": "cho t công thức sốt chua ngọt vs",
+   "query": "cho t công thức sốt cchua ngọt vs",
+   "original": "cho t công thức sốt chua ngọt vs",
    "gold_urls": [
     "https://vnexpress.net/ty-le-vang-pha-sot-chua-ngot-cho-moi-mon-an-5118253.html"
    ],
    "gold_titles": [
     "Tỷ lệ vàng pha sốt chua ngọt cho mọi món ăn"
    ],
-   "style": "teencode"
+   "style": "teencode",
+   "typo": {
+    "kind": "lap_chu",
+    "from": "chua",
+    "to": "cchua"
+   }
   },
   {
-   "query": "ferran torres lap hat-trick cho psg",
+   "query": "ferran tortes lap hat-trick cho psg",
+   "original": "ferran torres lap hat-trick cho psg",
    "gold_urls": [
     "https://vnexpress.net/psg-pho-dien-suc-manh-o-champions-league-5118602.html"
    ],
    "gold_titles": [
     "PSG phô diễn sức mạnh ở Champions League"
    ],
-   "style": "không dấu"
+   "style": "không dấu",
+   "typo": {
+    "kind": "phim_ke_ben",
+    "from": "torres",
+    "to": "tortes"
+   }
   },
   {
-   "query": "người dân Estonia mở quán cà phê tại nhà đón khách lạ",
+   "query": "người dân Estonia mở quán cà pgê tại nhà đón khách lạ",
+   "original": "người dân Estonia mở quán cà phê tại nhà đón khách lạ",
    "gold_urls": [
     "https://vnexpress.net/noi-nguoi-dan-thich-moi-khach-la-vao-nha-uong-ca-phe-5117684.html"
    ],
    "gold_titles": [
     "Nơi người dân thích mời khách lạ vào nhà uống cà phê"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "phim_ke_ben",
+    "from": "phê",
+    "to": "pgê"
+   }
   },
   {
-   "query": "tên lửa tái sử dụng Pallas-1",
+   "query": "tên ửla tái sử dụng Pallas-1",
+   "original": "tên lửa tái sử dụng Pallas-1",
    "gold_urls": [
     "https://vnexpress.net/ten-lua-tai-su-dung-trung-quoc-bay-thanh-cong-len-quy-dao-5116086.html",
     "https://vnexpress.net/dai-zheng-bo-nao-cho-tham-vong-ten-lua-tai-su-dung-cua-trung-quoc-5113698.html"
@@ -906,70 +1375,112 @@
     "Tên lửa tái sử dụng Trung Quốc bay thành công lên quỹ đạo",
     "Dai Zheng - 'bộ não' cho tham vọng tên lửa tái sử dụng của Trung Quốc"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "dao_chu",
+    "from": "lửa",
+    "to": "ửla"
+   }
   },
   {
-   "query": "giải marathon ở Pháp phát rượu vang",
+   "query": "giiải marathon ở Pháp phát rượu vang",
+   "original": "giải marathon ở Pháp phát rượu vang",
    "gold_urls": [
     "https://vnexpress.net/4-500-lit-ruou-vang-duoc-rot-tai-giai-marathon-o-phap-5118540.html"
    ],
    "gold_titles": [
     "4.500 lít rượu vang được rót tại giải marathon ở Pháp"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "lap_chu",
+    "from": "giải",
+    "to": "giiải"
+   }
   },
   {
-   "query": "tàu hàng đi qua Bắc Cực do băng tan",
+   "query": "tàu àhng đi qua Bắc Cực do băng tan",
+   "original": "tàu hàng đi qua Bắc Cực do băng tan",
    "gold_urls": [
     "https://vnexpress.net/con-duong-to-lua-tren-bang-5117142.html"
    ],
    "gold_titles": [
     "'Con đường tơ lụa' trên băng"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "dao_chu",
+    "from": "hàng",
+    "to": "àhng"
+   }
   },
   {
-   "query": "máy in 3d có đáng mua ko m",
+   "query": "máyy in 3d có đáng mua ko m",
+   "original": "máy in 3d có đáng mua ko m",
    "gold_urls": [
     "https://vnexpress.net/ly-do-may-in-3d-tro-nen-hap-dan-5117618.html"
    ],
    "gold_titles": [
     "Lý do máy in 3D trở nên hấp dẫn"
    ],
-   "style": "teencode"
+   "style": "teencode",
+   "typo": {
+    "kind": "lap_chu",
+    "from": "máy",
+    "to": "máyy"
+   }
   },
   {
-   "query": "Ronaldo ghi bàn thứ 979",
+   "query": "Ronaldo thi bàn thứ 979",
+   "original": "Ronaldo ghi bàn thứ 979",
    "gold_urls": [
     "https://vnexpress.net/ronaldo-toa-sang-giup-al-nassr-tim-lai-mach-thang-5118597.html"
    ],
    "gold_titles": [
     "Ronaldo tỏa sáng giúp Al Nassr tìm lại mạch thắng"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "phim_ke_ben",
+    "from": "ghi",
+    "to": "thi"
+   }
   },
   {
-   "query": "liverpool thang atletico madrid",
+   "query": "liveprool thang atletico madrid",
+   "original": "liverpool thang atletico madrid",
    "gold_urls": [
     "https://vnexpress.net/liverpool-thang-nguoc-atletico-o-champions-league-5118598.html"
    ],
    "gold_titles": [
     "Liverpool thắng ngược Atletico ở Champions League"
    ],
-   "style": "không dấu"
+   "style": "không dấu",
+   "typo": {
+    "kind": "dao_chu",
+    "from": "liverpool",
+    "to": "liveprool"
+   }
   },
   {
-   "query": "thị trấn gần cực Bắc tối suốt 3 tháng có gấu Bắc Cực",
+   "query": "thị trấn gần cực Bắc tối suốt 3 tháng có gấu Bcắ Cực",
+   "original": "thị trấn gần cực Bắc tối suốt 3 tháng có gấu Bắc Cực",
    "gold_urls": [
     "https://vnexpress.net/noi-moi-nam-co-gan-3-thang-chim-hoan-toan-trong-bong-toi-5111766.html"
    ],
    "gold_titles": [
     "Nơi mỗi năm có gần 3 tháng chìm hoàn toàn trong bóng tối"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "dao_chu",
+    "from": "Bắc",
+    "to": "Bcắ"
+   }
   },
   {
-   "query": "phụ huynh phàn nàn bữa ăn bán trú ở Hà Nội",
+   "query": "phụ huynh phàn nàn bbữa ăn bán trú ở Hà Nội",
+   "original": "phụ huynh phàn nàn bữa ăn bán trú ở Hà Nội",
    "gold_urls": [
     "https://vnexpress.net/don-dap-phan-ung-ve-suat-an-ban-tru-o-ha-noi-5118306.html",
     "https://vnexpress.net/phu-huynh-buc-xuc-vi-suat-an-ban-tru-40-000-dong-leo-teo-5118078.html"
@@ -978,639 +1489,348 @@
     "Dồn dập phản ứng về suất ăn bán trú ở Hà Nội",
     "Phụ huynh bức xúc vì suất ăn bán trú 40.000 đồng 'lèo tèo'"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "lap_chu",
+    "from": "bữa",
+    "to": "bbữa"
+   }
   },
   {
-   "query": "Chelsea thắng ngược Leeds 6-3",
+   "query": "Chelsea thắng ngược Ledes 6-3",
+   "original": "Chelsea thắng ngược Leeds 6-3",
    "gold_urls": [
     "https://vnexpress.net/chelsea-nguoc-dong-kho-tin-o-cup-lien-doan-5118601.html"
    ],
    "gold_titles": [
     "Chelsea ngược dòng khó tin ở Cup Liên đoàn"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "dao_chu",
+    "from": "Leeds",
+    "to": "Ledes"
+   }
   },
   {
-   "query": "làm sao cho hết đờm ở họng v",
+   "query": "làm sao cho hết đờm ở họgn v",
+   "original": "làm sao cho hết đờm ở họng v",
    "gold_urls": [
     "https://vnexpress.net/5-cach-giam-dom-o-hong-5118697.html"
    ],
    "gold_titles": [
     "5 cách giảm đờm ở họng"
    ],
-   "style": "teencode"
+   "style": "teencode",
+   "typo": {
+    "kind": "dao_chu",
+    "from": "họng",
+    "to": "họgn"
+   }
   },
   {
-   "query": "bác sĩ nội trú chọn sản phụ khoa",
+   "query": "bác sĩ nội trú chọn sản pphụ khoa",
+   "original": "bác sĩ nội trú chọn sản phụ khoa",
    "gold_urls": [
     "https://vnexpress.net/video-match-day-chon-chuyen-nganh-bac-si-noi-tru-dai-hoc-y-ha-noi-2026-5118242.html"
    ],
    "gold_titles": [
     "Tân bác sĩ nội trú chuộng ngành Sản phụ khoa"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "lap_chu",
+    "from": "phụ",
+    "to": "pphụ"
+   }
   },
   {
-   "query": "arteta noi ve phong do cua odegaard",
+   "query": "arteta noi ve phong do cua odegard",
+   "original": "arteta noi ve phong do cua odegaard",
    "gold_urls": [
     "https://vnexpress.net/arteta-ly-giai-su-thang-hoa-cua-odegaard-5118651.html"
    ],
    "gold_titles": [
     "Arteta lý giải sự thăng hoa của Odegaard"
    ],
-   "style": "không dấu"
+   "style": "không dấu",
+   "typo": {
+    "kind": "thieu_chu",
+    "from": "odegaard",
+    "to": "odegard"
+   }
   },
   {
-   "query": "Hà Nội thi đề chung để xét tuyển lớp 10",
+   "query": "Hà Nội thi đề chung để xét tuyẻn lớp 10",
+   "original": "Hà Nội thi đề chung để xét tuyển lớp 10",
    "gold_urls": [
     "https://vnexpress.net/thi-diem-khao-sat-chung-tien-toi-xet-tuyen-lop-10-o-ha-noi-5117623.html"
    ],
    "gold_titles": [
     "Thí điểm khảo sát chung, tiến tới xét tuyển lớp 10 ở Hà Nội"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "mat_dau_phu",
+    "from": "tuyển",
+    "to": "tuyẻn"
+   }
   },
   {
-   "query": "giảm 51 kg phải cắt túi mật",
+   "query": "giảm 51 kg phải cắt túi mậtt",
+   "original": "giảm 51 kg phải cắt túi mật",
    "gold_urls": [
     "https://vnexpress.net/mat-tui-mat-vi-dot-chay-51-kg-mo-cap-toc-5118559.html"
    ],
    "gold_titles": [
     "Mất túi mật vì 'đốt cháy' 51 kg mỡ cấp tốc"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "lap_chu",
+    "from": "mật",
+    "to": "mậtt"
+   }
   },
   {
-   "query": "tốc độ internet Việt Nam vào top 10",
+   "query": "tốc độ internet Việt Nam vào rop 10",
+   "original": "tốc độ internet Việt Nam vào top 10",
    "gold_urls": [
     "https://vnexpress.net/internet-viet-nam-lan-dau-vao-top-10-the-gioi-ca-di-dong-va-co-dinh-5115655.html"
    ],
    "gold_titles": [
     "Internet Việt Nam lần đầu vào top 10 thế giới cả di động và cố định"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "phim_ke_ben",
+    "from": "top",
+    "to": "rop"
+   }
   },
   {
-   "query": "le hoi danh nhau o peru",
+   "query": "le ohi danh nhau o peru",
+   "original": "le hoi danh nhau o peru",
    "gold_urls": [
     "https://vnexpress.net/le-hoi-dam-nhau-de-giai-quyet-mau-thuan-o-peru-5117325.html"
    ],
    "gold_titles": [
     "Lễ hội đấm nhau để giải quyết mâu thuẫn ở Peru"
    ],
-   "style": "không dấu"
+   "style": "không dấu",
+   "typo": {
+    "kind": "dao_chu",
+    "from": "hoi",
+    "to": "ohi"
+   }
   },
   {
-   "query": "Vietjet bán vé 0 đồng ngày 9/9",
+   "query": "Vietjet bán vé 0 đồngg ngày 9/9",
+   "original": "Vietjet bán vé 0 đồng ngày 9/9",
    "gold_urls": [
     "https://vnexpress.net/vietjet-mo-ban-hang-nghin-ve-bay-0-dong-dip-9-9-5116882.html"
    ],
    "gold_titles": [
     "Vietjet mở bán hàng nghìn vé bay 0 đồng dịp 9/9"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "lap_chu",
+    "from": "đồng",
+    "to": "đồngg"
+   }
   },
   {
-   "query": "Shinhan và HSBC lãi tại Việt Nam",
+   "query": "hinhan và HSBC lãi tại Việt Nam",
+   "original": "Shinhan và HSBC lãi tại Việt Nam",
    "gold_urls": [
     "https://vnexpress.net/hai-ngan-hang-nuoc-ngoai-cung-lai-hon-2-000-ty-dong-tai-viet-nam-5118520.html"
    ],
    "gold_titles": [
     "Hai ngân hàng nước ngoài cùng lãi hơn 2.000 tỷ đồng tại Việt Nam"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "thieu_chu",
+    "from": "Shinhan",
+    "to": "hinhan"
+   }
   },
   {
-   "query": "Mexico phải trả nước cho Mỹ",
+   "query": "MMexico phải trả nước cho Mỹ",
+   "original": "Mexico phải trả nước cho Mỹ",
    "gold_urls": [
     "https://vnexpress.net/mexico-ap-luc-tra-no-mot-ty-m3-nuoc-cho-my-5117967.html"
    ],
    "gold_titles": [
     "Mexico áp lực 'trả nợ' một tỷ m3 nước cho Mỹ"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "lap_chu",
+    "from": "Mexico",
+    "to": "MMexico"
+   }
   },
   {
-   "query": "đánh chó ở quảng trường Lâm Viên Đà Lạt bị phạt",
+   "query": "đánh chó ở quảng trưòng Lâm Viên Đà Lạt bị phạt",
+   "original": "đánh chó ở quảng trường Lâm Viên Đà Lạt bị phạt",
    "gold_urls": [
     "https://vnexpress.net/nguoi-danh-cho-o-quang-truong-da-lat-bi-phat-2-trieu-dong-5116705.html"
    ],
    "gold_titles": [
     "Người đánh chó ở quảng trường Đà Lạt bị phạt 2 triệu đồng"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "mat_dau_phu",
+    "from": "trường",
+    "to": "trưòng"
+   }
   },
   {
-   "query": "du khách Anh chết sau khi làm đẹp ở Thái Lan",
+   "query": "du khách Anh chểt sau khi làm đẹp ở Thái Lan",
+   "original": "du khách Anh chết sau khi làm đẹp ở Thái Lan",
    "gold_urls": [
     "https://vnexpress.net/du-khach-anh-tu-vong-sau-thu-thuat-tham-my-tai-thai-lan-5117208.html"
    ],
    "gold_titles": [
     "Du khách Anh tử vong sau thủ thuật thẩm mỹ tại Thái Lan"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "sai_dau_thanh",
+    "from": "chết",
+    "to": "chểt"
+   }
   },
   {
-   "query": "những sân bay bị bỏ hoang trên thế giới",
+   "query": "những qân bay bị bỏ hoang trên thế giới",
+   "original": "những sân bay bị bỏ hoang trên thế giới",
    "gold_urls": [
     "https://vnexpress.net/7-san-bay-bi-bo-hoang-noi-tieng-the-gioi-5112626.html"
    ],
    "gold_titles": [
     "7 sân bay bị bỏ hoang nổi tiếng thế giới"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "phim_ke_ben",
+    "from": "sân",
+    "to": "qân"
+   }
   },
   {
-   "query": "phụ huynh chạy khắp nơi mua sách giáo khoa lớp 9",
+   "query": "hụ huynh chạy khắp nơi mua sách giáo khoa lớp 9",
+   "original": "phụ huynh chạy khắp nơi mua sách giáo khoa lớp 9",
    "gold_urls": [
     "https://vnexpress.net/tat-ta-san-lung-sach-giao-khoa-sau-khai-giang-5117175.html"
    ],
    "gold_titles": [
     "Tất tả săn lùng sách giáo khoa sau khai giảng"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "thieu_chu",
+    "from": "phụ",
+    "to": "hụ"
+   }
   },
   {
-   "query": "vợ phát hiện chồng ngoại tình qua hợp đồng bảo hiểm",
+   "query": "vợ phát hiện chồng ngoại tình qua hợp đồng báo hiểm",
+   "original": "vợ phát hiện chồng ngoại tình qua hợp đồng bảo hiểm",
    "gold_urls": [
     "https://vnexpress.net/lo-chuyen-ngoai-tinh-tu-50-hop-dong-bao-hiem-5118730.html"
    ],
    "gold_titles": [
     "Lộ chuyện ngoại tình từ 50 hợp đồng bảo hiểm"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "sai_dau_thanh",
+    "from": "bảo",
+    "to": "báo"
+   }
   },
   {
-   "query": "nữ giao liên trốn dưới lục bình",
+   "query": "nữ giao liên trốn dưới lục bính",
+   "original": "nữ giao liên trốn dưới lục bình",
    "gold_urls": [
     "https://vnexpress.net/nu-giao-lien-giau-minh-duoi-luc-binh-de-vuot-song-5118723.html"
    ],
    "gold_titles": [
     "Nữ giao liên giấu mình dưới lục bình để vượt sông"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "sai_dau_thanh",
+    "from": "bình",
+    "to": "bính"
+   }
   },
   {
-   "query": "sau đột quỵ ít nói có phải trầm cảm",
+   "query": "sau ộđt quỵ ít nói có phải trầm cảm",
+   "original": "sau đột quỵ ít nói có phải trầm cảm",
    "gold_urls": [
     "https://vnexpress.net/it-noi-sau-dot-quy-co-phai-tram-cam-5118634.html"
    ],
    "gold_titles": [
     "Ít nói sau đột quỵ có phải trầm cảm?"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "dao_chu",
+    "from": "đột",
+    "to": "ộđt"
+   }
   },
   {
-   "query": "nhan vien openai tieu 7000 do tien token moi ngay",
+   "query": "bhan vien openai tieu 7000 do tien token moi ngay",
+   "original": "nhan vien openai tieu 7000 do tien token moi ngay",
    "gold_urls": [
     "https://vnexpress.net/nha-nghien-cuu-tai-openai-tieu-ton-7-000-usd-cho-token-moi-ngay-5118132.html"
    ],
    "gold_titles": [
     "Nhà nghiên cứu tại OpenAI tiêu tốn 7.000 USD cho token mỗi ngày"
    ],
-   "style": "không dấu"
+   "style": "không dấu",
+   "typo": {
+    "kind": "phim_ke_ben",
+    "from": "nhan",
+    "to": "bhan"
+   }
   },
   {
-   "query": "Messi mua câu lạc bộ Eldense",
+   "query": "Messi mua câu ạc bộ Eldense",
+   "original": "Messi mua câu lạc bộ Eldense",
    "gold_urls": [
     "https://vnexpress.net/messi-mua-clb-hang-nhi-tay-ban-nha-5118137.html"
    ],
    "gold_titles": [
     "Messi mua CLB hạng Nhì Tây Ban Nha"
    ],
-   "style": "có dấu"
+   "style": "có dấu",
+   "typo": {
+    "kind": "thieu_chu",
+    "from": "lạc",
+    "to": "ạc"
+   }
   },
   {
-   "query": "robot bieu tinh o warsaw doi luat ve ai",
+   "query": "robot bueu tinh o warsaw doi luat ve ai",
+   "original": "robot bieu tinh o warsaw doi luat ve ai",
    "gold_urls": [
     "https://vnexpress.net/robot-bieu-tinh-doi-ban-hanh-quy-dinh-ve-ai-5118079.html"
    ],
    "gold_titles": [
     "Robot 'biểu tình' đòi ban hành quy định về AI"
    ],
-   "style": "không dấu"
-  }
- ],
- "out_of_scope": [
-  {
-   "text": "thời tiết sao hỏa hôm nay thế nào",
-   "style": "cũ",
-   "origin": "cũ"
-  },
-  {
-   "text": "công thức nấu phở bò gia truyền",
-   "style": "cũ",
-   "origin": "cũ"
-  },
-  {
-   "text": "giải phương trình bậc hai giúp mình",
-   "style": "cũ",
-   "origin": "cũ"
-  },
-  {
-   "text": "dịch câu này sang tiếng nhật",
-   "style": "cũ",
-   "origin": "cũ"
-  },
-  {
-   "text": "kể một câu chuyện cười đi",
-   "style": "cũ",
-   "origin": "cũ"
-  },
-  {
-   "text": "asdfgh qwerty zxcvb",
-   "style": "cũ",
-   "origin": "cũ"
-  },
-  {
-   "text": "bitcoin sẽ lên bao nhiêu vào năm 2030",
-   "style": "cũ",
-   "origin": "cũ"
-  },
-  {
-   "text": "viết giúp mình một bài thơ về mùa thu",
-   "style": "cũ",
-   "origin": "cũ"
-  },
-  {
-   "text": "thoi tiet sao hoa hom nay the nao",
-   "style": "cũ",
-   "origin": "cũ"
-  },
-  {
-   "text": "cong thuc nau pho bo gia truyen",
-   "style": "cũ",
-   "origin": "cũ"
-  },
-  {
-   "text": "ke 1 cau chuyen cuoi di b",
-   "style": "cũ",
-   "origin": "cũ"
-  },
-  {
-   "text": "gia bitcoin nam 2030 la bao nhieu",
-   "style": "cũ",
-   "origin": "cũ"
-  },
-  {
-   "text": "lời bài hát Nơi này có anh",
-   "style": "có dấu"
-  },
-  {
-   "text": "ai là tổng thống đầu tiên của Mỹ",
-   "style": "có dấu"
-  },
-  {
-   "text": "dang ky wifi viettel the nao",
-   "style": "không dấu"
-  },
-  {
-   "text": "tỷ số chung kết World Cup 2018",
-   "style": "có dấu"
-  },
-  {
-   "text": "cách giặt áo len không bị co",
-   "style": "có dấu"
-  },
-  {
-   "text": "bảng xếp hạng K-pop tuần này",
-   "style": "có dấu"
-  },
-  {
-   "text": "cách viết CV xin việc bằng tiếng Anh",
-   "style": "có dấu"
-  },
-  {
-   "text": "cách cài đặt Windows 11",
-   "style": "có dấu"
-  },
-  {
-   "text": "công thức tính diện tích hình tròn",
-   "style": "có dấu"
-  },
-  {
-   "text": "review phim Avengers mới nhất",
-   "style": "có dấu"
-  },
-  {
-   "text": "cach nau bun bo hue",
-   "style": "không dấu"
-  },
-  {
-   "text": "gia vang sjc hom nay",
-   "style": "không dấu"
-  },
-  {
-   "text": "cách đổi mật khẩu Facebook",
-   "style": "có dấu"
-  },
-  {
-   "text": "mua bảo hiểm xe máy ở đâu",
-   "style": "có dấu"
-  },
-  {
-   "text": "tỷ giá yên Nhật hôm nay",
-   "style": "có dấu"
-  },
-  {
-   "text": "hướng dẫn nấu bún bò Huế",
-   "style": "có dấu"
-  },
-  {
-   "text": "thoi tiet sao hoa hom nay",
    "style": "không dấu",
-   "origin": "kiểm thử hồi quy"
-  },
-  {
-   "text": "giai phuong trinh bac hai giup minh",
-   "style": "không dấu",
-   "origin": "biến thể không dấu của câu dev"
-  },
-  {
-   "text": "viet giup minh mot bai tho ve mua thu",
-   "style": "không dấu",
-   "origin": "biến thể không dấu của câu dev"
-  },
-  {
-   "text": "ai la tong thong dau tien cua my",
-   "style": "không dấu",
-   "origin": "biến thể không dấu của câu dev"
-  },
-  {
-   "text": "ty so chung ket world cup 2018",
-   "style": "không dấu",
-   "origin": "biến thể không dấu của câu dev"
-  },
-  {
-   "text": "cach cai dat windows 11",
-   "style": "không dấu",
-   "origin": "biến thể không dấu của câu dev"
-  },
-  {
-   "text": "cach doi mat khau facebook",
-   "style": "không dấu",
-   "origin": "biến thể không dấu của câu dev"
-  },
-  {
-   "text": "huong dan nau bun bo hue",
-   "style": "không dấu",
-   "origin": "biến thể không dấu của câu dev"
-  }
- ],
- "intent": [
-  {
-   "text": "chào bot nhé",
-   "expected": "chao_hoi",
-   "origin": "cũ"
-  },
-  {
-   "text": "hế lô bạn ơi",
-   "expected": "chao_hoi",
-   "origin": "cũ"
-  },
-  {
-   "text": "chào buổi chiều",
-   "expected": "chao_hoi",
-   "origin": "cũ"
-  },
-  {
-   "text": "thôi mình đi ngủ đây",
-   "expected": "tam_biet",
-   "origin": "cũ"
-  },
-  {
-   "text": "bye nhé bot",
-   "expected": "tam_biet",
-   "origin": "cũ"
-  },
-  {
-   "text": "cảm ơn bạn rất nhiều",
-   "expected": "cam_on",
-   "origin": "cũ"
-  },
-  {
-   "text": "thank nha",
-   "expected": "cam_on",
-   "origin": "cũ"
-  },
-  {
-   "text": "bạn là con người à",
-   "expected": "hoi_ve_bot",
-   "origin": "cũ"
-  },
-  {
-   "text": "ai đã lập trình ra bạn vậy",
-   "expected": "hoi_ve_bot",
-   "origin": "cũ"
-  },
-  {
-   "text": "bạn hoạt động dựa trên nguyên lý gì",
-   "expected": "hoi_ve_bot",
-   "origin": "cũ"
-  },
-  {
-   "text": "chỉ mình cách hỏi với",
-   "expected": "huong_dan",
-   "origin": "cũ"
-  },
-  {
-   "text": "bạn hỗ trợ được những gì",
-   "expected": "huong_dan",
-   "origin": "cũ"
-  },
-  {
-   "text": "cho mình xem danh sách các mục",
-   "expected": "liet_ke_chuyen_muc",
-   "origin": "cũ"
-  },
-  {
-   "text": "bạn có những lĩnh vực nào",
-   "expected": "liet_ke_chuyen_muc",
-   "origin": "cũ"
-  },
-  {
-   "text": "kho của bạn có bao nhiêu tin",
-   "expected": "thong_ke_corpus",
-   "origin": "cũ"
-  },
-  {
-   "text": "dữ liệu lấy từ nguồn nào vậy",
-   "expected": "thong_ke_corpus",
-   "origin": "cũ"
-  },
-  {
-   "text": "cho xem tin thể thao đi",
-   "expected": "tin_theo_chuyen_muc",
-   "origin": "cũ"
-  },
-  {
-   "text": "mục giáo dục có bài gì",
-   "expected": "tin_theo_chuyen_muc",
-   "origin": "cũ"
-  },
-  {
-   "text": "liệt kê tin kinh doanh",
-   "expected": "tin_theo_chuyen_muc",
-   "origin": "cũ"
-  },
-  {
-   "text": "tóm tắt lại giúp mình với",
-   "expected": "tom_tat_bai",
-   "origin": "cũ"
-  },
-  {
-   "text": "bài vừa rồi nói gì vậy",
-   "expected": "tom_tat_bai",
-   "origin": "cũ"
-  },
-  {
-   "text": "cho xin đường dẫn bài viết",
-   "expected": "hoi_nguon",
-   "origin": "cũ"
-  },
-  {
-   "text": "link gốc ở đâu vậy bạn",
-   "expected": "hoi_nguon",
-   "origin": "cũ"
-  },
-  {
-   "text": "ừ đúng rồi đó",
-   "expected": "dong_y",
-   "origin": "cũ"
-  },
-  {
-   "text": "không phải ý mình",
-   "expected": "tu_choi",
-   "origin": "cũ"
-  },
-  {
-   "text": "bot trả lời chán quá đi",
-   "expected": "che_bai",
-   "origin": "cũ"
-  },
-  {
-   "text": "cho tôi biết về giá iphone",
-   "expected": "__retrieve__",
-   "origin": "cũ"
-  },
-  {
-   "text": "tin về đảo hải nam",
-   "expected": "__retrieve__",
-   "origin": "cũ"
-  },
-  {
-   "text": "thông tin về ninh bình",
-   "expected": "__retrieve__",
-   "origin": "cũ"
-  },
-  {
-   "text": "bạn biết gì về man utd",
-   "expected": "__retrieve__",
-   "origin": "cũ"
-  },
-  {
-   "text": "giá xăng dầu thế nào",
-   "expected": "__retrieve__",
-   "origin": "cũ"
-  },
-  {
-   "text": "học sinh bị bắt nạt",
-   "expected": "__retrieve__",
-   "origin": "cũ"
-  },
-  {
-   "text": "robot chó dẫn đường",
-   "expected": "__retrieve__",
-   "origin": "cũ"
-  },
-  {
-   "text": "có bài nào về bệnh viện không",
-   "expected": "__retrieve__",
-   "origin": "cũ"
-  },
-  {
-   "text": "hi bạn",
-   "expected": "chao_hoi"
-  },
-  {
-   "text": "ban la gi vay",
-   "expected": "hoi_ve_bot"
-  },
-  {
-   "text": "cho mình đọc tin đời sống",
-   "expected": "tin_theo_chuyen_muc"
-  },
-  {
-   "text": "học phí du học Mỹ",
-   "expected": "__retrieve__"
-  },
-  {
-   "text": "bt j về vụ giá dầu k",
-   "expected": "__retrieve__"
-  },
-  {
-   "text": "không phải vậy",
-   "expected": "tu_choi"
-  },
-  {
-   "text": "ngủ đây bai",
-   "expected": "tam_biet"
-  },
-  {
-   "text": "sai rồi bot",
-   "expected": "tu_choi"
-  },
-  {
-   "text": "ko đúng",
-   "expected": "tu_choi"
-  },
-  {
-   "text": "có mấy chuyên mục",
-   "expected": "liet_ke_chuyen_muc"
-  },
-  {
-   "text": "nói ngắn gọn bài đó",
-   "expected": "tom_tat_bai"
-  },
-  {
-   "text": "cảm ơn b nhiều",
-   "expected": "cam_on"
-  },
-  {
-   "text": "tin the thao moi nhat",
-   "expected": "tin_theo_chuyen_muc"
-  },
-  {
-   "text": "tin khoa học mới",
-   "expected": "tin_theo_chuyen_muc"
-  },
-  {
-   "text": "co nhung chu de nao",
-   "expected": "liet_ke_chuyen_muc"
-  },
-  {
-   "text": "bạn có phải người thật không",
-   "expected": "hoi_ve_bot"
-  },
-  {
-   "text": "chào nha",
-   "expected": "chao_hoi"
-  },
-  {
-   "text": "xem tin kinh doanh",
-   "expected": "tin_theo_chuyen_muc"
-  },
-  {
-   "text": "bạn là chatbot à",
-   "expected": "hoi_ve_bot"
-  },
-  {
-   "text": "t đi đây bye",
-   "expected": "tam_biet"
-  },
-  {
-   "text": "tks bot",
-   "expected": "cam_on"
+   "typo": {
+    "kind": "phim_ke_ben",
+    "from": "bieu",
+    "to": "bueu"
+   }
   }
  ]
 }

@@ -28,5 +28,16 @@
   "vé tàu cát linh có tăng giá không",
   "tàu cát linh 15.000 đồng",
   "hoãn tăng giá vé tàu"
- ]
+ ],
+ "future_unrelated_article": {
+  "note": "Bài KHÔNG liên quan, ngày đăng xa trong tương lai — mô phỏng các lần crawl sau. Thêm bài này vào corpus KHÔNG được làm đổi kết quả ca mâu thuẫn (ràng buộc cứng thứ hai khi dò độ mới, docs/09).",
+  "url": "https://example.test/tuong-lai-khong-lien-quan",
+  "source": "VnExpress",
+  "category": "Thể thao",
+  "title": "Giải bóng chuyền nữ quốc tế khai mạc tại Ninh Bình",
+  "description": "Tám đội tuyển châu Á tranh tài trong giải đấu kéo dài một tuần.",
+  "text": "Giải bóng chuyền nữ quốc tế chính thức khai mạc với sự tham dự của tám đội tuyển mạnh châu Á. Ban tổ chức cho biết các trận đấu diễn ra mỗi tối và được truyền hình trực tiếp. Đội chủ nhà đặt mục tiêu vào bán kết.",
+  "published_at": "2026-12-31",
+  "crawled_at": "2026-12-31"
+ }
 }

@@ -1378,3 +1378,68 @@ RAG: run `python tools/build_rag_notebook.py` and `python tools/make_colab_bundl
 (Test names are in Vietnamese; each corresponds to a real bug described in Sections 7 and 9.1 — for example
 `hoi_thoi_tiet_khong_bi_chao_tam_biet` = "a weather question is not answered with goodbye", and
 `tin_moi_phu_dinh_tin_cu` = "newer news overrides older news".)
+
+---
+
+### Appendix G — Post-Submission Improvements (branch `cap-nhat-du-lieu`)
+
+The submitted version is frozen at tag `nop-bai` (381-article corpus). The corpus
+was then extended by the daily crawl procedure of `docs/08`, and **the first real
+crawl (14 Sep 2026, +151 articles, 532 total)** exposed two defects that a static
+corpus could not reveal. Both were fixed on branch `cap-nhat-du-lieu`; the full
+reasoning and measurements are in `docs/09-cai-thien-mo-hinh.md`.
+
+**G.1. The freshness reference point drifted with the corpus.** Recency was
+computed relative to the newest publication date **in the whole corpus**. Adding
+151 unrelated articles moved that reference from 10 Sep to 14 Sep, aged both
+articles of the "newer article contradicts older article" test case, and the bot
+went back to returning the **outdated** article (0.5104 vs 0.5086) — precisely
+the failure that Section 5.5 exists to prevent. This is a design defect, not a
+parameter defect: a full grid sweep (7 half-lives × 11 values of α) shows that
+**no configuration** of the corpus-relative reference both handles the conflict
+case and still handles it after an unrelated future-dated article is added. The
+fix takes the reference to be the newest date among the articles **actually
+competing** for that question (those satisfying `score × (1 + α) ≥ best score`).
+The resulting property is an invariant: adding unrelated articles cannot change
+the ranking. Re-tuned on DEV, α dropped from 0.6 to 0.3.
+
+**G.2. Misspelled queries were not recognised.** A user typing "thám hiểm Sơn
+Dòng" (one missing *o*, and the stroke of *Đ* omitted) was refused, while "Sơn
+Đoòng" was answered correctly — cosine was only 0.086, below the 0.13 threshold.
+Lowering the threshold is not the fix: at 0.08, correct refusal of out-of-scope
+questions falls from 100% to 58%. The fix adds a **third index of character
+3-grams over accent-folded titles**, used as a **fallback path** that runs only
+when the main path refuses, with acceptance scored as word-level cosine plus
+character-level cosine. The design was chosen empirically on DEV (12 variants:
+indexed field × n × acceptance rule); "title only, n = 3, additive score"
+rescued the most questions while answering none of them incorrectly.
+
+**G.3. A lesson about evaluation data.** After enabling the fallback, a
+regression test caught an **out-of-scope** question written without diacritics
+being answered, even though DEV tuning reported zero leaks. The cause: DEV's
+out-of-scope set contained only **accented** questions, whereas the character
+n-gram index always operates on accent-folded text — folding makes distinct
+sentences look more alike. The fix was to **extend the evaluation data**
+(generating unaccented variants of DEV's out-of-scope questions, 28 → 36) rather
+than to bend the threshold around that one case. Variants are generated from DEV
+questions only, never from TEST, so the measurement stays sound.
+
+**G.4. Results.** Measured on the same 532-article corpus and the same TEST
+questions, through `bot.respond()` (`tools/compare_improvements.py`):
+
+| TEST metric | Before (as submitted) | After |
+|---|---|---|
+| Recall@1 (component) | 109/122 | **112/122** |
+| MRR | 0.927 | **0.940** |
+| Ordinary questions → correct article | 90/122 | **101/122** |
+| Misspelled questions → correct article | 74/122 | **86/122** |
+| Newer article contradicting older one | wrong | **correct** |
+| Same case after adding a "future" article | wrong | **correct** |
+| Out-of-scope questions refused | 18/24 | 18/24 |
+
+The cost must be stated plainly: the fallback converts some refusals into
+answers, so the number of **incorrect** answers rises (7 → 8 on the misspelled
+set, 3 → 5 on the clean set). In exchange it leaks no additional out-of-scope
+questions, and every answer produced through this path carries an explicit "you
+may have mistyped" note. The regression suite grew from 21 to 26 cases, two of
+which guard the invariants described above.

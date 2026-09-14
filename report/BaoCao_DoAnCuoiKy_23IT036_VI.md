@@ -1364,3 +1364,63 @@ RAG: `python tools/build_rag_notebook.py` và `python tools/make_colab_bundle.py
 `cau_ngoai_pham_vi_bi_tu_choi`, `snippet_khong_lap_cau`, `tham_chieu_bai_do_qua_nhieu_luot`,
 `dau_vao_rong_khong_lam_sap_bot`, `doc_duoc_ngay_vnexpress`, `duyet_muc_sap_theo_ngay_moi_nhat`,
 `tin_moi_phu_dinh_tin_cu`, `cache_tinh_lai_do_moi_theo_nua_chu_ky`.
+
+---
+
+### Phụ lục G — Cải tiến sau khi nộp bài (nhánh `cap-nhat-du-lieu`)
+
+Bản nộp được đóng băng ở tag `nop-bai` (kho 381 bài). Sau đó kho được crawl bổ
+sung hằng ngày theo quy trình ở `docs/08`, và **lần crawl thật đầu tiên
+(14/09/2026, +151 bài, tổng 532)** làm lộ ra hai lỗi mà bộ dữ liệu tĩnh không thể
+phát hiện. Cả hai đã được sửa trên nhánh `cap-nhat-du-lieu`; toàn bộ lập luận và
+số liệu ở `docs/09-cai-thien-mo-hinh.md`.
+
+**G.1. Mốc tính độ mới trôi theo kho.** Điểm độ mới được tính theo ngày đăng mới
+nhất **của cả kho**. Khi crawl thêm 151 bài không liên quan, mốc nhảy từ 10/09
+lên 14/09, hai bài trong ca kiểm thử "tin mới phủ định tin cũ" cùng già đi, và
+bot quay lại trả bài cũ **đã sai** (0,5104 so với 0,5086) — đúng lỗi mà mục 5.5
+của báo cáo sinh ra để chống. Đây là lỗi thiết kế chứ không phải lỗi tham số:
+quét toàn bộ lưới (7 nửa chu kỳ × 11 giá trị α) cho thấy **không cấu hình nào**
+của mốc "toàn kho" vừa xử lý đúng ca mâu thuẫn vừa còn đúng sau khi thêm một bài
+không liên quan ở ngày tương lai. Cách sửa: lấy mốc là ngày mới nhất trong **các
+bài đang cạnh tranh** cho chính câu hỏi đó (những bài thỏa `điểm × (1 + α) ≥ điểm
+cao nhất`). Tính chất thu được là một bất biến: thêm bài không liên quan không
+làm đổi thứ hạng. Dò lại trên DEV: α giảm 0,6 → 0,3.
+
+**G.2. Không nhận ra câu gõ sai chính tả.** Người dùng gõ "thám hiểm Sơn Dòng"
+(thiếu một chữ *o*, quên gạch của *Đ*) thì bot từ chối, trong khi "Sơn Đoòng" trả
+lời đúng — cosine chỉ 0,086 < ngưỡng 0,13. Hạ ngưỡng không phải cách sửa: ở 0,08
+tỷ lệ chặn đúng câu ngoài phạm vi rơi từ 100% xuống 58%. Cách sửa là thêm **chỉ
+mục thứ ba gồm n-gram ký tự (n = 3) của tiêu đề đã bỏ dấu**, dùng như **đường dự
+phòng** chỉ chạy khi đường chính từ chối, với điểm chấp nhận = cosine mức từ +
+cosine n-gram ký tự. Thiết kế được chọn bằng thực nghiệm trên DEV (12 phương án:
+trường đưa vào chỉ mục × n × luật chấp nhận); phương án "chỉ tiêu đề, n = 3, điểm
+cộng" cứu được nhiều câu nhất mà không trả sai câu nào.
+
+**G.3. Một bài học về dữ liệu đánh giá.** Sau khi bật đường dự phòng, kiểm thử
+hồi quy bắt được một câu **ngoài phạm vi** viết không dấu bị trả lời, trong khi
+việc dò trên DEV báo 0 câu lọt. Nguyên nhân: tập câu ngoài phạm vi của DEV khi đó
+toàn câu **có dấu**, mà chỉ mục n-gram ký tự lại luôn làm việc trên bản đã bỏ dấu
+— bỏ dấu làm hai câu khác nhau trông giống nhau hơn. Đã sửa bằng cách **bổ sung
+dữ liệu đánh giá** (sinh thêm biến thể không dấu cho câu ngoài phạm vi của DEV,
+28 → 36 câu) chứ không phải bằng cách vặn ngưỡng cho vừa ca đó. Các biến thể chỉ
+được sinh từ câu của DEV, không bao giờ từ TEST, để không làm hỏng phép đo.
+
+**G.4. Kết quả.** Đo trên cùng kho 532 bài, cùng bộ câu hỏi TEST, qua
+`bot.respond()` (`tools/compare_improvements.py`):
+
+| Chỉ số trên TEST | Trước (cấu hình lúc nộp) | Sau |
+|---|---|---|
+| Recall@1 (thành phần) | 109/122 | **112/122** |
+| MRR | 0,927 | **0,940** |
+| Câu hỏi thường → đúng bài | 90/122 | **101/122** |
+| Câu gõ sai chính tả → đúng bài | 74/122 | **86/122** |
+| Ca tin mới phủ định tin cũ | sai | **đúng** |
+| Ca trên sau khi thêm bài "tương lai" | sai | **đúng** |
+| Câu ngoài phạm vi bị từ chối | 18/24 | 18/24 |
+
+Cái giá phải nói rõ: đường dự phòng biến một phần câu "từ chối" thành câu "trả
+lời", nên số câu **trả lời sai** tăng (trên tập gõ sai 7 → 8, trên tập sạch 3 →
+5). Bù lại nó không làm lọt thêm câu ngoài phạm vi nào, và mỗi câu trả lời theo
+đường này đều kèm lời nhắc "có thể bạn gõ nhầm". Bộ kiểm thử hồi quy tăng từ 21
+lên 26 ca, trong đó có hai ca canh đúng hai bất biến vừa nêu.

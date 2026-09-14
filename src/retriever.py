@@ -14,6 +14,11 @@ Kiến trúc hai tầng:
         query và từng câu. Nhờ vậy bot trả lời một đoạn ngắn đúng trọng tâm
         thay vì ném cả bài báo 3000 ký tự vào mặt người dùng.
 
+    Đường dự phòng chống gõ sai (docs/09)
+        Khi tầng 1 không có bài nào đạt ngưỡng, thử lại trên chỉ mục n-gram
+        KÝ TỰ của tiêu đề đã bỏ dấu: "son dong" vẫn gần "son doong". Câu gõ
+        đúng không bao giờ đi vào nhánh này, nên hành vi cũ giữ nguyên.
+
 Vì sao không dùng embedding/LLM: đồ án yêu cầu làm from scratch bằng kỹ thuật
 đã học ở lab. Đổi lại, TF-IDF có ưu điểm thật: chạy tức thì, không cần GPU,
 và mọi kết quả đều truy vết được về term cụ thể (xem `explain`).
@@ -36,6 +41,10 @@ from config import (
     CONFIG_RETRIEVAL,
     FRESHNESS_ALPHA,
     FRESHNESS_HALFLIFE_DAYS,
+    FRESHNESS_REFERENCE,
+    FUZZY_CHAR_N,
+    FUZZY_ENABLED,
+    FUZZY_THRESHOLD,
     INDEX_CACHE_PATH,
     RANKING_METHOD,
     RETRIEVAL_THRESHOLD,
@@ -45,6 +54,7 @@ from config import (
     TOP_K,
 )
 from preprocess import (
+    fold_for_chars,
     fold_query,
     fold_tokens,
     has_diacritics,
@@ -54,7 +64,14 @@ from preprocess import (
     tokenize,
 )
 from dates import compute_recency, format_vn_date, parse_vn_date
-from vectorizer import TfidfVectorizer, bm25_idf, bm25_scores, bm25_weights, cosine_similarity
+from vectorizer import (
+    TfidfVectorizer,
+    bm25_idf,
+    bm25_scores,
+    bm25_weights,
+    cosine_similarity,
+    make_char_ngrams,
+)
 
 # Số lần lặp lại title/description khi dựng document index.
 TITLE_WEIGHT = 3
@@ -75,6 +92,8 @@ class RetrievalResult:
     matched_terms: list[tuple[str, float]] = field(default_factory=list)
     published_date: object = None        # datetime.date | None
     base_score: float = 0.0              # điểm cosine TRƯỚC khi nhân độ mới
+    match: str = "exact"                 # "exact" (mức từ) | "fuzzy" (dự phòng gõ sai)
+    fuzzy_score: float = 0.0             # cosine từ + cosine n-gram ký tự, chỉ khi fuzzy
 
     @property
     def published_str(self) -> str:
@@ -82,6 +101,17 @@ class RetrievalResult:
 
     def __repr__(self) -> str:
         return f"<{self.score:.3f} | {self.category} | {self.title[:60]}>"
+
+
+@dataclass
+class _Scored:
+    """Điểm của một câu hỏi trên toàn corpus (nội bộ, dùng chung search/rank)."""
+
+    q_vec: object                        # vector TF-IDF của câu hỏi
+    folded: bool                         # có dùng index bỏ dấu không
+    mask: object                         # mặt nạ chuyên mục hoặc None
+    base: np.ndarray                     # cosine thuần — thước đo CHẤP NHẬN
+    scores: np.ndarray                   # điểm XẾP HẠNG (đã nhân độ mới)
 
 
 class NewsRetriever:
@@ -98,9 +128,21 @@ class NewsRetriever:
         ranking: str = RANKING_METHOD,
         bm25_k1: float = BM25_K1,
         bm25_b: float = BM25_B,
+        freshness_reference: str = FRESHNESS_REFERENCE,
+        fuzzy_threshold: float | None = FUZZY_THRESHOLD if FUZZY_ENABLED else None,
     ):
         if ranking not in ("tfidf", "bm25"):
             raise ValueError(f"ranking phai la 'tfidf' hoac 'bm25', nhan duoc {ranking!r}")
+        if freshness_reference not in ("corpus", "candidates"):
+            raise ValueError("freshness_reference phai la 'corpus' hoac 'candidates', "
+                             f"nhan duoc {freshness_reference!r}")
+        self.freshness_reference = freshness_reference
+        # None = tắt đường dự phòng chống gõ sai.
+        self.fuzzy_threshold = fuzzy_threshold
+
+        # Chỉ mục thứ ba: n-gram ký tự của TIÊU ĐỀ đã bỏ dấu (xem config.FUZZY_*).
+        self.char_vectorizer = TfidfVectorizer(ngram_range=(1, 1), sublinear_tf=True)
+        self.char_matrix = None
         self.ranking = ranking
         self.bm25_k1 = bm25_k1
         self.bm25_b = bm25_b
@@ -128,8 +170,9 @@ class NewsRetriever:
         self.threshold = threshold
         self.freshness_alpha = freshness_alpha
         self.freshness_halflife = freshness_halflife
-        self.recency = None              # điểm độ mới (0, 1] cho từng bài
+        self.recency = None              # điểm độ mới (0, 1] theo mốc CẢ corpus
         self.published_dates: list = []
+        self._date_ordinals = None       # ngày đăng dạng số (NaN nếu không rõ)
         self.df: pd.DataFrame | None = None
         self.doc_matrix = None
         self._sentence_cache: dict[int, list[str]] = {}
@@ -163,13 +206,25 @@ class NewsRetriever:
         self.folded_counts = self.folded_vectorizer.counter.transform(folded)
         self._rebuild_bm25()
 
+        self.char_matrix = self.char_vectorizer.fit_transform(
+            [self._char_grams(row.get("title", "")) for _, row in self.df.iterrows()])
+
         # Độ mới: dùng để phá thế hòa khi hai bài liên quan xấp xỉ nhau.
         self.published_dates = [parse_vn_date(v) for v in self.df.get("published_at", [])]
-        self.recency = compute_recency(self.published_dates,
-                                       half_life_days=self.freshness_halflife)
+        self._set_dates(self.published_dates)
 
         self._sentence_cache.clear()
         return self
+
+    @staticmethod
+    def _char_grams(text) -> list[str]:
+        return make_char_ngrams(fold_for_chars(text), FUZZY_CHAR_N)
+
+    def _set_dates(self, dates: list) -> None:
+        self.published_dates = dates
+        self._date_ordinals = np.array(
+            [d.toordinal() if d else np.nan for d in dates], dtype=np.float64)
+        self.recency = compute_recency(dates, half_life_days=self.freshness_halflife)
 
 
     # -- cache ra đĩa --------------------------------------------------------
@@ -193,6 +248,7 @@ class NewsRetriever:
             "title_weight": TITLE_WEIGHT,
             "desc_weight": DESC_WEIGHT,
             "config": CONFIG_RETRIEVAL,
+            "fuzzy_index": {"field": "title", "char_n": FUZZY_CHAR_N},
         }
         h.update(json.dumps(params, sort_keys=True, ensure_ascii=False).encode())
         return h.hexdigest()
@@ -220,14 +276,14 @@ class NewsRetriever:
                     self.folded_matrix = blob["folded_matrix"]
                     self.doc_counts = blob["doc_counts"]
                     self.folded_counts = blob["folded_counts"]
+                    self.char_vectorizer = blob["char_vectorizer"]
+                    self.char_matrix = blob["char_matrix"]
                     self._rebuild_bm25()
-                    self.published_dates = blob["published_dates"]
-                    # KHÔNG nạp recency từ cache mà tính lại. Nửa chu kỳ độ mới
-                    # không nằm trong vân tay cache (nó không ảnh hưởng index),
-                    # nên nếu nạp recency đã lưu thì đổi FRESHNESS_HALFLIFE_DAYS
-                    # sẽ bị bỏ qua âm thầm — bot tiếp tục dùng điểm độ mới cũ.
-                    self.recency = compute_recency(
-                        self.published_dates, half_life_days=self.freshness_halflife)
+                    # KHÔNG nạp recency từ cache mà tính lại (_set_dates). Nửa chu
+                    # kỳ độ mới không nằm trong vân tay cache (nó không ảnh hưởng
+                    # index), nên nếu nạp recency đã lưu thì đổi
+                    # FRESHNESS_HALFLIFE_DAYS sẽ bị bỏ qua âm thầm.
+                    self._set_dates(blob["published_dates"])
                     self.df = df.reset_index(drop=True)
                     self._sentence_cache = blob.get("sentence_cache", {})
                     if verbose:
@@ -252,6 +308,8 @@ class NewsRetriever:
                     "folded_matrix": self.folded_matrix,
                     "doc_counts": self.doc_counts,
                     "folded_counts": self.folded_counts,
+                    "char_vectorizer": self.char_vectorizer,
+                    "char_matrix": self.char_matrix,
                     "published_dates": self.published_dates,
                     "sentence_cache": self._sentence_cache,
                 },
@@ -309,27 +367,28 @@ class NewsRetriever:
             return self._query_vector(query), self.doc_matrix
         return self._folded_query_vector(query), self.folded_matrix
 
-    def search(
-        self,
-        query: str,
-        top_k: int = TOP_K,
-        category: str | None = None,
-        min_score: float | None = None,
-    ) -> list[RetrievalResult]:
-        """Trả top-k bài báo vượt ngưỡng similarity.
+    def _category_mask(self, category: str | None):
+        if not category:
+            return None
+        return (self.df["category"].astype(str).str.lower() == category.lower()).to_numpy()
 
-        `category` cho phép thu hẹp phạm vi khi người dùng đã nói rõ chuyên mục.
+    def _score(self, query: str, category: str | None = None) -> _Scored:
+        """Toàn bộ phần TÍNH ĐIỂM của một câu hỏi, chưa dựng kết quả.
+
+        Tách riêng để search() và evaluate.py (qua rank()) dùng CHUNG một cách
+        tính — nếu evaluate tự tính lại điểm thì hai bên sớm muộn sẽ lệch nhau.
         """
         if self.df is None or self.doc_matrix is None:
             raise RuntimeError("Phai goi fit() truoc khi search().")
 
-        threshold = self.threshold if min_score is None else min_score
-
         folded = not has_diacritics(query)
         q_vec, doc_matrix = self._select_index(query)
+        mask = self._category_mask(category)
         if q_vec.nnz == 0:
-            # Không term nào của query có trong vocabulary -> không có căn cứ.
-            return []
+            # Không term nào của query có trong vocabulary -> đường chính không
+            # có căn cứ. Câu gõ sai ("ipone") hay rơi vào đây; dự phòng vẫn thử.
+            zeros = np.zeros(doc_matrix.shape[0])
+            return _Scored(q_vec, folded, mask, zeros, zeros)
 
         # Cosine TF-IDF: luôn tính, vì đây là thước đo CHẤP NHẬN câu trả lời.
         base_scores = cosine_similarity(q_vec, doc_matrix)[0]
@@ -343,20 +402,61 @@ class NewsRetriever:
         else:
             rank_scores = base_scores
 
+        # Lọc theo chuyên mục bằng cách triệt tiêu điểm của bài ngoài mục. Lọc
+        # TRƯỚC khi tính độ mới, để mốc "bài cạnh tranh" chỉ gồm bài trong mục.
+        if mask is not None:
+            rank_scores = np.where(mask, rank_scores, 0.0)
+            base_scores = np.where(mask, base_scores, 0.0)
+
         # Thưởng độ mới: score' = rank_score * (1 + alpha * recency).
         # Nhân chứ không cộng, để bài không liên quan (điểm ~ 0) vẫn ở lại 0
         # dù mới tinh — nếu cộng thì tin mới nhất sẽ nổi lên với mọi câu hỏi.
         # Phép nhân cũng không phụ thuộc thang đo, nên dùng được cho cả BM25.
-        if self.freshness_alpha and self.recency is not None:
-            scores = rank_scores * (1.0 + self.freshness_alpha * self.recency)
-        else:
-            scores = rank_scores
+        return _Scored(q_vec, folded, mask, base_scores, self._apply_freshness(rank_scores))
 
-        # Lọc theo chuyên mục bằng cách triệt tiêu điểm của bài ngoài mục.
-        if category:
-            mask = (self.df["category"].astype(str).str.lower() == category.lower()).to_numpy()
-            scores = np.where(mask, scores, 0.0)
-            base_scores = np.where(mask, base_scores, 0.0)
+    def _score_fuzzy(self, query: str, scored: _Scored) -> tuple[np.ndarray, np.ndarray]:
+        """Đường dự phòng: (điểm chấp nhận, điểm xếp hạng).
+
+        Điểm chấp nhận = cosine mức từ + cosine n-gram ký tự của tiêu đề. Cộng
+        hai tín hiệu thay vì chỉ dùng n-gram ký tự: bài đúng thường vẫn còn chút
+        điểm mức từ (các từ gõ đúng trong câu), còn bài chỉ "na ná cách viết"
+        thì không. Trên dev, luật cộng cứu được nhiều câu nhất mà 0 câu trả sai
+        (config.FUZZY_*). Độ mới vẫn chỉ dùng để xếp hạng như đường chính.
+        """
+        combined = scored.base + self.fuzzy_scores(query)
+        if scored.mask is not None:
+            combined = np.where(scored.mask, combined, 0.0)
+        return combined, self._apply_freshness(combined)
+
+    def rank(self, query: str, top_k: int = TOP_K, category: str | None = None,
+             fuzzy: bool = False) -> list[tuple[int, float, float]]:
+        """Top-k (doc_id, điểm xếp hạng, điểm chấp nhận), KHÔNG lọc ngưỡng.
+
+        Nhẹ hơn search() vì không tách câu / dựng snippet — evaluate.py gọi hàm
+        này hàng chục nghìn lần khi quét tham số. `fuzzy=True` xếp theo đường
+        dự phòng gõ sai (điểm chấp nhận khi đó là cosine từ + cosine ký tự).
+        """
+        scored = self._score(query, category)
+        accept, scores = (self._score_fuzzy(query, scored) if fuzzy
+                          else (scored.base, scored.scores))
+        order = np.argsort(-scores, kind="stable")[:top_k]
+        return [(int(i), float(scores[i]), float(accept[i])) for i in order]
+
+    def search(
+        self,
+        query: str,
+        top_k: int = TOP_K,
+        category: str | None = None,
+        min_score: float | None = None,
+    ) -> list[RetrievalResult]:
+        """Trả top-k bài báo vượt ngưỡng similarity.
+
+        `category` cho phép thu hẹp phạm vi khi người dùng đã nói rõ chuyên mục.
+        `min_score=0.0` tắt ngưỡng (dùng khi chẩn đoán) — khi đó không có
+        "từ chối" nên cũng không bao giờ đi vào đường dự phòng gõ sai.
+        """
+        threshold = self.threshold if min_score is None else min_score
+        scored = self._score(query, category)
 
         # XẾP HẠNG theo điểm đã nhân độ mới, nhưng CHẤP NHẬN theo cosine thuần.
         #
@@ -369,31 +469,85 @@ class NewsRetriever:
         # vượt được ngưỡng — độ mới đã âm thầm biến thành bộ lọc loại bài cũ.
         # "tin ve dao hai nam" từ trả lời đúng chuyển sang "không tìm thấy".
         # Kiểm thử hồi quy (tests/test_chatbot.py) bắt được lỗi này.
-        order = np.argsort(-scores)[:top_k]
-
         results: list[RetrievalResult] = []
-        for doc_id in order:
-            score = float(scores[doc_id])
-            if float(base_scores[doc_id]) < threshold:
+        if scored.q_vec.nnz:
+            order = np.argsort(-scored.scores, kind="stable")[:top_k]
+            results = [self._make_result(int(i), query, scored.scores[i], scored.base[i], scored)
+                       for i in order if float(scored.base[i]) >= threshold]
+        if results or not threshold or self.fuzzy_threshold is None:
+            return results
+
+        # Đường chính từ chối -> thử dự phòng gõ sai (docs/09).
+        accept, scores = self._score_fuzzy(query, scored)
+        order = np.argsort(-scores, kind="stable")[:top_k]
+        for i in order:
+            if float(accept[i]) < self.fuzzy_threshold:
                 continue
-            row = self.df.iloc[doc_id]
-            results.append(
-                RetrievalResult(
-                    doc_id=int(doc_id),
-                    score=score,
-                    title=str(row.get("title", "")),
-                    category=str(row.get("category", "")),
-                    url=str(row.get("url", "")),
-                    description=normalize_basic(row.get("description", "")),
-                    snippet=self.best_sentences(int(doc_id), query),
-                    matched_terms=self._matched_terms(q_vec, doc_id, folded=folded),
-                    published_date=(
-                        self.published_dates[doc_id] if self.published_dates else None
-                    ),
-                    base_score=float(base_scores[doc_id]),
-                )
-            )
+            res = self._make_result(int(i), query, scores[i], scored.base[i], scored)
+            res.match, res.fuzzy_score = "fuzzy", float(accept[i])
+            results.append(res)
         return results
+
+    # -- độ mới ----------------------------------------------------------------
+    def _apply_freshness(self, rank_scores: np.ndarray) -> np.ndarray:
+        if not self.freshness_alpha or self.recency is None:
+            return rank_scores
+        return rank_scores * (1.0 + self.freshness_alpha * self._recency_for(rank_scores))
+
+    def _recency_for(self, rank_scores: np.ndarray) -> np.ndarray:
+        """Điểm độ mới cho MỘT câu hỏi, theo mốc tham chiếu đã cấu hình.
+
+        "candidates": mốc là ngày mới nhất trong các bài còn cơ hội lên hạng 1,
+        tức điểm x (1 + alpha) >= điểm cao nhất. Bài kém hơn mức đó thì dù được
+        thưởng tối đa cũng không vượt được bài đầu, nên không có lý do để ngày
+        đăng của nó quyết định "thế nào là mới". Hệ quả quan trọng: crawl thêm
+        bài không liên quan (dù mới tới đâu) không làm đổi thứ hạng câu hỏi này.
+        """
+        ordinals = self._date_ordinals
+        if self.freshness_reference == "corpus" or ordinals is None:
+            return self.recency
+        known = ~np.isnan(ordinals)
+        top = float(rank_scores.max()) if rank_scores.size else 0.0
+        if top <= 0 or not known.any():
+            return self.recency
+        pool = known & (rank_scores > 0) & (rank_scores * (1.0 + self.freshness_alpha) >= top)
+        reference = ordinals[pool].max() if pool.any() else np.nanmax(ordinals)
+
+        age = np.clip(reference - np.where(known, ordinals, reference), 0.0, None)
+        values = 0.5 ** (age / self.freshness_halflife)
+        # Bài không rõ ngày: trung vị của phần còn lại — không thưởng, không phạt
+        # (cùng quy ước với dates.compute_recency).
+        return np.where(known, values, float(np.median(values[known])))
+
+    # -- dự phòng gõ sai ------------------------------------------------------
+    def fuzzy_query_text(self, query: str) -> str:
+        """Phần mang nội dung của câu hỏi, đã bỏ dấu, để sinh n-gram ký tự."""
+        tokens, _ = self._query_tokens(query)
+        return fold_for_chars(" ".join(tokens))
+
+    def fuzzy_scores(self, query: str) -> np.ndarray:
+        """Cosine giữa n-gram ký tự của câu hỏi và của tiêu đề mọi bài."""
+        q = self.char_vectorizer.transform(
+            [make_char_ngrams(self.fuzzy_query_text(query), FUZZY_CHAR_N)])
+        if q.nnz == 0:
+            return np.zeros(self.char_matrix.shape[0])
+        return cosine_similarity(q, self.char_matrix)[0]
+
+    def _make_result(self, doc_id: int, query: str, score, base_score,
+                     scored: _Scored) -> RetrievalResult:
+        row = self.df.iloc[doc_id]
+        return RetrievalResult(
+            doc_id=doc_id,
+            score=float(score),
+            title=str(row.get("title", "")),
+            category=str(row.get("category", "")),
+            url=str(row.get("url", "")),
+            description=normalize_basic(row.get("description", "")),
+            snippet=self.best_sentences(doc_id, query),
+            matched_terms=self._matched_terms(scored.q_vec, doc_id, folded=scored.folded),
+            published_date=(self.published_dates[doc_id] if self.published_dates else None),
+            base_score=float(base_score),
+        )
 
     # -- tầng 2: chọn câu ----------------------------------------------------
     def _sentences(self, doc_id: int) -> list[str]:

@@ -91,6 +91,13 @@ kết quả phải tái lập được. Nếu lấy thời gian thực thì cùn
 thứ hạng khác nhau tùy hôm nào chạy, và mọi con số trong báo cáo sẽ không kiểm
 chứng lại được. Hệ thống chạy thật thì nên đổi sang thời gian thực.
 
+> **Cách này đã bị THAY khi kho bắt đầu được cập nhật hằng ngày.** Mốc "mới nhất
+> trong corpus" làm thứ hạng của một câu hỏi phụ thuộc vào những bài chẳng liên
+> quan gì tới nó — crawl thêm 151 bài là ca Cát Linh hỏng lại. Mốc hiện hành là
+> **ngày mới nhất trong các bài đang cạnh tranh** cho chính câu hỏi đó. Vẫn tái
+> lập được (không dùng `datetime.now()`), nhưng không còn trôi theo kho. Chi tiết
+> ở mục "Mốc độ mới trượt theo kho" bên dưới và [docs/09](09-cai-thien-mo-hinh.md).
+
 ---
 
 ## Dò tham số: tối ưu ĐỒNG THỜI hai mục tiêu
@@ -280,6 +287,49 @@ cần được dò lại khi corpus lớn lên đáng kể.
 
 Xấp xỉ tuyến tính theo số bài (~54ms/bài): 1.000 bài ≈ 1 phút,
 10.000 bài ≈ 9 phút.
+
+## Mốc độ mới trượt theo kho (phát hiện 14/09/2026, đã sửa)
+
+Lần crawl thật đầu tiên thêm 151 bài vào kho (381 → 532). Ngay sau đó, câu
+`"giá vé tàu cát linh bao nhiêu"` **quay lại trả bài cũ đã sai** — đúng cái lỗi
+mà cả mục này sinh ra để chống, và kiểm thử hồi quy `tin_moi_phu_dinh_tin_cu` bắt
+được.
+
+Không bài mới nào nói về tàu Cát Linh. Vấn đề nằm ở **mốc tham chiếu**: nó là
+ngày đăng mới nhất của cả kho, nên crawl xong mốc nhảy từ 10/09 lên 14/09 và
+**cả hai** bài Cát Linh cùng già đi:
+
+| | bài cũ (01/09, đã sai) | bài mới (10/09, đúng) |
+|---|---|---|
+| cosine | 0.4956 | 0.4098 |
+| recency khi mốc = 10/09 | 0.125 → hệ số 1.08 | 1.000 → hệ số 1.60 |
+| recency khi mốc = 14/09 | 0.050 → hệ số 1.03 | 0.397 → hệ số 1.24 |
+| điểm cuối (mốc 14/09) | **0.5104** ← bot trả bài này | 0.5086 |
+
+Đây là lỗi **thiết kế**, không phải lỗi tham số: thứ hạng của một câu hỏi không
+được phép phụ thuộc vào những bài không liên quan tới nó. `evaluate.py` quét cả
+lưới (7 nửa chu kỳ × 11 alpha) và xác nhận — với mốc "corpus", **không cấu hình
+nào** vừa xử lý đúng ca Cát Linh vừa còn đúng sau khi thêm một bài không liên
+quan ở ngày tương lai.
+
+**Cách sửa.** Mốc = ngày mới nhất trong **các bài đang cạnh tranh** cho chính câu
+hỏi đó, tức những bài mà nếu được thưởng độ mới tối đa thì vẫn có thể lên hạng 1:
+
+```
+điểm(bài) × (1 + alpha)  >=  điểm cao nhất
+```
+
+Bài yếu hơn mức đó thì dù mới tới đâu cũng không lật được hạng 1, nên không có lý
+do để ngày đăng của nó định nghĩa "thế nào là mới". Hệ quả: **thêm bài không liên
+quan không làm đổi thứ hạng** — bất biến theo thiết kế, không phải nhờ may mắn
+của tham số. Đây cũng thành ràng buộc cứng thứ hai khi dò (`conflict_case.json`
+có sẵn một bài "tương lai không liên quan" để kiểm tra đúng điều này).
+
+Dò lại trên dev với corpus 532 bài: **nửa chu kỳ 3 ngày, alpha 0.6 → 0.3**
+(35/77 cấu hình qua được cả hai ràng buộc; chọn cấu hình MRR cao nhất, hòa thì
+lấy alpha nhỏ hơn). Alpha 0.6 nay là quá mạnh để gọi là "phá thế hòa": nó cho
+phép một bài chỉ liên quan bằng 62,5% bài đúng chiếm hạng 1 — chấp nhận được khi
+kho đứng yên, nhưng không khi mỗi ngày có thêm hàng chục bài mới.
 
 ## Hạn chế còn lại
 

@@ -42,18 +42,26 @@
    | reply / help /             |     |  - chọn index: có dấu | âm tiết không dấu |
    | list_categories / stats /  |     |  - lọc từ khung câu hỏi (QUERY_FRAME_WORDS)|
    | browse_category /          |     |  - XẾP HẠNG: cosine TF-IDF (hoặc BM25)    |
-   | summarize / source         |     |              x (1 + 0.6·recency)          |
-   +----------------------------+     |  - CHẤP NHẬN: cosine thuần >= 0.13        |
+   | summarize / source         |     |              x (1 + 0.3·recency)          |
+   +----------------------------+     |    recency theo bài ĐANG CẠNH TRANH       |
+                  |                   |  - CHẤP NHẬN: cosine thuần >= 0.13        |
                   |                   |    (x 0.6 nếu người dùng đã nêu chuyên mục)|
                   |                   |  - tầng 2: 2 câu sát nhất trong bài       |
                   |                   +------------------------------------------+
                   |                        |                         |
                   |                    đạt ngưỡng              dưới ngưỡng
                   v                        v                         v
-            câu soạn sẵn           trả lời + ngày đăng        fallback
-            hoặc dữ liệu           + chuyên mục + nguồn     "mình chưa biết"
-                  |                        |                         |
-                  +------------------------+-------------------------+
+            câu soạn sẵn           trả lời + ngày đăng    [3b] dự phòng gõ sai
+            hoặc dữ liệu           + chuyên mục + nguồn   cosine từ + cosine n-gram
+                  |                        |              ký tự tiêu đề >= 0.53
+                  |                        |                    |          |
+                  |                        |                  đạt      không đạt
+                  |                        |                    v          v
+                  |                        |         trả lời kèm      fallback
+                  |                        |       "có thể bạn      "mình chưa biết"
+                  |                        |         gõ nhầm"           |
+                  |                        |                    |       |
+                  +------------------------+--------------------+-------+
                                            |
                                            v
                                +-----------------------+
@@ -78,7 +86,7 @@
 | `normalizer.py` | Học từ điển teencode từ ViLexNorm; `prepare_user_text` dùng chung cho bot và đánh giá | — |
 | `vectorizer.py` | BoW, n-gram, TF-IDF, chuẩn hóa L2, cosine, BM25 — **tự cài đặt** | Lab 04 |
 | `intent_classifier.py` | Multinomial Naive Bayes **tự cài đặt** + tín hiệu cosine tới pattern | Lab 04 |
-| `retriever.py` | Truy hồi hai tầng, hai index, độ mới, cache đĩa, giải thích | Lab 01 + 04 |
+| `retriever.py` | Truy hồi hai tầng, ba index (có dấu / âm tiết / n-gram ký tự), độ mới, cache đĩa, giải thích | Lab 01 + 04 |
 | `dates.py` | Đọc ngày đăng VnExpress, tính điểm độ mới | — |
 | `entities.py` | NER + Regex, nhận diện chuyên mục | Lab 01 |
 | `dialogue.py` | Trạng thái hội thoại, giải tham chiếu "bài đó" | — |
@@ -103,6 +111,7 @@ retriever (0.13) đều có ngưỡng; dưới ngưỡng thì bot nói thẳng l
 |---|---|
 | Bài nào nên đứng trước? | cosine (hoặc BM25) **×** (1 + α·recency) |
 | Có đủ căn cứ để trả lời không? | **chỉ** cosine TF-IDF, trong [0, 1] |
+| (đường dự phòng) có đủ căn cứ không? | cosine TF-IDF **+** cosine n-gram ký tự, trong [0, 2] |
 
 Trước đây ngưỡng áp lên điểm đã nhân độ mới, và độ mới âm thầm biến thành bộ lọc
 loại bài cũ (docs/06, mục 5.1). BM25 cũng chỉ được dùng để xếp hạng vì điểm của
@@ -115,13 +124,18 @@ nó không bị chặn và không so được giữa các câu hỏi.
 | `remove_stopwords` | False | True |
 | Lý do | câu hỏi 5–10 token, stopword **chính là** tín hiệu phân biệt intent | bài báo trung bình 3.358 ký tự, stopword làm loãng vector |
 
-### 4. Hai index tách biệt cho câu có dấu và không dấu
+### 4. Ba index tách biệt, mỗi index một việc
 
 Trộn chung sẽ làm gấp đôi vocabulary, pha loãng điểm số và làm mất hiệu lực các
 ngưỡng đã dò. Giữ tách biệt và chỉ chuyển sang index âm tiết khi câu hỏi **không
 có dấu nào**. Vì chuẩn hóa teencode luôn trả từ có dấu, `prepare_user_text` bỏ
 dấu lại khi câu gốc không dấu — nếu không, một token được sửa sẽ làm cả câu bị
 định tuyến sang index có dấu (docs/05, lỗi 2).
+
+Index thứ ba — **n-gram ký tự của tiêu đề đã bỏ dấu** — chỉ chạy khi hai index
+kia không có bài nào đạt ngưỡng, để cứu câu gõ sai chính tả ("Sơn Dòng" so với
+"Sơn Đoòng"). Cùng một lý do tách biệt: trộn n-gram ký tự vào index chính sẽ làm
+mọi câu hỏi trông "na ná" mọi bài báo. Xem [docs/09](09-cai-thien-mo-hinh.md).
 
 ### 5. Một quy tắc nghiệp vụ chỉ nằm ở một chỗ
 

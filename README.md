@@ -5,10 +5,16 @@ Naive Bayes tự cài đặt — lõi **không dùng mô hình ngôn ngữ lớn
 `sklearn` trong runtime. Một lớp RAG với PhoGPT được thử nghiệm riêng như phần
 mở rộng **tùy chọn, mặc định tắt** (xem mục RAG bên dưới).
 
-Bot trả lời câu hỏi về tin tức dựa trên kho **381 bài báo VnExpress** thuộc
-8 chuyên mục, do chính dự án thu thập.
+Bot trả lời câu hỏi về tin tức dựa trên kho bài báo VnExpress thuộc 8 chuyên mục,
+do chính dự án thu thập — **381 bài** ở bản nộp (tag `nop-bai`), **532 bài** trên
+nhánh cập nhật dữ liệu hằng ngày.
 
 **Sinh viên:** Hoàng Công Dũng — 23IT036
+
+> **Nhánh `cap-nhat-du-lieu`.** Sau khi nộp, kho được crawl thêm hằng ngày và hai
+> lỗi thật lộ ra: xếp hạng độ mới hỏng khi kho lớn dần, và bot không nhận ra câu
+> gõ sai chính tả. Cả hai đã sửa — xem [docs/09](docs/09-cai-thien-mo-hinh.md),
+> tài liệu cũng giải thích *nên kéo đòn bẩy nào* khi muốn cải thiện mô hình.
 
 ---
 
@@ -39,6 +45,23 @@ Chi tiết phương pháp và lịch sử sửa đổi: [docs/06](docs/06-danh-g
 
 Toàn bộ số liệu tái lập được bằng `python src/evaluate.py` (dò trên dev, báo cáo trên test).
 
+### Sau hai cải tiến trên nhánh `cap-nhat-du-lieu` (kho 532 bài)
+
+Bảng trên là bản **nộp bài**. Trên kho đã crawl thêm, cùng một bộ câu hỏi test,
+đo lại TRƯỚC / SAU hai bản sửa (`python tools/compare_improvements.py`):
+
+| Chỉ số trên TEST | Trước | Sau |
+|---|---|---|
+| Recall@1 | 109/122 | **112/122** |
+| MRR | 0.927 | **0.940** |
+| Câu hỏi thường → đúng bài | 90/122 | **101/122** |
+| Câu **gõ sai chính tả** → đúng bài | 74/122 | **86/122** |
+| Tin mới phủ định tin cũ (ca Cát Linh) | ❌ sai | ✅ đúng |
+| Câu ngoài phạm vi bị từ chối | 18/24 | 18/24 |
+
+Cái giá: số câu **trả lời sai** trên tập gõ sai tăng 7 → 8 (đường dự phòng biến
+một phần "từ chối" thành "trả lời"). Chi tiết và cách chọn ngưỡng: docs/09.
+
 ---
 
 ## Cài đặt
@@ -65,10 +88,12 @@ python src/api.py
 
 # Kiểm thử và đánh giá
 python tests/test_vectorizer.py     # đối chiếu TF-IDF với sklearn + BM25 với cài đặt tham chiếu
-python tests/test_chatbot.py        # 21 kiểm thử hồi quy, mỗi cái ứng với một lỗi thật
+python tests/test_chatbot.py        # 26 kiểm thử hồi quy, mỗi cái ứng với một lỗi thật
 python tests/test_rag.py            # 29 kiểm thử lớp RAG, không cần GPU
 python src/evaluate.py              # dò trên DEV, báo cáo trên TEST (Recall@k, MRR, F1, KTC 95%)
 python tools/build_eval_sets.py     # tái tạo tập dev/test (seed cố định)
+python tools/build_typo_sets.py     # sinh tập truy vấn GÕ SAI từ dev/test
+python tools/compare_improvements.py # chọn thiết kế chống gõ sai + so trước/sau
 python src/normalizer.py            # học + đánh giá từ điển teencode (ERR)
 python src/generator.py             # thí nghiệm sinh văn bản n-gram
 
@@ -103,6 +128,7 @@ python tools/rebuild_index.py       # dựng lại index + kiểm tra khói sau 
 | Chào hỏi, cảm ơn, hỏi về bot | `bạn là ai` |
 | **Hiểu câu gõ không dấu** | `tin ve dao hai nam` |
 | **Hiểu teencode** | `bt gì về vụ iphone k b` → `biết gì về vụ iphone không bạn` |
+| **Chịu được gõ sai chính tả** | `thám hiểm Sơn Dòng` → vẫn ra bài "Sơn Đoòng", kèm lời nhắc "có thể bạn gõ nhầm" |
 | **Từ chối khi không biết** | `thời tiết sao hỏa hôm nay` → nói thẳng là không có dữ liệu |
 
 ---
@@ -184,11 +210,13 @@ final-project/
 │   ├── api.py               # FastAPI
 │   └── web/index.html       # giao diện chat
 ├── data/
-│   ├── raw/corpus_raw.csv           # 381 bài báo
+│   ├── raw/corpus_raw.csv           # 381 bài báo (532 trên nhánh cập nhật)
 │   ├── intents/intents_vi.json      # 14 intent, 164 pattern
 │   ├── eval/dev.json                # tập DEV — để dò tham số
 │   ├── eval/test.json               # tập TEST — chỉ để báo cáo
-│   ├── eval/conflict_case.json      # ca tin mâu thuẫn (ràng buộc cứng)
+│   ├── eval/conflict_case.json      # ca tin mâu thuẫn + bài "tương lai" (2 ràng buộc cứng)
+│   ├── eval/{dev,test}_typo.json    # truy vấn GÕ SAI sinh từ dev/test
+│   ├── eval/improvements_report.txt # chọn thiết kế + so trước/sau (docs/09)
 │   ├── eval/test_report_v*.txt      # báo cáo từng lần xem tập test
 │   ├── eval/tuned_params.json       # tham số dò trên dev
 │   ├── eval/test_results.json       # số liệu báo cáo trên test
@@ -209,11 +237,14 @@ final-project/
 │   ├── 05-do-moi-va-thong-tin-loi-thoi.md
 │   ├── 06-danh-gia-trung-thuc-va-bm25.md
 │   ├── 07-rag-phogpt.md
-│   └── 08-runbook-cap-nhat-du-lieu.md   # crawl hằng ngày + cập nhật mô hình
+│   ├── 08-runbook-cap-nhat-du-lieu.md   # crawl hằng ngày + cập nhật mô hình
+│   └── 09-cai-thien-mo-hinh.md          # năm "đòn bẩy" cải thiện + hai ca sửa thật
 ├── tests/test_vectorizer.py         # TF-IDF vs sklearn, BM25 vs tham chiếu
-├── tests/test_chatbot.py            # 21 kiểm thử hồi quy
+├── tests/test_chatbot.py            # 26 kiểm thử hồi quy
 ├── tests/test_rag.py                # 29 kiểm thử RAG (không cần GPU)
 ├── tools/build_eval_sets.py         # sinh tập dev/test
+├── tools/build_typo_sets.py         # sinh tập truy vấn gõ sai chính tả
+├── tools/compare_improvements.py    # số liệu cho docs/09 (chọn thiết kế, trước/sau)
 ├── tools/build_notebook.py          # sinh notebook báo cáo
 ├── tools/build_rag_notebook.py      # sinh notebook RAG cho Colab
 ├── tools/make_colab_bundle.py       # đóng gói mã + dữ liệu cho Colab
@@ -261,24 +292,36 @@ có cả đánh giá đầu-cuối gọi `bot.respond()` như người dùng th�
 [ViLexNorm](https://github.com/ngxtnhi/ViLexNorm) (10.467 cặp câu do người gán
 nhãn) với ba điều kiện an toàn. ERR 67.8% trên split test chưa từng thấy.
 
-**7. Không trả lời bằng thông tin lỗi thời.** Với hai bài mâu thuẫn cách nhau
+**7. Chịu được gõ sai chính tả mà không hạ ngưỡng an toàn.** "thám hiểm Sơn
+Dòng" từng bị từ chối (cosine 0.086 < 0.13) trong khi "Sơn Đoòng" trả lời đúng.
+Hạ ngưỡng không phải cách sửa: xuống 0.08 thì tỷ lệ chặn đúng câu ngoài phạm vi
+rơi từ 100% còn 58%. Cách sửa là **thêm một chỉ mục n-gram KÝ TỰ của tiêu đề đã
+bỏ dấu**, chạy như đường dự phòng chỉ khi đường chính từ chối, và chấm bằng
+tổng cosine mức từ + cosine ký tự. Trên test: câu gõ sai đúng bài tăng 60.7% →
+73.8%, câu ngoài phạm vi vẫn bị chặn như cũ (21/24). Xem
+[docs/09](docs/09-cai-thien-mo-hinh.md).
+
+**8. Không trả lời bằng thông tin lỗi thời.** Với hai bài mâu thuẫn cách nhau
 9 ngày, TF-IDF thuần trả về bài **cũ đã sai** (0.4956 vs 0.4098) kèm dẫn nguồn
 thật. Đã thêm xếp hạng theo độ mới `score = cosine × (1 + α·recency)` — bài mới
 được xếp đầu ở **cả 4 cách hỏi** (một cách hỏi, "tàu cát linh 15.000 đồng", có
 cosine dưới ngưỡng chấp nhận nên bot trả lời "không tìm thấy" thay vì trả bài). Độ mới chỉ dùng để **xếp hạng**; việc **chấp
 nhận** trả lời dựa trên cosine thuần. Trên tập dev lớn, độ mới là một **đánh
 đổi** nhỏ (mất ~0.001 MRR), không phải cải tiến miễn phí như từng tưởng. Mọi
-câu trả lời đều kèm **ngày đăng**. Xem [docs/05](docs/05-do-moi-va-thong-tin-loi-thoi.md).
+câu trả lời đều kèm **ngày đăng**. Mốc tính độ mới đã được sửa sau khi crawl thật:
+tính theo bài **đang cạnh tranh** với câu hỏi, thay vì theo bài mới nhất của cả
+kho — nếu không, crawl thêm bài không liên quan cũng làm hỏng thứ hạng (docs/09).
+Xem [docs/05](docs/05-do-moi-va-thong-tin-loi-thoi.md).
 
-**8. BM25 tự cài đặt — và một kết quả âm được ghi lại đầy đủ.** BM25 không hơn
+**9. BM25 tự cài đặt — và một kết quả âm được ghi lại đầy đủ.** BM25 không hơn
 TF-IDF (kiểm định dấu có cặp trên dev: 3 thắng / 3 thua / 106 hòa, p = 1.0).
 Nguyên nhân có kiểm chứng: độ bão hòa tf của BM25 triệt tiêu mẹo lặp tiêu đề để
 tăng trọng số — MRR của BM25 tăng đều khi giảm bão hòa (tăng k1).
 
-**9. Kiểm thử hồi quy.** 21 test, mỗi cái ứng với một lỗi thật từng làm bot trả
+**10. Kiểm thử hồi quy.** 26 test, mỗi cái ứng với một lỗi thật từng làm bot trả
 lời sai mà không báo lỗi. Chúng đã bắt được hai lỗi thiết kế ngay lần chạy đầu.
 
-**10. Đã kiểm chứng vì sao KHÔNG sinh văn bản.** `src/generator.py` cài đặt
+**11. Đã kiểm chứng vì sao KHÔNG sinh văn bản.** `src/generator.py` cài đặt
 n-gram LM hoàn chỉnh và đo: ở quy mô dữ liệu này, sinh văn bản thua truy hồi
 trên mọi tiêu chí (bịa sự kiện, không dẫn được nguồn, n cao thì suy biến thành
 chép nguyên văn). Lựa chọn kiến trúc dựa trên số liệu, không phải giả định.
@@ -288,12 +331,16 @@ chép nguyên văn). Lựa chọn kiến trúc dựa trên số liệu, không p
 ## Hạn chế đã biết
 
 1. **Không hiểu từ đồng nghĩa** — TF-IDF so khớp trên mặt chữ; "xe hơi" không
-   tìm ra bài dùng "ô tô". Đây là hạn chế cốt lõi của mô hình túi từ.
+   tìm ra bài dùng "ô tô". Đây là hạn chế cốt lõi của mô hình túi từ. (Gõ **sai
+   chính tả** thì đã xử lý được bằng chỉ mục n-gram ký tự — docs/09 — nhưng đó
+   là "gần giống mặt chữ", không phải "gần giống nghĩa".)
 2. **Không suy luận, không sinh văn bản, không diễn đạt lại** — bot lõi trích
    xuất 100%, chỉ trả về câu đã có sẵn trong corpus. Đây là giới hạn **kiến
    trúc**, đã kiểm chứng bằng thực nghiệm ở [docs/04](docs/04-thi-nghiem-sinh-van-ban.md).
    Lớp RAG tùy chọn diễn đạt lại được, nhưng không trung thực hơn (docs/07).
-3. **Kho tri thức tĩnh** — muốn cập nhật phải chạy lại crawler.
+3. **Kho tri thức tĩnh** — muốn cập nhật phải chạy lại crawler. Đã có quy trình
+   crawl + dựng lại index hằng ngày ([docs/08](docs/08-runbook-cap-nhat-du-lieu.md)),
+   nhưng bot vẫn không tự biết dữ liệu của mình cũ tới đâu.
 4. **Hai intent chồng lấn** (`huong_dan` / `liet_ke_chuyen_muc`) vẫn nhầm lẫn.
 5. **Tham chiếu chỉ neo vào lượt gần nhất** — "bài thứ hai ấy" chưa giải được.
 6. **Không phát hiện mâu thuẫn giữa các bài** — xếp hạng theo độ mới chỉ *giảm
@@ -309,6 +356,14 @@ chép nguyên văn). Lựa chọn kiến trúc dựa trên số liệu, không p
    iPhone không nằm trong các câu được chọn (docs/07, mục 11).
 10. **Câu hỏi xác nhận bị định tuyến sai** — "...đúng không", "...phải không" hay
    bị intent classifier xếp nhầm, nên không tới được nhánh truy hồi.
+11. **Đường dự phòng gõ sai trả lời sai nhiều hơn một chút** — nó biến một phần
+   câu "từ chối" thành câu "trả lời", và không phải lần nào cũng đúng bài (trên
+   test: 7 → 8 câu sai ở tập gõ sai, 3 → 5 ở tập sạch). Bot có nói rõ "có thể bạn
+   gõ nhầm", nhưng người đọc vẫn cần kiểm tra lại. Đánh đổi có chủ đích, đo ở
+   [docs/09](docs/09-cai-thien-mo-hinh.md).
+12. **Nhãn vàng của tập đánh giá cũ dần khi kho lớn lên** — bài mới hơn về cùng
+   sự việc cũng trả lời đúng câu hỏi nhưng không nằm trong nhãn, nên Recall đo
+   trên kho đã crawl thêm **thấp hơn thực tế**.
 
 Phân tích chi tiết các lỗi thật kèm nguyên nhân: xem **Phần J** của notebook.
 

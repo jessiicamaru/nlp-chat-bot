@@ -263,9 +263,25 @@ $env:PYTHONIOENCODING = "utf-8"
 - Bài đứng đầu **không liên quan** → hồi quy thật (thường do bài mới làm loãng từ khóa). Khôi phục
   kho từ bản sao lưu (mục 11) và báo lại.
 
-Các kiểm thử không gắn bài cụ thể (chuẩn hóa teencode, từ chối câu ngoài phạm vi, đọc ngày đăng,
-tin mâu thuẫn trên dữ liệu giả lập...) **phải luôn đạt**. Nếu một trong số đó không đạt thì đó là
-lỗi thật.
+**Kiểm thử phụ thuộc NGÀY của kho — `tin_moi_phu_dinh_tin_cu`.**
+
+> **Lịch sử.** Lần crawl thật đầu tiên (14/09/2026, +151 bài) làm kiểm thử này **không đạt**, và đó
+> là một lỗi thiết kế thật chứ không phải lỗi dữ liệu: độ mới khi đó tính theo ngày đăng mới nhất
+> **của cả kho**, nên crawl thêm bài không liên quan cũng làm thứ hạng của câu hỏi khác đi.
+> Đã sửa — mốc nay tính theo các bài **đang cạnh tranh** cho chính câu hỏi đó (docs/05, docs/09).
+> Kiểm thử này vì vậy **phải luôn đạt trở lại**, kể cả sau nhiều lần crawl.
+
+Có thêm một kiểm thử canh đúng tính chất đó: `crawl_them_bai_khong_lien_quan_khong_doi_thu_hang` —
+thêm một bài không liên quan có ngày đăng ở tương lai **không được** làm đổi thứ hạng. Nếu kiểm thử
+này không đạt sau khi cập nhật dữ liệu, đừng chỉnh tham số: đó là dấu hiệu phần tính độ mới bị hỏng.
+
+**Kiểm thử đường dự phòng gõ sai** (`go_sai_chinh_ta_van_tim_duoc`) gắn với bài "Chiêm nghiệm từ cuộc
+thám hiểm Sơn Đoòng" (crawl ngày 14/09/2026). Nếu kho không còn bài đó, kiểm thử tự bỏ qua và in chú
+thích, không báo lỗi giả.
+
+Các kiểm thử không gắn bài cụ thể **và** không phụ thuộc ngày (regex, chuẩn hóa teencode, giữ hệ quy
+chiếu dấu, so khớp chuyên mục theo âm tiết, snippet không lặp câu, đầu vào rỗng, đọc ngày VnExpress,
+cache tính lại độ mới) **phải luôn đạt**. Nếu một trong số đó không đạt thì đó là lỗi thật.
 
 ---
 
@@ -282,7 +298,14 @@ $env:PYTHONIOENCODING = "utf-8"
 Script dò lại tham số trên DEV, in bảng so sánh, và **cảnh báo nếu `src/config.py` khác tham số vừa
 dò**. Chỉ cập nhật `config.py` khi tham số dò trên DEV thay đổi, rồi chạy lại mục 4.3–4.5.
 
-Ba lưu ý bắt buộc:
+Nếu vừa crawl thêm nhiều dữ liệu, nên sinh lại tập truy vấn gõ sai trước khi dò, vì chúng được sinh
+từ tập dev/test:
+
+```powershell
+.venv\Scripts\python.exe tools\build_typo_sets.py
+```
+
+Bốn lưu ý bắt buộc:
 
 1. **Nhãn đúng của tập đánh giá là URL bài báo trong kho gốc.** Khi có bài mới về cùng sự việc,
    truy vấn có thể trả về bài mới (đúng về nội dung) nhưng bị chấm là sai. Recall đo trên kho đã
@@ -291,6 +314,9 @@ Ba lưu ý bắt buộc:
    `evaluate.py` in cả phần TEST chỉ để báo cáo.
 3. Đừng chạy `evaluate.py` trên nhánh `main` rồi commit: nó ghi lại `data/eval/tuned_params.json`
    và `test_results.json` của bản nộp.
+4. **Ngưỡng phải dò trên đúng phân bố câu hỏi người dùng thật sự gõ.** Tập câu ngoài phạm vi của dev
+   có thêm biến thể **không dấu**, vì câu không dấu dễ lọt hơn câu có dấu. Nếu bổ sung câu mẫu, chỉ
+   bổ sung vào DEV — thêm vào TEST là làm hỏng phép đo (docs/09, mục 6).
 
 ---
 
