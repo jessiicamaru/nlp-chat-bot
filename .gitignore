@@ -10,3 +10,7 @@ data/raw/crawl_errors.csv
 models/retriever_index.joblib
 dist/
 rag_out/
+
+# Runbook cập nhật dữ liệu hằng ngày (tools/daily_update.ps1)
+logs/
+data/raw/backups/

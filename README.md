@@ -72,9 +72,10 @@ python tools/build_eval_sets.py     # tái tạo tập dev/test (seed cố đị
 python src/normalizer.py            # học + đánh giá từ điển teencode (ERR)
 python src/generator.py             # thí nghiệm sinh văn bản n-gram
 
-# Thu thập thêm dữ liệu
-python src/crawler.py --per-category 45
+# Thu thập thêm dữ liệu + cập nhật mô hình (xem runbook docs/08 TRƯỚC khi chạy)
+powershell -ExecutionPolicy Bypass -File tools\daily_update.ps1 -RestartApi
 python src/crawler.py --per-category 20 --only "Công nghệ" "Thể thao"
+python tools/rebuild_index.py       # dựng lại index + kiểm tra khói sau khi kho đổi
 ```
 
 ## Báo cáo
@@ -207,7 +208,8 @@ final-project/
 │   ├── 04-thi-nghiem-sinh-van-ban.md
 │   ├── 05-do-moi-va-thong-tin-loi-thoi.md
 │   ├── 06-danh-gia-trung-thuc-va-bm25.md
-│   └── 07-rag-phogpt.md
+│   ├── 07-rag-phogpt.md
+│   └── 08-runbook-cap-nhat-du-lieu.md   # crawl hằng ngày + cập nhật mô hình
 ├── tests/test_vectorizer.py         # TF-IDF vs sklearn, BM25 vs tham chiếu
 ├── tests/test_chatbot.py            # 21 kiểm thử hồi quy
 ├── tests/test_rag.py                # 29 kiểm thử RAG (không cần GPU)
@@ -216,6 +218,8 @@ final-project/
 ├── tools/build_rag_notebook.py      # sinh notebook RAG cho Colab
 ├── tools/make_colab_bundle.py       # đóng gói mã + dữ liệu cho Colab
 ├── tools/rescore_rag_run.py         # chấm lại kết quả Colab bằng mã hiện tại
+├── tools/daily_update.ps1           # cập nhật hằng ngày: sao lưu, crawl, dựng index, kiểm thử
+├── tools/rebuild_index.py           # dựng lại index + kiểm tra khói
 └── requirements.txt
 ```
 
