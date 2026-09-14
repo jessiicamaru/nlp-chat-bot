@@ -170,6 +170,7 @@ function addMessage(text, who, meta){
       `<span class="route-${meta.route}"><b>${routeLabel}</b></span>` +
       (meta.intent ? `<span>ý định: <b>${escapeHtml(meta.intent)}</b> (${meta.confidence.toFixed(2)})</span>` : '') +
       (meta.sources && meta.sources.length ? `<span>nguồn khớp: <b>${meta.sources.length}</b></span>` : '') +
+      (meta.sources && meta.sources.length && meta.sources[0].match === 'fuzzy' ? `<span><b>khớp gần đúng</b> (gõ sai?)</span>` : '') +
       (meta.entities && meta.entities.category ? `<span>chuyên mục: <b>${escapeHtml(meta.entities.category)}</b></span>` : '');
     bubble.appendChild(m);
   }

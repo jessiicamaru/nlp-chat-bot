@@ -114,6 +114,38 @@ def fold_tokens(tokens: list[str]) -> list[str]:
     return out
 
 
+def fold_for_chars(text) -> str:
+    """Chuẩn bị chuỗi cho chỉ mục n-gram KÝ TỰ: chữ thường, bỏ dấu, bỏ dấu câu.
+
+        "Thám hiểm Sơn Đoòng 'phút 89'" -> "tham hiem son doong phut 89"
+
+    Bỏ dấu ở đây là CỐ Ý: lỗi gõ tiếng Việt rất hay rơi vào dấu (quên gạch
+    của Đ, nhầm dấu thanh). Gạch dưới của từ ghép đổi thành khoảng trắng để
+    n-gram tính theo từng âm tiết, giống cách người dùng gõ.
+    """
+    text = strip_accents(normalize_basic(text).lower())
+    text = remove_punctuation(text, keep_inner=True)
+    return text.replace("_", " ")
+
+
+@lru_cache(maxsize=1)
+def folded_stop_syllables() -> frozenset[str]:
+    """Stopword + từ khung, hạ xuống ÂM TIẾT KHÔNG DẤU.
+
+    Dùng cho chỉ mục n-gram ký tự, nơi mọi thứ đã bỏ dấu. Câu có dấu được lọc
+    stopword từ trước (CONFIG_RETRIEVAL), câu KHÔNG dấu thì không — `fold_query`
+    bỏ qua tách từ nên cũng bỏ qua lọc stopword. Hai đường vào vì thế lệch nhau,
+    và câu không dấu mang theo những âm tiết rỗng nghĩa như "hom nay", "the nao".
+    Với n-gram ký tự, các âm tiết đó đủ để một tiêu đề bất kỳ trông "na ná"
+    câu hỏi: "thoi tiet sao hoa hom nay" từng khớp "ASIAD 20 khởi tranh hôm nay"
+    (tests/test_chatbot.py).
+    """
+    words = set(load_stopwords()) | set(QUERY_FRAME_WORDS)
+    return frozenset(
+        piece for w in words for piece in strip_accents(w.lower()).split("_") if piece
+    )
+
+
 def fold_query(text: str) -> list[str]:
     """Chuyển câu hỏi KHÔNG DẤU thành list âm tiết, bỏ qua word segmentation."""
     text = normalize_basic(text).lower()

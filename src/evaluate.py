@@ -11,13 +11,18 @@ Cách làm mới:
 
   PHA 1 — DÒ TRÊN DEV (data/eval/dev.json)
     1. Intent: quét lưới (w_nb x ngưỡng)
-    2. Độ mới: quét lưới (nửa chu kỳ x alpha), RÀNG BUỘC CỨNG là ca tin mâu
-       thuẫn (data/eval/conflict_case.json) phải trả bài mới ở mọi cách hỏi
-    3. Ngưỡng truy hồi: quét lưới với độ mới đã chốt
-    (trước bước 2) Cách xếp hạng: TF-IDF hay BM25, và (k1, b) của BM25 —
-       so bằng MRR trên dev với độ mới TẮT, để đo đúng chất lượng xếp hạng.
+    2. Cách xếp hạng: TF-IDF hay BM25, và (k1, b) của BM25 — so bằng MRR trên
+       dev với độ mới TẮT, để đo đúng chất lượng xếp hạng.
+    3. Độ mới: quét lưới (mốc tham chiếu x nửa chu kỳ x alpha) với HAI RÀNG
+       BUỘC CỨNG (data/eval/conflict_case.json):
+         a. ca tin mâu thuẫn phải trả bài mới ở mọi cách hỏi
+         b. vẫn đúng như vậy sau khi thêm một bài KHÔNG liên quan có ngày đăng
+            xa trong tương lai — tức là crawl thêm dữ liệu không được làm đổi
+            thứ hạng (ràng buộc thêm sau lỗi crawl 14/09/2026, docs/09)
+    4. Ngưỡng truy hồi: quét lưới với độ mới đã chốt
+    5. Ngưỡng dự phòng gõ sai: quét trên dev + dev_typo + câu ngoài phạm vi
 
-  PHA 2 — BÁO CÁO TRÊN TEST (data/eval/test.json)
+  PHA 2 — BÁO CÁO TRÊN TEST (data/eval/test.json, data/eval/test_typo.json)
     Dùng ĐÚNG bộ tham số chốt ở pha 1. Không quay lại chỉnh gì sau khi xem
     kết quả test — nếu làm vậy thì test lại thành dev.
 
@@ -49,10 +54,13 @@ from config import (
     DATA_DIR,
     FRESHNESS_ALPHA,
     FRESHNESS_HALFLIFE_DAYS,
+    FRESHNESS_REFERENCE,
+    FUZZY_THRESHOLD,
     INTENT_THRESHOLD,
     INTENT_W_NB,
     RANKING_METHOD,
     RETRIEVAL_THRESHOLD,
+    TOP_K,
 )
 from dates import compute_recency
 from entities import expand_query, extract
@@ -65,9 +73,11 @@ TUNED_PATH = EVAL_DIR / "tuned_params.json"
 
 INTENT_W_GRID = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
 INTENT_TH_GRID = [0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50]
-HALFLIFE_GRID = [3.0, 7.0, 14.0, 30.0]
-ALPHA_GRID = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+FRESHNESS_REFERENCES = ["corpus", "candidates"]
+HALFLIFE_GRID = [1.0, 2.0, 3.0, 5.0, 7.0, 14.0, 30.0]
+ALPHA_GRID = [round(x, 1) for x in np.arange(0.0, 1.05, 0.1)]
 RETR_TH_GRID = [round(x, 3) for x in np.arange(0.06, 0.305, 0.005)]
+FUZZY_TH_GRID = [round(x, 2) for x in np.arange(0.30, 0.805, 0.01)]
 BM25_K1_GRID = [0.6, 0.9, 1.2, 1.5, 2.0, 3.0, 5.0, 8.0]
 BM25_B_GRID = [0.25, 0.5, 0.75, 0.9]
 
@@ -114,6 +124,14 @@ def fmt_rate(k: int, n: int) -> str:
 
 def load_split(name: str) -> dict:
     return json.loads((EVAL_DIR / f"{name}.json").read_text(encoding="utf-8"))
+
+
+def load_typo_split(name: str) -> dict:
+    """dev_typo / test_typo (tools/build_typo_sets.py). Rỗng nếu chưa sinh."""
+    path = EVAL_DIR / f"{name}_typo.json"
+    if not path.exists():
+        return {"retrieval": []}
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 # ---------------------------------------------------------------------------
@@ -186,11 +204,13 @@ def tune_intent(dev: dict) -> tuple[float, float]:
 # Truy hồi
 # ---------------------------------------------------------------------------
 def ranks_for(retriever: NewsRetriever, cases: list[dict], k: int = 10) -> list[int | None]:
+    """Hạng của bài đúng đầu tiên trong top-k (None nếu không có), KHÔNG xét ngưỡng."""
+    url_of = retriever.df["url"].tolist()
     out = []
     for c in cases:
         gold = set(c["gold_urls"])
-        res = retriever.search(retrieval_query(c["query"]), top_k=k, min_score=0.0)
-        out.append(next((i for i, r in enumerate(res, 1) if r.url in gold), None))
+        ranked = retriever.rank(retrieval_query(c["query"]), top_k=k)
+        out.append(next((i for i, (d, _, _) in enumerate(ranked, 1) if url_of[d] in gold), None))
     return out
 
 
@@ -199,49 +219,76 @@ def mrr(ranks) -> float:
 
 
 def conflict_ok(retriever: NewsRetriever, case: dict) -> bool:
+    url_of = retriever.df["url"].tolist()
     for q in case["queries"]:
-        res = [r for r in retriever.search(q, top_k=10, min_score=0.0)
-               if "example.test" in r.url]
-        if not res or res[0].url != case["expected_url"]:
+        res = [url_of[d] for d, _, _ in retriever.rank(q, top_k=10) if "example.test" in url_of[d]]
+        if not res or res[0] != case["expected_url"]:
             return False
     return True
 
 
-def set_freshness(retriever: NewsRetriever, halflife: float, alpha: float) -> None:
+def conflict_retrievers(df: pd.DataFrame, case: dict) -> tuple[NewsRetriever, NewsRetriever]:
+    """(corpus + 2 bài mâu thuẫn, như trên + 1 bài không liên quan ở tương lai)."""
+    arts = pd.DataFrame(case["articles"])
+    future = {k: v for k, v in case["future_unrelated_article"].items() if k != "note"}
+    now = NewsRetriever().fit(pd.concat([df, arts], ignore_index=True))
+    later = NewsRetriever().fit(pd.concat([df, arts, pd.DataFrame([future])], ignore_index=True))
+    return now, later
+
+
+def set_freshness(retriever: NewsRetriever, halflife: float, alpha: float,
+                  reference: str | None = None) -> None:
     retriever.freshness_halflife = halflife
     retriever.freshness_alpha = alpha
+    if reference is not None:
+        retriever.freshness_reference = reference
     retriever.recency = compute_recency(retriever.published_dates, half_life_days=halflife)
 
 
 def tune_freshness(dev: dict, retriever: NewsRetriever,
-                   conflict_retriever: NewsRetriever, case: dict) -> tuple[float, float]:
-    hr("PHA 1.3 — DÒ ĐỘ MỚI TRÊN DEV (nửa chu kỳ x alpha)")
-    print("Mục tiêu: MRR cao nhất trên dev. RÀNG BUỘC CỨNG: ca tin mâu thuẫn phải đúng.\n")
-    print(f"{'half-life':>9} {'alpha':>6} {'R@1':>7} {'MRR':>7}  ca mâu thuẫn")
-    print("-" * 46)
+                   conflict_now: NewsRetriever, conflict_later: NewsRetriever,
+                   case: dict) -> tuple[str, float, float]:
+    hr("PHA 1.3 — DÒ ĐỘ MỚI TRÊN DEV (mốc tham chiếu x nửa chu kỳ x alpha)")
+    print("Mục tiêu: MRR cao nhất trên dev, với HAI RÀNG BUỘC CỨNG:")
+    print("  (a) ca tin mâu thuẫn trả bài mới")
+    print("  (b) vẫn đúng sau khi thêm 1 bài KHÔNG liên quan có ngày đăng ở tương lai")
+    print("Ô bảng = MRR dev; '*' = qua (a) và (b), '~' = chỉ qua (a), ' ' = trượt (a)\n")
 
-    best = None
-    for hl in HALFLIFE_GRID:
-        for a in ALPHA_GRID:
-            set_freshness(retriever, hl, a)
-            set_freshness(conflict_retriever, hl, a)
-            ranks = ranks_for(retriever, dev["retrieval"])
-            r1 = sum(1 for r in ranks if r == 1) / len(ranks)
-            m = mrr(ranks)
-            ok = conflict_ok(conflict_retriever, case)
-            print(f"{hl:>9.0f} {a:>6.1f} {r1:>6.1%} {m:>7.3f}  {'ĐÚNG' if ok else 'sai'}")
-            if ok:
-                # Hòa điểm -> chọn alpha nhỏ hơn: thay đổi ít hơn so với TF-IDF thuần.
-                cand = (round(m, 6), -a, -abs(hl - 7), hl, a)
-                if best is None or cand > best:
-                    best = cand
+    rows = []
+    for ref in FRESHNESS_REFERENCES:
+        print(f"[mốc = {ref}]")
+        print(f"{'hl':>4} " + " ".join(f"{a:>7.1f}" for a in ALPHA_GRID))
+        for hl in HALFLIFE_GRID:
+            cells = []
+            for a in ALPHA_GRID:
+                for r in (retriever, conflict_now, conflict_later):
+                    set_freshness(r, hl, a, ref)
+                ranks = ranks_for(retriever, dev["retrieval"])
+                m = mrr(ranks)
+                r1 = sum(1 for x in ranks if x == 1) / len(ranks)
+                ok_now = conflict_ok(conflict_now, case)
+                ok_later = ok_now and conflict_ok(conflict_later, case)
+                rows.append((ref, hl, a, r1, m, ok_now, ok_later))
+                cells.append(f"{m:.3f}{'*' if ok_later else '~' if ok_now else ' '}")
+            print(f"{hl:>4.0f} " + " ".join(f"{c:>7}" for c in cells))
+        print()
 
-    if best is None:
-        print("\nKHÔNG có cấu hình nào vừa đúng ca mâu thuẫn -> giữ giá trị trong config.")
-        return FRESHNESS_HALFLIFE_DAYS, FRESHNESS_ALPHA
-    _, _, _, hl, a = best
-    print(f"\n-> chốt nửa chu kỳ = {hl:g} ngày, alpha = {a}")
-    return hl, a
+    off = next(x for x in rows if x[2] == 0.0)
+    print(f"Tham chiếu — độ mới TẮT (alpha=0): R@1 {off[3]:.1%}, MRR {off[4]:.3f}")
+    for ref in FRESHNESS_REFERENCES:
+        n_ok = sum(1 for x in rows if x[0] == ref and x[6])
+        print(f"   mốc {ref:<10}: {n_ok} cấu hình qua cả hai ràng buộc")
+
+    feasible = [x for x in rows if x[6]]
+    if not feasible:
+        print("\nKHÔNG có cấu hình nào qua cả hai ràng buộc -> giữ giá trị trong config.")
+        return FRESHNESS_REFERENCE, FRESHNESS_HALFLIFE_DAYS, FRESHNESS_ALPHA
+    # Hòa điểm -> alpha nhỏ hơn (ít lệch khỏi TF-IDF thuần), rồi nửa chu kỳ gần 7.
+    best = max(feasible, key=lambda x: (round(x[4], 6), -x[2], -abs(x[1] - 7)))
+    ref, hl, a, r1, m = best[:5]
+    print(f"\n-> chốt mốc = {ref}, nửa chu kỳ = {hl:g} ngày, alpha = {a}"
+          f"  (dev: R@1 {r1:.1%}, MRR {m:.3f})")
+    return ref, hl, a
 
 
 def tune_ranking(dev: dict, retriever: NewsRetriever) -> tuple[str, float, float]:
@@ -377,9 +424,99 @@ def tune_retrieval_threshold(dev: dict, retriever: NewsRetriever) -> float:
 
 
 # ---------------------------------------------------------------------------
+# Dự phòng gõ sai
+# ---------------------------------------------------------------------------
+def fallback_candidates(retriever: NewsRetriever, cases: list[dict], key: str) -> tuple[list, list]:
+    """Với từng câu: kết quả đường CHÍNH, và (nếu bị từ chối) ứng viên dự phòng.
+
+    Mô phỏng đúng search() với TOP_K của bot: câu trả lời là bài ĐẦU TIÊN trong
+    top-k (theo điểm xếp hạng) có điểm chấp nhận đạt ngưỡng.
+
+    Trả (outcome, fuzzy) — outcome ∈ {"correct", "wrong", "refused"} ở ngưỡng
+    hiện hành của retriever; fuzzy = danh sách (điểm chấp nhận, đúng bài không)
+    của top-k đường dự phòng, chỉ cho câu bị từ chối. Câu ngoài phạm vi không có
+    gold_urls nên "đúng bài" luôn là False.
+    """
+    url_of = retriever.df["url"].tolist()
+    outcomes, fuzzy = [], []
+    for c in cases:
+        q = retrieval_query(c[key])
+        gold = set(c.get("gold_urls", []))
+        hit = next((d for d, _, acc in retriever.rank(q, top_k=TOP_K)
+                    if acc >= retriever.threshold), None)
+        if hit is not None:
+            outcomes.append("correct" if url_of[hit] in gold else "wrong")
+            fuzzy.append(None)
+        else:
+            outcomes.append("refused")
+            fuzzy.append([(acc, url_of[d] in gold)
+                          for d, _, acc in retriever.rank(q, top_k=TOP_K, fuzzy=True)])
+    return outcomes, fuzzy
+
+
+def fuzzy_table(outcomes, fuzzy, th: float | None) -> Counter:
+    """Đếm correct / wrong / refused sau khi áp đường dự phòng với ngưỡng th."""
+    counts = Counter()
+    for o, cands in zip(outcomes, fuzzy):
+        pick = (None if o != "refused" or th is None
+                else next((ok for acc, ok in cands if acc >= th), None))
+        if pick is None:
+            counts[o] += 1
+        else:
+            counts["correct" if pick else "wrong"] += 1
+    return counts
+
+
+def tune_fuzzy_threshold(dev: dict, dev_typo: dict, retriever: NewsRetriever) -> float | None:
+    hr("PHA 1.5 — DÒ NGƯỠNG DỰ PHÒNG GÕ SAI TRÊN DEV (+ dev_typo)")
+    if not dev_typo["retrieval"]:
+        print("Chưa có data/eval/dev_typo.json (tools/build_typo_sets.py) -> giữ config.")
+        return FUZZY_THRESHOLD
+    in_cases = dev["retrieval"] + dev_typo["retrieval"]
+    out_in, fz_in = fallback_candidates(retriever, in_cases, "query")
+    out_oos, fz_oos = fallback_candidates(retriever, dev["out_of_scope"], "text")
+    n_in, n_oos = len(in_cases), len(dev["out_of_scope"])
+
+    def summary(th):
+        c_in, c_oos = fuzzy_table(out_in, fz_in, th), fuzzy_table(out_oos, fz_oos, th)
+        leaked = n_oos - c_oos["refused"]
+        score = (c_in["correct"] / n_in + (n_oos - leaked) / n_oos) / 2
+        return score, c_in, leaked
+
+    base_score, base_in, base_leak = summary(None)
+    print("Mục tiêu giống PHA 1.4: TB(trả lời ĐÚNG trên câu trong phạm vi, chặn đúng ngoài phạm vi).")
+    print("Hòa điểm -> ít câu trả SAI hơn, rồi ngưỡng CAO hơn (dự phòng là tín hiệu yếu hơn).")
+    print(f"Câu trong phạm vi: {n_in} (dev {len(dev['retrieval'])} + dev_typo "
+          f"{len(dev_typo['retrieval'])}); ngoài phạm vi: {n_oos}\n")
+    print(f"{'ngưỡng':>7} {'đúng':>6} {'sai':>5} {'từ chối':>8} {'lọt':>5} {'TB':>7}")
+    print("-" * 44)
+    print(f"{'tắt':>7} {base_in['correct']:>6} {base_in['wrong']:>5} {base_in['refused']:>8} "
+          f"{base_leak:>5} {base_score:>7.1%}")
+
+    best = None
+    for th in FUZZY_TH_GRID:
+        score, c_in, leaked = summary(th)
+        if round(th * 100) % 5 == 0:
+            print(f"{th:>7.2f} {c_in['correct']:>6} {c_in['wrong']:>5} {c_in['refused']:>8} "
+                  f"{leaked:>5} {score:>7.1%}")
+        cand = (round(score, 6), -c_in["wrong"], th)
+        if best is None or cand > best:
+            best = cand
+
+    if best[0] <= round(base_score, 6):
+        print("\n-> dự phòng KHÔNG cải thiện trên dev: TẮT (fuzzy_threshold = None)")
+        return None
+    th = best[2]
+    _, c_in, leaked = summary(th)
+    print(f"\n-> chốt FUZZY_THRESHOLD = {th:.2f}  (dev: đúng {base_in['correct']} -> "
+          f"{c_in['correct']}, sai {base_in['wrong']} -> {c_in['wrong']}, lọt {leaked})")
+    return th
+
+
+# ---------------------------------------------------------------------------
 # PHA 2 — báo cáo trên TEST
 # ---------------------------------------------------------------------------
-def report_test(test: dict, params: dict, retriever: NewsRetriever) -> dict:
+def report_test(test: dict, test_typo: dict, params: dict, retriever: NewsRetriever) -> dict:
     hr("PHA 2 — BÁO CÁO TRÊN TEST (tham số đã chốt trên dev, KHÔNG chỉnh thêm)")
     print(json.dumps(params, ensure_ascii=False))
     results: dict = {}
@@ -456,10 +593,39 @@ def report_test(test: dict, params: dict, retriever: NewsRetriever) -> dict:
         if r is not None and r.base_score >= params["retrieval_threshold"]:
             print(f"     LỌT: {x['text']!r} -> {r.base_score:.3f} {r.title[:44]}")
     results["oos_blocked"] = (blocked, len(oos))
+
+    # ---- Dự phòng gõ sai: đo cả khi TẮT và BẬT, trên câu sạch, câu gõ sai và
+    # câu ngoài phạm vi — cái giá của việc cứu câu gõ sai là có thể lọt thêm.
+    fth = params["fuzzy_threshold"]
+    print(f"\n[Dự phòng gõ sai — FUZZY_THRESHOLD = {fth}]")
+    print(f"  {'tập':<22} {'dự phòng':>8} {'đúng':>6} {'sai':>5} {'từ chối':>8}")
+    groups = [("test (sạch)", test["retrieval"], "query"),
+              ("test_typo (gõ sai)", test_typo["retrieval"], "query"),
+              ("ngoài phạm vi", test["out_of_scope"], "text")]
+    results["fuzzy"] = {}
+    for name, cases, key in groups:
+        if not cases:
+            continue
+        outs, fz = fallback_candidates(retriever, cases, key)
+        row = {}
+        for label, th in (("tắt", None), ("bật", fth)):
+            c = fuzzy_table(outs, fz, th)
+            row[label] = {"correct": c["correct"], "wrong": c["wrong"], "refused": c["refused"],
+                          "n": len(cases)}
+            print(f"  {name:<22} {label:>8} {c['correct']:>6} {c['wrong']:>5} {c['refused']:>8}")
+        results["fuzzy"][name] = row
+        if key == "query":
+            on = row["bật"]
+            print(f"     -> trả lời đúng: {fmt_rate(row['tắt']['correct'], len(cases))}"
+                  f"  ->  {fmt_rate(on['correct'], len(cases))}")
+        else:
+            on_blocked = row["bật"]["refused"]
+            print(f"     -> chặn đúng khi bật dự phòng: {fmt_rate(on_blocked, len(cases))}")
+            results["oos_blocked_with_fuzzy"] = (on_blocked, len(cases))
     return results
 
 
-def report_end_to_end(test: dict, params: dict) -> dict:
+def report_end_to_end(test: dict, test_typo: dict, params: dict) -> dict:
     """Đo HỆ THỐNG hoàn chỉnh: gọi bot.respond() như người dùng thật.
 
     Khác với số liệu thành phần ở trên, phần này tính cả việc intent classifier
@@ -477,6 +643,9 @@ def report_end_to_end(test: dict, params: dict) -> dict:
         ranking=params["ranking"],
         bm25_k1=params["bm25_k1"],
         bm25_b=params["bm25_b"],
+        freshness_reference=params["freshness_reference"],
+        fuzzy_threshold=params["fuzzy_threshold"],
+        use_fuzzy=params["fuzzy_threshold"] is not None,
     ).train()
 
     ok = 0
@@ -505,31 +674,52 @@ def report_end_to_end(test: dict, params: dict) -> dict:
     print(f"  Câu ngoài phạm vi -> bot từ chối           : {fmt_rate(refused, len(test['out_of_scope']))}")
     for t, route, intent in leaked:
         print(f"     KHÔNG từ chối: {t!r} -> route={route} intent={intent}")
-    return {"e2e_answer": (ok, n), "e2e_refuse": (refused, len(test["out_of_scope"]))}
+    out = {"e2e_answer": (ok, n), "e2e_refuse": (refused, len(test["out_of_scope"]))}
+
+    if test_typo["retrieval"]:
+        typo_ok, typo_wrong, fuzzy_used = 0, 0, 0
+        for c in test_typo["retrieval"]:
+            bot.reset()
+            r = bot.respond(c["query"])
+            if r.results:
+                typo_ok += r.results[0].url in set(c["gold_urls"])
+                typo_wrong += r.results[0].url not in set(c["gold_urls"])
+                fuzzy_used += r.results[0].match == "fuzzy"
+        nt = len(test_typo["retrieval"])
+        print(f"  Câu gõ sai -> bài đứng đầu là bài đúng      : {fmt_rate(typo_ok, nt)}")
+        print(f"     trả bài sai: {typo_wrong}; trong số câu có trả lời, {fuzzy_used} câu đi đường dự phòng")
+        out["e2e_typo_answer"] = (typo_ok, nt)
+        out["e2e_typo_wrong"] = (typo_wrong, nt)
+    return out
 
 
 # ---------------------------------------------------------------------------
 def main() -> int:
     dev, test = load_split("dev"), load_split("test")
+    dev_typo, test_typo = load_typo_split("dev"), load_typo_split("test")
     case = json.loads((EVAL_DIR / "conflict_case.json").read_text(encoding="utf-8"))
     print(f"DEV : {len(dev['retrieval'])} truy hồi, {len(dev['out_of_scope'])} ngoài phạm vi, "
           f"{len(dev['intent'])} intent")
     print(f"TEST: {len(test['retrieval'])} truy hồi, {len(test['out_of_scope'])} ngoài phạm vi, "
           f"{len(test['intent'])} intent")
+    print(f"GÕ SAI: dev_typo {len(dev_typo['retrieval'])} câu, test_typo {len(test_typo['retrieval'])} câu")
 
     df = pd.read_csv(CORPUS_RAW_PATH).dropna(subset=["title", "text"]).reset_index(drop=True)
+    print(f"CORPUS: {len(df)} bài ({CORPUS_RAW_PATH.name})")
     retriever = NewsRetriever().fit_cached(df)
-    df_c = pd.concat([df, pd.DataFrame(case["articles"])], ignore_index=True)
-    conflict_retriever = NewsRetriever().fit(df_c)
+    conflict_now, conflict_later = conflict_retrievers(df, case)
 
     # ---------------- PHA 1: DEV
     w_nb, intent_th = tune_intent(dev)
     ranking, bm25_k1, bm25_b = tune_ranking(dev, retriever)
-    conflict_retriever.set_bm25(bm25_k1, bm25_b, ranking=ranking)
-    halflife, alpha = tune_freshness(dev, retriever, conflict_retriever, case)
-    set_freshness(retriever, halflife, alpha)
+    for r in (conflict_now, conflict_later):
+        r.set_bm25(bm25_k1, bm25_b, ranking=ranking)
+    reference, halflife, alpha = tune_freshness(dev, retriever, conflict_now, conflict_later, case)
+    set_freshness(retriever, halflife, alpha, reference)
     retr_th = tune_retrieval_threshold(dev, retriever)
     retriever.threshold = retr_th
+    fuzzy_th = tune_fuzzy_threshold(dev, dev_typo, retriever)
+    retriever.fuzzy_threshold = fuzzy_th
 
     params = {
         "intent_w_nb": w_nb,
@@ -539,7 +729,9 @@ def main() -> int:
         "bm25_b": bm25_b,
         "freshness_halflife": halflife,
         "freshness_alpha": alpha,
+        "freshness_reference": reference,
         "retrieval_threshold": retr_th,
+        "fuzzy_threshold": fuzzy_th,
     }
     TUNED_PATH.write_text(json.dumps(params, ensure_ascii=False, indent=1), encoding="utf-8")
 
@@ -548,15 +740,18 @@ def main() -> int:
         "freshness_halflife": FRESHNESS_HALFLIFE_DAYS, "freshness_alpha": FRESHNESS_ALPHA,
         "retrieval_threshold": RETRIEVAL_THRESHOLD,
         "ranking": RANKING_METHOD, "bm25_k1": BM25_K1, "bm25_b": BM25_B,
+        "freshness_reference": FRESHNESS_REFERENCE, "fuzzy_threshold": FUZZY_THRESHOLD,
     }
     def _differs(a, b):
-        return a != b if isinstance(a, str) or isinstance(b, str) else abs(a - b) > 1e-9
+        if a is None or b is None or isinstance(a, str) or isinstance(b, str):
+            return a != b
+        return abs(a - b) > 1e-9
     diffs = {k: (current[k], v) for k, v in params.items() if _differs(current[k], v)}
 
     # ---------------- PHA 2: TEST
-    results = report_test(test, params, retriever)
+    results = report_test(test, test_typo, params, retriever)
     results["ranking_comparison"] = compare_ranking_on_test(test, retriever, params)
-    results.update(report_end_to_end(test, params))
+    results.update(report_end_to_end(test, test_typo, params))
 
     hr("TÓM TẮT")
     print("Tham số chốt trên DEV:", json.dumps(params, ensure_ascii=False))

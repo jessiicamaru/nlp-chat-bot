@@ -465,6 +465,42 @@ def main() -> int:
     oos_dev_new, oos_test = split([{"text": t, "style": s} for t, s in NEW_OUT_OF_SCOPE])
     int_dev_new, int_test = split([{"text": t, "expected": e} for t, e in NEW_INTENT])
 
+    dev_oos = ([{"text": t, "style": "cũ", "origin": "cũ"} for t in OLD_OUT_OF_SCOPE]
+               + oos_dev_new)
+
+    # Thêm biến thể KHÔNG DẤU của chính các câu ngoài phạm vi trong DEV.
+    #
+    # Vì sao cần: ngưỡng phải được dò trên đúng phân bố truy vấn mà bot thực sự
+    # nhận — lập luận đã dùng khi dò RETRIEVAL_THRESHOLD. Tập ngoài phạm vi cũ
+    # toàn câu CÓ DẤU, nên không phát hiện được rằng câu không dấu dễ lọt hơn:
+    # bỏ dấu làm hai câu khác nhau trông giống nhau hơn, và chỉ mục n-gram ký tự
+    # (docs/09) vốn chạy trên bản đã bỏ dấu. Một ca thật lọt qua vì lỗ hổng này:
+    # "thoi tiet sao hoa hom nay" (tests/test_chatbot.py).
+    #
+    # CHỈ sinh từ câu của DEV, không bao giờ từ TEST — nếu không, tập test sẽ có
+    # "anh em sinh đôi" nằm trong tập dò, và số liệu test thành lạc quan giả.
+    # Hạt giống riêng, đặt SAU khi đã chia dev/test, nên test.json không đổi.
+    # Các câu ngoài phạm vi dùng trong kiểm thử hồi quy (tests/test_chatbot.py).
+    # Chúng là ca đã BIẾT là khó, nên chỗ của chúng là DEV: ngưỡng phải được dò
+    # sao cho chặn được đúng những ca này, thay vì để chúng chỉ nổ ở lúc chạy test.
+    have = {x["text"] for x in dev_oos}
+    dev_oos += [{"text": t, "style": s, "origin": "kiểm thử hồi quy"} for t, s in [
+        ("thoi tiet sao hoa hom nay", "không dấu"),
+        ("asdfgh qwerty zxcvb", "vô nghĩa"),
+    ] if t not in have]
+
+    oos_rng = random.Random(f"{SEED}-oos-unaccent")
+    seen = {x["text"] for x in dev_oos}
+    for x in list(dev_oos):
+        folded = strip_accents(x["text"]).lower()
+        # Bỏ qua câu vốn đã không dấu (danh sách cũ có sẵn vài câu như vậy),
+        # nếu không sẽ sinh ra bản sao y hệt và câu đó bị tính hai lần khi dò.
+        if folded == x["text"] or folded in seen or oos_rng.random() >= 0.4:
+            continue
+        seen.add(folded)
+        dev_oos.append({"text": folded, "style": "không dấu",
+                        "origin": "biến thể không dấu của câu dev"})
+
     dev = {
         "meta": {
             "split": "dev",
@@ -472,8 +508,7 @@ def main() -> int:
             "seed": SEED,
         },
         "retrieval": old_ret + ret_dev_new,
-        "out_of_scope": [{"text": t, "style": "cũ", "origin": "cũ"} for t in OLD_OUT_OF_SCOPE]
-                        + oos_dev_new,
+        "out_of_scope": dev_oos,
         "intent": [{"text": t, "expected": e, "origin": "cũ"} for t, e in OLD_INTENT]
                   + int_dev_new,
     }

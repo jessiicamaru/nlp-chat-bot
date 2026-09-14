@@ -217,6 +217,70 @@ def tin_moi_phu_dinh_tin_cu():
 
 
 @test
+def crawl_them_bai_khong_lien_quan_khong_doi_thu_hang():
+    """Lỗi (crawl 14/09/2026): mốc độ mới là ngày mới nhất của CẢ corpus, nên
+    thêm bài không liên quan làm mốc trượt đi và bot quay về trả bài Cát Linh cũ.
+    Nay mốc tính theo các bài đang cạnh tranh -> thêm bài ở tương lai xa không
+    được làm đổi kết quả (docs/09)."""
+    case = json.loads((config.DATA_DIR / "eval" / "conflict_case.json").read_text(encoding="utf-8"))
+    future = {k: v for k, v in case["future_unrelated_article"].items() if k != "note"}
+    base = pd.concat([CORPUS, pd.DataFrame(case["articles"])], ignore_index=True)
+    r_now = NewsRetriever().fit(base)
+    r_later = NewsRetriever().fit(pd.concat([base, pd.DataFrame([future])], ignore_index=True))
+    for q in case["queries"]:
+        now = [d for d, _, _ in r_now.rank(q, top_k=5)]
+        later = [d for d, _, _ in r_later.rank(q, top_k=5)]
+        assert now == later, (q, now, later)
+        top = [x for x in r_later.search(q, top_k=10, min_score=0.0) if "example.test" in x.url]
+        assert top and top[0].url == case["expected_url"], (q, [x.url for x in top])
+
+
+@test
+def rank_va_search_cung_mot_cach_tinh_diem():
+    """evaluate.py đo bằng rank(), bot trả lời bằng search() — hai bên phải khớp."""
+    r = bot().retriever
+    for q in ["giá xăng dầu tăng", "tin ve dao hai nam", "robot chó dẫn đường"]:
+        ranked = [d for d, _, _ in r.rank(q, top_k=3)]
+        searched = [x.doc_id for x in r.search(q, top_k=3, min_score=0.0)]
+        assert ranked == searched, (q, ranked, searched)
+
+
+# ---------------------------------------------------------------------------
+# Gõ sai chính tả (đường dự phòng n-gram ký tự)
+# ---------------------------------------------------------------------------
+SON_DOONG = CORPUS.loc[CORPUS["title"].str.contains("thám hiểm Sơn Đoòng", na=False), "url"]
+
+
+@test
+def go_sai_chinh_ta_van_tim_duoc():
+    """Lỗi người dùng báo: 'thám hiểm Sơn Dòng' bị từ chối (cosine 0.086 < 0.13)."""
+    if SON_DOONG.empty:
+        print("      (bỏ qua: corpus chưa có bài Sơn Đoòng ngày 14/09/2026)")
+        return
+    for q in ["thám hiểm Sơn Dòng", "tham hiem son dong"]:
+        r = bot().respond(q)
+        assert r.results and r.results[0].url == SON_DOONG.iloc[0], (q, r.route, r.text[:80])
+        assert r.results[0].match == "fuzzy" and "gõ nhầm" in r.text, (q, r.results[0].match)
+
+
+@test
+def go_dung_khong_di_duong_du_phong():
+    """Đường dự phòng chỉ chạy khi đường chính từ chối — câu gõ đúng giữ nguyên hành vi."""
+    r = bot().respond("tin về đảo hải nam")
+    assert r.results and r.results[0].url == URL_HAI_NAM
+    assert all(x.match == "exact" for x in r.results)
+    assert "gõ nhầm" not in r.text
+
+
+@test
+def tu_vo_nghia_khong_lot_qua_du_phong():
+    """N-gram ký tự khớp 'na ná' rất dễ — chuỗi vô nghĩa vẫn phải bị từ chối."""
+    for q in ["asdfgh qwerty zxcvb", "thoi tiet sao hoa hom nay", "kể một câu chuyện cười đi"]:
+        r = bot().respond(q)
+        assert r.route != "retrieval", (q, r.route, r.results[:1])
+
+
+@test
 def cache_tinh_lai_do_moi_theo_nua_chu_ky():
     """Lỗi: cache lưu sẵn recency; đổi nửa chu kỳ bị bỏ qua âm thầm."""
     r = NewsRetriever(freshness_halflife=1.0).fit_cached(CORPUS)

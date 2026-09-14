@@ -58,6 +58,26 @@ def make_ngrams(tokens: list[str], ngram_range: tuple[int, int] = (1, 1)) -> lis
     return grams
 
 
+def make_char_ngrams(text: str, n: int = 3) -> list[str]:
+    """Sinh n-gram KÝ TỰ trong phạm vi từng từ, có đệm khoảng trắng hai đầu.
+
+        "son dong" (n=3) -> " so" "son" "on " " do" "don" "ong" "ng "
+
+    Khớp đúng `analyzer="char_wb"` của sklearn (kiểm chứng trong
+    tests/test_vectorizer.py). Dùng cho chỉ mục chống gõ sai: "dong" và "doong"
+    là hai term khác hẳn nhau với TF-IDF mức từ, nhưng chung 3/4 n-gram ký tự.
+    Khoảng trắng đệm giúp n-gram ở đầu/cuối từ mang thông tin vị trí.
+    """
+    grams: list[str] = []
+    for word in text.split():
+        w = f" {word} "
+        if len(w) <= n:
+            grams.append(w)            # từ ngắn hơn n: đếm nguyên từ một lần
+            continue
+        grams.extend(w[i : i + n] for i in range(len(w) - n + 1))
+    return grams
+
+
 # ---------------------------------------------------------------------------
 # Count / Bag-of-Words
 # ---------------------------------------------------------------------------

@@ -169,7 +169,30 @@ QUERY_FRAME_WORDS = {
 # đã bị BÁC BỎ khi đo trên dev 112 câu: độ mới không cải thiện nhất quán, và
 # mọi cấu hình xử lý đúng ca tin mâu thuẫn đều thấp hơn nhẹ (MRR 0.957–0.964
 # so với 0.965 khi tắt). Độ mới là một ĐÁNH ĐỔI có chủ đích (docs/06, mục 4.1).
-FRESHNESS_ALPHA = 0.6
+#
+# 0.6 -> 0.3 (nhánh cap-nhat-du-lieu, docs/09): khi đổi mốc tham chiếu sang
+# "candidates" (xem FRESHNESS_REFERENCE) và dò lại trên corpus 532 bài, 0.3 là
+# alpha NHỎ NHẤT có MRR dev cao nhất mà vẫn qua cả hai ràng buộc cứng. Với 0.6,
+# một bài mới chỉ cần cosine bằng 62,5% bài đúng là đã chiếm hạng 1 — quá mạnh
+# để gọi là "phá thế hòa" khi corpus có thêm bài mới mỗi ngày.
+FRESHNESS_ALPHA = 0.3
+
+# Mốc tính tuổi bài báo khi chấm độ mới.
+#   "corpus"     : ngày đăng MỚI NHẤT của cả corpus (cách cũ).
+#   "candidates" : ngày đăng mới nhất trong các bài ĐANG CẠNH TRANH cho câu hỏi
+#                  này — những bài mà nếu được thưởng độ mới tối đa thì có thể
+#                  vượt lên hạng 1:  điểm x (1 + alpha) >= điểm cao nhất.
+#
+# Lỗi của "corpus" (phát hiện sau lần crawl 14/09/2026): mốc trượt theo bài mới
+# nhất của CẢ kho. Crawl thêm 151 bài không liên quan, mốc nhảy từ 10/09 lên
+# 14/09, hai bài Cát Linh (01/09 và 10/09) cùng "già" đi và chênh lệch hệ số
+# thưởng co lại — bot quay về trả bài cũ đã sai. Tức là THỨ HẠNG của một câu hỏi
+# phụ thuộc vào những bài chẳng liên quan gì tới nó. Không cặp (nửa chu kỳ,
+# alpha) nào sửa được: evaluate.py quét cả lưới, mode "corpus" không có cấu hình
+# nào qua được ràng buộc "thêm bài không liên quan ngày tương lai" (docs/09).
+# Với "candidates", thêm bài không liên quan không đổi thứ hạng — bất biến theo
+# thiết kế, không phải nhờ may mắn của tham số.
+FRESHNESS_REFERENCE = "candidates"
 
 # Nửa chu kỳ suy giảm: sau ngần này ngày, điểm độ mới còn một nửa.
 # 3 ngày (dò trên dev; lần dò cũ bị rò rỉ từng chọn 7). Đủ ngắn để hai bài cách
@@ -181,6 +204,35 @@ FRESHNESS_HALFLIFE_DAYS = 3.0
 
 # Thư mục cache index đã dựng (tránh phải tách từ lại 381 bài mỗi lần khởi động).
 INDEX_CACHE_PATH = MODELS_DIR / "retriever_index.joblib"
+
+
+# ------------------------------------------------- CHỐNG GÕ SAI CHÍNH TẢ --
+# Lỗi người dùng báo: "thám hiểm Sơn Dòng" bị từ chối, "Sơn Đoòng" thì trả lời
+# đúng. TF-IDF mức từ so khớp CHÍNH XÁC: "dòng" là một từ có thật (100/532 bài) còn
+# "đoòng" là term khác hẳn, nên cosine chỉ 0.086 < 0.13. Hạ ngưỡng không cứu
+# được — xuống 0.08 thì chặn đúng câu ngoài phạm vi trên dev rơi từ 100% còn 57%
+# (data/eval/test_report_v4.txt, PHA 1.4; docs/09).
+#
+# Cách sửa: chỉ mục THỨ BA gồm n-gram KÝ TỰ của TIÊU ĐỀ đã bỏ dấu, dùng như
+# ĐƯỜNG DỰ PHÒNG — chỉ chạy khi đường chính (mức từ) không có bài nào đạt
+# ngưỡng. Câu mà đường chính ĐÃ trả lời thì giữ nguyên kết quả; chỉ câu trước
+# đây bị TỪ CHỐI mới có thêm cơ hội (và có thêm rủi ro trả sai).
+#   "son dong" và "son doong" chung " so","son","on "," do","ong","ng "
+#
+# Điểm dự phòng = cosine mức từ + cosine n-gram ký tự  (thang [0, 2]).
+# Các lựa chọn được so trên dev (112 câu sạch + 112 câu gõ sai + 28 câu ngoài
+# phạm vi) bằng `python tools/compare_improvements.py` — trường đưa vào chỉ mục
+# x n x luật chấp nhận, mỗi thiết kế dò ngưỡng tốt nhất của riêng nó:
+#   chỉ tiêu đề,   n=3, cộng cosine từ -> cứu 36 câu, 0 trả sai, 0 lọt  <- chọn
+#   chỉ tiêu đề,   n=3, chỉ ký tự      -> cứu 34 câu, 1 trả sai, 0 lọt
+#   tiêu đề+mô tả, n=4, cộng cosine từ -> cứu 36 câu, 4 trả sai, 0 lọt
+#   cả bài,        n=4, chỉ ký tự      -> cứu 20 câu, 5 trả sai, 0 lọt
+# Tiêu đề cô đọng tên riêng cần tìm; thêm thân bài làm vector ký tự "đặc" lên và
+# mọi câu đều na ná nhau. Cộng thêm cosine mức từ luôn tốt hơn dùng một mình
+# n-gram ký tự: các từ GÕ ĐÚNG còn lại trong câu là bằng chứng độc lập.
+FUZZY_ENABLED = True
+FUZZY_CHAR_N = 3
+FUZZY_THRESHOLD = 0.53
 
 
 # ----------------------------------------------------------- CÁCH XẾP HẠNG --
@@ -195,6 +247,10 @@ INDEX_CACHE_PATH = MODELS_DIR / "retriever_index.joblib"
 # trên test BM25 còn kém nhẹ (MRR 0.943 vs 0.950). Giữ TF-IDF vì đơn giản hơn.
 # BM25_K1/B dưới đây là cấu hình BM25 tốt nhất trên dev, chỉ dùng khi đổi
 # RANKING_METHOD = "bm25".
+#
+# Dò lại trên corpus 532 bài (data/eval/test_report_v4.txt): kết luận không đổi —
+# BM25 tốt hơn 2 câu, kém hơn 4 câu, hòa 106 (p = 0.688); trên test MRR 0.915 so
+# với 0.940 của TF-IDF. Cấu hình BM25 tốt nhất trên dev đổi b 0.9 -> 0.75.
 RANKING_METHOD = "tfidf"
 BM25_K1 = 8.0
-BM25_B = 0.9
+BM25_B = 0.75

@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 from sklearn.feature_extraction.text import TfidfVectorizer as SkTfidf
 from sklearn.metrics.pairwise import cosine_similarity as sk_cosine
 
-from vectorizer import TfidfVectorizer, cosine_similarity, make_ngrams
+from vectorizer import TfidfVectorizer, cosine_similarity, make_char_ngrams, make_ngrams
 
 DOCS = [
     "xử_lý ngôn_ngữ tự_nhiên là một nhánh của trí_tuệ nhân_tạo",
@@ -200,6 +200,32 @@ def test_bm25():
         FAIL += 1
 
 
+def test_char_ngrams():
+    """N-gram ký tự (chỉ mục chống gõ sai) phải khớp analyzer="char_wb" của sklearn."""
+    global PASS, FAIL
+    print("\n--- n-gram ký tự (char_wb) ---")
+    texts = ["tham hiem son doong", "son dong", "a bo ca", "iphone 17 pro max", "  x  "]
+    for n in (2, 3, 4):
+        analyzer = SkTfidf(analyzer="char_wb", ngram_range=(n, n), lowercase=False).build_analyzer()
+        for t in texts:
+            ours, theirs = make_char_ngrams(t, n), analyzer(t)
+            if ours == theirs:
+                PASS += 1
+            else:
+                print(f"  [FAIL] n={n} {t!r}: {ours} != {theirs}")
+                FAIL += 1
+    print(f"  [PASS] make_char_ngrams khớp sklearn char_wb trên {len(texts) * 3} ca")
+
+    # TF-IDF trên n-gram ký tự dùng lại đúng lớp TfidfVectorizer, chỉ khác đầu vào.
+    docs = ["tham hiem son doong", "dong song cuu long", "gia ve tau cat linh"]
+    grams = [make_char_ngrams(d, 3) for d in docs]
+    ours = TfidfVectorizer(sublinear_tf=True).fit_transform(grams).toarray()
+    sk = SkTfidf(analyzer="char_wb", ngram_range=(3, 3), lowercase=False, sublinear_tf=True)
+    ref = sk.fit_transform(docs)
+    order = [sk.vocabulary_[g] for g in sorted(sk.vocabulary_)]
+    check("tfidf trên n-gram ký tự", ours, ref.toarray()[:, order])
+
+
 if __name__ == "__main__":
     print("=" * 74)
     print("ĐỐI CHIẾU TF-IDF TỰ CÀI ĐẶT  vs  scikit-learn")
@@ -213,6 +239,7 @@ if __name__ == "__main__":
 
     test_edge_cases()
     test_bm25()
+    test_char_ngrams()
 
     print("\n" + "=" * 74)
     print(f"KẾT QUẢ: {PASS} pass / {FAIL} fail")

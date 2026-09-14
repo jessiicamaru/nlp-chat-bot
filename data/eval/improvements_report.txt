@@ -1,0 +1,35 @@
+CORPUS: 532 bài; TOP_K = 3
+
+==============================================================================
+PHẦN A — CHỌN THIẾT KẾ CHỈ MỤC GÕ SAI (DEV + dev_typo + ngoài phạm vi)
+==============================================================================
+Đường chính: 170/224 câu trong phạm vi trả lời đúng, 48 câu bị từ chối; ngoài phạm vi lọt 0/36
+
+trường                          n luật                 ngưỡng  cứu  sai  lọt
+------------------------------------------------------------------------------
+tiêu đề                         3 chỉ n-gram ký tự       0.47   34    1    0
+tiêu đề                         3 cộng cosine mức từ     0.53   36    0    0
+tiêu đề                         4 chỉ n-gram ký tự       0.49   30    0    0
+tiêu đề                         4 cộng cosine mức từ     0.55   32    0    0
+tiêu đề + mô tả                 3 chỉ n-gram ký tự       0.39   32    2    1
+tiêu đề + mô tả                 3 cộng cosine mức từ     0.49   31    1    0
+tiêu đề + mô tả                 4 chỉ n-gram ký tự       0.38   33    3    0
+tiêu đề + mô tả                 4 cộng cosine mức từ     0.40   36    4    0
+cả bài (tiêu đề x3, mô tả x2)   3 chỉ n-gram ký tự       0.31   11    4    0
+cả bài (tiêu đề x3, mô tả x2)   3 cộng cosine mức từ     0.39   12    5    0
+cả bài (tiêu đề x3, mô tả x2)   4 chỉ n-gram ký tự       0.26   20    5    0
+cả bài (tiêu đề x3, mô tả x2)   4 cộng cosine mức từ     0.34   21    4    0
+
+==============================================================================
+PHẦN B — TRƯỚC / SAU TRÊN TEST (cùng corpus hiện tại, qua bot.respond)
+==============================================================================
+
+chỉ số                                     TRƯỚC (nộp bài)           SAU (hiện hành)
+------------------------------------------------------------------------------------
+R@1                                                109/122                   112/122
+MRR                                                  0.927                     0.940
+ca Cát Linh (kho hiện tại)                             SAI                      đúng
+ca Cát Linh (+ bài tương lai)                          SAI                      đúng
+câu sạch: đúng / sai                     90 / 5 (trên 122)        101 / 4 (trên 122)
+câu gõ sai: đúng / sai                   74 / 7 (trên 122)         86 / 8 (trên 122)
+ngoài phạm vi bị từ chối                             18/24                     18/24
