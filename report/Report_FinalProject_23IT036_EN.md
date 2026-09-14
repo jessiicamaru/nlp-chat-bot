@@ -308,7 +308,7 @@ constraint** when tuning freshness.
 | `preprocess.py` | NFC, segmentation (cached), stopwords, accent stripping, syllable folding | Lab 03 |
 | `normalizer.py` | Teencode lexicon learning; `prepare_user_text` shared by bot and evaluation | — |
 | `vectorizer.py` | BoW, n-grams, TF-IDF, L2, cosine, BM25 — from scratch | Lab 04 |
-| `intent_classifier.py` | Hand-written Multinomial NB + cosine-to-pattern signal | Lab 04 |
+| `intent_classifier.py` | Hand-written Multinomial NB + cosine-to-pattern signal | TF-IDF + cosine: Lab 04; **NB: outside the lab syllabus** |
 | `retriever.py` | Two-tier retrieval, two indexes, freshness, disk cache, explanations | Labs 01 + 04 |
 | `dates.py` | VnExpress date parsing, recency scores | — |
 | `entities.py` | NER + regex, category detection | Lab 01 |

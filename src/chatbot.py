@@ -12,7 +12,8 @@ Luồng xử lý một lượt chat:
     [1] entities.extract       NER + Regex + nhận diện chuyên mục (Lab 01)
         |
         v
-    [2] IntentClassifier       (TF-IDF + Naive Bayes tự cài đặt, Lab 03 + 04)
+    [2] IntentClassifier       TF-IDF (Lab 03 + 04) + Naive Bayes tự cài đặt
+        |                      (Naive Bayes là phần bổ sung, không thuộc lab nào)
         |
         +-- conf >= INTENT_THRESHOLD và action != retrieve
         |       --> thực thi action (reply / help / list_categories / stats /

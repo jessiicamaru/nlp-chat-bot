@@ -41,7 +41,11 @@ Chatbot trả lời câu hỏi về tin tức dựa trên kho bài báo VnExpres
 | **Lab 01** | `sent_tokenize`, `word_tokenize`, `ner`, Regex | Tách câu để chọn snippet; NER + Regex trích thực thể (`entities.py`) |
 | **Lab 02** | Crawl web bằng `requests` + `BeautifulSoup`, validation | Mở rộng corpus lên 381 bài / 8 chuyên mục (`crawler.py`) |
 | **Lab 03** | `normalize_basic`, `segment_vi`, stopwords, `preprocess_vi(text, config)` | Pipeline tiền xử lý dùng chung (`preprocess.py`) |
-| **Lab 04** | Bag of Words, n-gram, TF-IDF, cosine similarity | **Phần lõi**: `vectorizer.py`, `retriever.py`, `intent_classifier.py` |
+| **Lab 04** | Bag of Words, n-gram, TF-IDF, cosine similarity | **Phần lõi**: `vectorizer.py`, `retriever.py`, và phần TF-IDF + cosine của `intent_classifier.py` |
+
+> **Ngoài phạm vi lab** (tự bổ sung): bộ phân lớp Multinomial Naive Bayes — Lab 04
+> chỉ dạy *biểu diễn* văn bản, không có phần phân lớp — cùng với BM25, xếp hạng
+> theo độ mới, chuẩn hóa teencode, chỉ mục n-gram ký tự và lớp RAG.
 
 ## 🏗️ Kiến trúc
 

@@ -315,7 +315,7 @@ vé tàu Cát Linh — bài 01/09 "tăng lên 15.000 đồng", bài 10/09 "hoãn
 | `preprocess.py` | NFC, tách từ (có cache), stopword, bỏ dấu, hạ về âm tiết | Lab 03 |
 | `normalizer.py` | Học từ điển teencode; `prepare_user_text` dùng chung cho bot và đánh giá | — |
 | `vectorizer.py` | BoW, n-gram, TF-IDF, L2, cosine, BM25 — tự cài đặt | Lab 04 |
-| `intent_classifier.py` | Multinomial NB tự cài đặt + tín hiệu cosine tới pattern | Lab 04 |
+| `intent_classifier.py` | Multinomial NB tự cài đặt + tín hiệu cosine tới pattern | TF-IDF + cosine: Lab 04; **NB: ngoài phạm vi lab** |
 | `retriever.py` | Truy hồi hai tầng, hai index, độ mới, cache đĩa, giải thích | Lab 01 + 04 |
 | `dates.py` | Đọc ngày đăng VnExpress, tính điểm độ mới | — |
 | `entities.py` | NER + Regex, nhận diện chuyên mục | Lab 01 |

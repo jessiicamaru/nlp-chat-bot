@@ -27,7 +27,7 @@
                                      |
                                      v
              +------------------------------------------------+
-        [2]  |  IntentClassifier.predict()    Lab 03 + 04     |
+        [2]  |  IntentClassifier.predict()  Lab 03 + 04 (*)   |
              |  preprocess_vi(CONFIG_INTENT) -> TF-IDF (1,2)   |
              |  score = w_nb·P_NB(c|x) + (1-w_nb)·max cos(x,p_c)|
              |  w_nb = 1.0 (Naive Bayes thuần, dò trên dev)    |
@@ -71,6 +71,10 @@
                                |  fallback liên tiếp   |
                                +-----------------------+
 
+  (*) Naive Bayes KHÔNG thuộc Lab 01–04. Lab 04 dạy BoW / n-gram / TF-IDF /
+      cosine; phần TF-IDF (1,2) và tín hiệu cosine tới pattern là của Lab 04,
+      còn bản thân bộ phân lớp Naive Bayes là phần tự bổ sung của đồ án.
+
   ---- Lớp TÙY CHỌN, mặc định tắt (chạy trên Colab, docs/07) ----
   rag.RagChatbot bọc toàn bộ luồng trên. Chỉ khi [3] đã có bài vượt ngưỡng:
     chốt chặn giả định -> PhoGPT-4B-Chat -> làm sạch -> chốt chặn rỗng / lặp lại / số bịa
@@ -85,7 +89,7 @@
 | `preprocess.py` | Chuẩn hóa NFC, tách từ (có cache), stopwords, bỏ dấu, hạ về âm tiết | Lab 03 |
 | `normalizer.py` | Học từ điển teencode từ ViLexNorm; `prepare_user_text` dùng chung cho bot và đánh giá | — |
 | `vectorizer.py` | BoW, n-gram, TF-IDF, chuẩn hóa L2, cosine, BM25 — **tự cài đặt** | Lab 04 |
-| `intent_classifier.py` | Multinomial Naive Bayes **tự cài đặt** + tín hiệu cosine tới pattern | Lab 04 |
+| `intent_classifier.py` | Multinomial Naive Bayes **tự cài đặt** + tín hiệu cosine tới pattern | TF-IDF + cosine: Lab 04. **Naive Bayes: ngoài phạm vi lab** |
 | `retriever.py` | Truy hồi hai tầng, ba index (có dấu / âm tiết / n-gram ký tự), độ mới, cache đĩa, giải thích | Lab 01 + 04 |
 | `dates.py` | Đọc ngày đăng VnExpress, tính điểm độ mới | — |
 | `entities.py` | NER + Regex, nhận diện chuyên mục | Lab 01 |

@@ -263,7 +263,13 @@ final-project/
 | **Lab 01** | `sent_tokenize`, `word_tokenize`, `ner`, Regex | Tách câu chọn snippet (`retriever.py`), tách từ (`preprocess.py`), trích thực thể (`entities.py`) |
 | **Lab 02** | requests + BeautifulSoup, validation | `crawler.py` — mở rộng corpus lên 381 bài |
 | **Lab 03** | `preprocess_vi(text, config)`, stopwords | `preprocess.py` — pipeline dùng chung |
-| **Lab 04** | BoW, n-gram, TF-IDF, cosine similarity | `vectorizer.py`, `retriever.py`, `intent_classifier.py` |
+| **Lab 04** | BoW, n-gram, TF-IDF, cosine similarity | `vectorizer.py`, `retriever.py`, và phần **TF-IDF + cosine** của `intent_classifier.py` |
+
+**Những phần KHÔNG đến từ lab** (tự bổ sung, để không nhận vơ): bộ phân lớp
+**Multinomial Naive Bayes** (`intent_classifier.py` — Lab 04 chỉ dạy biểu diễn
+văn bản, không có phần phân lớp), **BM25**, **xếp hạng theo độ mới**, **chuẩn hóa
+teencode** học từ ViLexNorm, **chỉ mục n-gram ký tự** chống gõ sai, và lớp **RAG**
+với PhoGPT.
 
 ---
 
