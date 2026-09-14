@@ -210,8 +210,8 @@ INDEX_CACHE_PATH = MODELS_DIR / "retriever_index.joblib"
 # Lỗi người dùng báo: "thám hiểm Sơn Dòng" bị từ chối, "Sơn Đoòng" thì trả lời
 # đúng. TF-IDF mức từ so khớp CHÍNH XÁC: "dòng" là một từ có thật (100/532 bài) còn
 # "đoòng" là term khác hẳn, nên cosine chỉ 0.086 < 0.13. Hạ ngưỡng không cứu
-# được — xuống 0.08 thì chặn đúng câu ngoài phạm vi trên dev rơi từ 100% còn 57%
-# (data/eval/test_report_v4.txt, PHA 1.4; docs/09).
+# được — xuống 0.08 thì chặn đúng câu ngoài phạm vi trên dev rơi từ 97% còn 64%
+# (data/eval/test_report_v5.txt, PHA 1.4; docs/09).
 #
 # Cách sửa: chỉ mục THỨ BA gồm n-gram KÝ TỰ của TIÊU ĐỀ đã bỏ dấu, dùng như
 # ĐƯỜNG DỰ PHÒNG — chỉ chạy khi đường chính (mức từ) không có bài nào đạt
@@ -223,16 +223,16 @@ INDEX_CACHE_PATH = MODELS_DIR / "retriever_index.joblib"
 # Các lựa chọn được so trên dev (112 câu sạch + 112 câu gõ sai + 28 câu ngoài
 # phạm vi) bằng `python tools/compare_improvements.py` — trường đưa vào chỉ mục
 # x n x luật chấp nhận, mỗi thiết kế dò ngưỡng tốt nhất của riêng nó:
-#   chỉ tiêu đề,   n=3, cộng cosine từ -> cứu 36 câu, 0 trả sai, 0 lọt  <- chọn
-#   chỉ tiêu đề,   n=3, chỉ ký tự      -> cứu 34 câu, 1 trả sai, 0 lọt
-#   tiêu đề+mô tả, n=4, cộng cosine từ -> cứu 36 câu, 4 trả sai, 0 lọt
+#   chỉ tiêu đề,   n=3, cộng cosine từ -> cứu 33 câu, 0 trả sai, 0 lọt  <- chọn
+#   chỉ tiêu đề,   n=3, chỉ ký tự      -> cứu 28 câu, 0 trả sai, 0 lọt
+#   tiêu đề+mô tả, n=4, cộng cosine từ -> cứu 35 câu, 4 trả sai, 0 lọt
 #   cả bài,        n=4, chỉ ký tự      -> cứu 20 câu, 5 trả sai, 0 lọt
 # Tiêu đề cô đọng tên riêng cần tìm; thêm thân bài làm vector ký tự "đặc" lên và
 # mọi câu đều na ná nhau. Cộng thêm cosine mức từ luôn tốt hơn dùng một mình
 # n-gram ký tự: các từ GÕ ĐÚNG còn lại trong câu là bằng chứng độc lập.
 FUZZY_ENABLED = True
 FUZZY_CHAR_N = 3
-FUZZY_THRESHOLD = 0.53
+FUZZY_THRESHOLD = 0.52
 
 
 # ----------------------------------------------------------- CÁCH XẾP HẠNG --
@@ -248,9 +248,9 @@ FUZZY_THRESHOLD = 0.53
 # BM25_K1/B dưới đây là cấu hình BM25 tốt nhất trên dev, chỉ dùng khi đổi
 # RANKING_METHOD = "bm25".
 #
-# Dò lại trên corpus 532 bài (data/eval/test_report_v4.txt): kết luận không đổi —
-# BM25 tốt hơn 2 câu, kém hơn 4 câu, hòa 106 (p = 0.688); trên test MRR 0.915 so
-# với 0.940 của TF-IDF. Cấu hình BM25 tốt nhất trên dev đổi b 0.9 -> 0.75.
+# Dò lại trên corpus 532 bài (data/eval/test_report_v5.txt): kết luận không đổi —
+# BM25 không thắng có ý nghĩa thống kê trên dev; trên test MRR 0.922 so với 0.940
+# của TF-IDF. Cấu hình BM25 tốt nhất trên dev hiện là k1 = 2.0, b = 0.9.
 RANKING_METHOD = "tfidf"
-BM25_K1 = 8.0
-BM25_B = 0.75
+BM25_K1 = 2.0
+BM25_B = 0.9

@@ -1831,6 +1831,38 @@
     "from": "bieu",
     "to": "bueu"
    }
+  },
+  {
+   "query": "SSơn Đoòng",
+   "original": "Sơn Đoòng",
+   "gold_urls": [
+    "https://vnexpress.net/chiem-nghiem-tu-cuoc-tham-hiem-son-doong-phut-89-cua-ceo-viet-5119565.html"
+   ],
+   "gold_titles": [
+    "Chiêm nghiệm từ cuộc thám hiểm Sơn Đoòng 'phút 89' của CEO Việt"
+   ],
+   "style": "chỉ tên riêng",
+   "typo": {
+    "kind": "lap_chu",
+    "from": "Sơn",
+    "to": "SSơn"
+   }
+  },
+  {
+   "query": "tin về Sn Đoòng",
+   "original": "tin về Sơn Đoòng",
+   "gold_urls": [
+    "https://vnexpress.net/chiem-nghiem-tu-cuoc-tham-hiem-son-doong-phut-89-cua-ceo-viet-5119565.html"
+   ],
+   "gold_titles": [
+    "Chiêm nghiệm từ cuộc thám hiểm Sơn Đoòng 'phút 89' của CEO Việt"
+   ],
+   "style": "chỉ tên riêng",
+   "typo": {
+    "kind": "thieu_chu",
+    "from": "Sơn",
+    "to": "Sn"
+   }
   }
  ]
 }

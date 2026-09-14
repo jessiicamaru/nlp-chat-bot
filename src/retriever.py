@@ -130,6 +130,7 @@ class NewsRetriever:
         bm25_b: float = BM25_B,
         freshness_reference: str = FRESHNESS_REFERENCE,
         fuzzy_threshold: float | None = FUZZY_THRESHOLD if FUZZY_ENABLED else None,
+        glue_compounds: bool = True,
     ):
         if ranking not in ("tfidf", "bm25"):
             raise ValueError(f"ranking phai la 'tfidf' hoac 'bm25', nhan duoc {ranking!r}")
@@ -139,6 +140,8 @@ class NewsRetriever:
         self.freshness_reference = freshness_reference
         # None = tắt đường dự phòng chống gõ sai.
         self.fuzzy_threshold = fuzzy_threshold
+        # Chỉ đặt False khi cần dựng lại hành vi CŨ để so sánh (docs/09, mục 7).
+        self.glue_compounds = glue_compounds
 
         # Chỉ mục thứ ba: n-gram ký tự của TIÊU ĐỀ đã bỏ dấu (xem config.FUZZY_*).
         self.char_vectorizer = TfidfVectorizer(ngram_range=(1, 1), sublinear_tf=True)
@@ -345,17 +348,38 @@ class NewsRetriever:
         self._rebuild_bm25()
 
     def _query_tokens(self, query: str) -> tuple[list[str], bool]:
-        """(token của câu hỏi, có dùng index bỏ dấu không)."""
+        """(token của câu hỏi, có dùng index bỏ dấu không). CHƯA ghép từ ghép."""
         if has_diacritics(query):
             return strip_frame_words(tokenize(query, CONFIG_RETRIEVAL)), False
         return strip_frame_words(fold_query(query)), True
 
+    def _glue_known_compounds(self, tokens: list[str], vectorizer: TfidfVectorizer) -> list[str]:
+        """Thêm dạng GHÉP của hai token liền nhau, nếu dạng ghép có trong từ vựng.
+
+        Vì sao cần: `word_tokenize` tách một cụm khác nhau tùy NGỮ CẢNH. Trong
+        bài báo, "hang Sơn Đoòng" cho token ghép `sơn_đoòng` (bài này có 7 lần);
+        nhưng câu hỏi trống ngữ cảnh "Sơn Đoòng" lại ra hai âm tiết rời
+        ['sơn', 'đoòng']. Với TF-IDF, `sơn_đoòng` và `sơn` + `đoòng` là những
+        term KHÁC NHAU, nên câu hỏi đúng chính tả vẫn trượt (cosine 0.067).
+
+        Cách chữa rẻ và an toàn: thử ghép các cặp liền nhau, nhưng CHỈ giữ dạng
+        ghép nào đã có trong từ vựng của index. Term lạ không bao giờ được thêm,
+        nên không sinh nhiễu; token gốc vẫn giữ nguyên để không mất chiều nào.
+        """
+        if not self.glue_compounds:
+            return tokens
+        vocab = vectorizer.vocabulary_
+        glued = [g for a, b in zip(tokens, tokens[1:]) if (g := f"{a}_{b}") in vocab]
+        return tokens + glued if glued else tokens
+
     # -- truy hồi ------------------------------------------------------------
     def _query_vector(self, query: str):
         tokens = strip_frame_words(tokenize(query, CONFIG_RETRIEVAL))
-        return self.vectorizer.transform([tokens])
+        return self.vectorizer.transform([self._glue_known_compounds(tokens, self.vectorizer)])
 
     def _folded_query_vector(self, query: str):
+        # Index bỏ dấu ở mức ÂM TIẾT nên từ vựng của nó không có dạng ghép nào;
+        # gọi _glue_known_compounds ở đây sẽ luôn là phép rỗng, nên không gọi.
         return self.folded_vectorizer.transform([strip_frame_words(fold_query(query))])
 
     def _select_index(self, query: str):
@@ -396,9 +420,11 @@ class NewsRetriever:
         # Điểm XẾP HẠNG: cosine hoặc BM25 tùy cấu hình.
         if self.ranking == "bm25" and self._bm25_main is not None:
             tokens, use_folded = self._query_tokens(query)
-            counter = (self.folded_vectorizer if use_folded else self.vectorizer).counter
+            vec = self.folded_vectorizer if use_folded else self.vectorizer
+            if not use_folded:
+                tokens = self._glue_known_compounds(tokens, vec)
             W = self._bm25_folded if use_folded else self._bm25_main
-            rank_scores = bm25_scores(W, counter.transform([tokens]))
+            rank_scores = bm25_scores(W, vec.counter.transform([tokens]))
         else:
             rank_scores = base_scores
 

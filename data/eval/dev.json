@@ -1189,6 +1189,28 @@
     "Robot 'biểu tình' đòi ban hành quy định về AI"
    ],
    "style": "không dấu"
+  },
+  {
+   "query": "Sơn Đoòng",
+   "gold_urls": [
+    "https://vnexpress.net/chiem-nghiem-tu-cuoc-tham-hiem-son-doong-phut-89-cua-ceo-viet-5119565.html"
+   ],
+   "gold_titles": [
+    "Chiêm nghiệm từ cuộc thám hiểm Sơn Đoòng 'phút 89' của CEO Việt"
+   ],
+   "style": "chỉ tên riêng",
+   "origin": "người dùng báo lỗi"
+  },
+  {
+   "query": "tin về Sơn Đoòng",
+   "gold_urls": [
+    "https://vnexpress.net/chiem-nghiem-tu-cuoc-tham-hiem-son-doong-phut-89-cua-ceo-viet-5119565.html"
+   ],
+   "gold_titles": [
+    "Chiêm nghiệm từ cuộc thám hiểm Sơn Đoòng 'phút 89' của CEO Việt"
+   ],
+   "style": "chỉ tên riêng",
+   "origin": "người dùng báo lỗi"
   }
  ],
  "out_of_scope": [

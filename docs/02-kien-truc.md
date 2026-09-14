@@ -53,7 +53,7 @@
                   v                        v                         v
             câu soạn sẵn           trả lời + ngày đăng    [3b] dự phòng gõ sai
             hoặc dữ liệu           + chuyên mục + nguồn   cosine từ + cosine n-gram
-                  |                        |              ký tự tiêu đề >= 0.53
+                  |                        |              ký tự tiêu đề >= 0.52
                   |                        |                    |          |
                   |                        |                  đạt      không đạt
                   |                        |                    v          v

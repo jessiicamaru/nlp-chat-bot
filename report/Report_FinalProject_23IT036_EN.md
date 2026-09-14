@@ -1385,8 +1385,8 @@ RAG: run `python tools/build_rag_notebook.py` and `python tools/make_colab_bundl
 
 The submitted version is frozen at tag `nop-bai` (381-article corpus). The corpus
 was then extended by the daily crawl procedure of `docs/08`, and **the first real
-crawl (14 Sep 2026, +151 articles, 532 total)** exposed two defects that a static
-corpus could not reveal. Both were fixed on branch `cap-nhat-du-lieu`; the full
+crawl (14 Sep 2026, +151 articles, 532 total)** exposed three defects that a
+static corpus could not reveal. All three were fixed on branch `cap-nhat-du-lieu`; the full
 reasoning and measurements are in `docs/09-cai-thien-mo-hinh.md`.
 
 **G.1. The freshness reference point drifted with the corpus.** Recency was
@@ -1432,14 +1432,30 @@ questions, through `bot.respond()` (`tools/compare_improvements.py`):
 | Recall@1 (component) | 109/122 | **112/122** |
 | MRR | 0.927 | **0.940** |
 | Ordinary questions → correct article | 90/122 | **101/122** |
-| Misspelled questions → correct article | 74/122 | **86/122** |
+| Misspelled questions → correct article | 74/122 | **90/122** |
 | Newer article contradicting older one | wrong | **correct** |
 | Same case after adding a "future" article | wrong | **correct** |
 | Out-of-scope questions refused | 18/24 | 18/24 |
 
+**G.5. A bare proper noun was still refused.** Typing the correctly spelled
+"Sơn Đoòng" was refused (cosine 0.067) while "thám hiểm Sơn Đoòng" was answered.
+Two causes compound. First, `word_tokenize` segments the same phrase differently
+depending on context: inside the article, "hang Sơn Đoòng" yields the compound
+token `sơn_đoòng` (7 occurrences), whereas a context-free query yields two loose
+syllables — different terms to TF-IDF. Second, an older trick in `entities.expand_query` — "entity duplication" —
+appends the entity **before** segmentation, so the segmenter glues
+across the seam into `đoòng_sơn`, a token that exists nowhere in the corpus; that
+alone drops "hang Sơn Đoòng" from 0.144 (accepted) to 0.109 (refused). Measured
+over both splits, the duplication trick is **net negative**: it helps 1 dev
+question and hurts 1 dev plus 2 test questions. The fix removes duplication
+entirely and instead re-glues adjacent query tokens **only when** the compound
+already exists in the index vocabulary, which guarantees no unseen term is ever
+introduced. Correct answers rose 81 → 86 on dev and 79 → 83 on test (measured at
+the old thresholds, before re-tuning).
+
 The cost must be stated plainly: the fallback converts some refusals into
 answers, so the number of **incorrect** answers rises (7 → 8 on the misspelled
-set, 3 → 5 on the clean set). In exchange it leaks no additional out-of-scope
+set, 3 → 4 on the clean set). In exchange it leaks no additional out-of-scope
 questions, and every answer produced through this path carries an explicit "you
 may have mistyped" note. The regression suite grew from 21 to 26 cases, two of
 which guard the invariants described above.

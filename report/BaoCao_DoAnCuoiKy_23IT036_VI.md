@@ -1371,8 +1371,8 @@ RAG: `python tools/build_rag_notebook.py` và `python tools/make_colab_bundle.py
 
 Bản nộp được đóng băng ở tag `nop-bai` (kho 381 bài). Sau đó kho được crawl bổ
 sung hằng ngày theo quy trình ở `docs/08`, và **lần crawl thật đầu tiên
-(14/09/2026, +151 bài, tổng 532)** làm lộ ra hai lỗi mà bộ dữ liệu tĩnh không thể
-phát hiện. Cả hai đã được sửa trên nhánh `cap-nhat-du-lieu`; toàn bộ lập luận và
+(14/09/2026, +151 bài, tổng 532)** làm lộ ra ba lỗi mà bộ dữ liệu tĩnh không thể
+phát hiện. Cả ba đã được sửa trên nhánh `cap-nhat-du-lieu`; toàn bộ lập luận và
 số liệu ở `docs/09-cai-thien-mo-hinh.md`.
 
 **G.1. Mốc tính độ mới trôi theo kho.** Điểm độ mới được tính theo ngày đăng mới
@@ -1414,13 +1414,28 @@ dữ liệu đánh giá** (sinh thêm biến thể không dấu cho câu ngoài 
 | Recall@1 (thành phần) | 109/122 | **112/122** |
 | MRR | 0,927 | **0,940** |
 | Câu hỏi thường → đúng bài | 90/122 | **101/122** |
-| Câu gõ sai chính tả → đúng bài | 74/122 | **86/122** |
+| Câu gõ sai chính tả → đúng bài | 74/122 | **90/122** |
 | Ca tin mới phủ định tin cũ | sai | **đúng** |
 | Ca trên sau khi thêm bài "tương lai" | sai | **đúng** |
 | Câu ngoài phạm vi bị từ chối | 18/24 | 18/24 |
 
+**G.5. Tên riêng đứng một mình vẫn bị từ chối.** Người dùng gõ đúng chính tả
+"Sơn Đoòng" mà bot vẫn từ chối (cosine 0,067), trong khi "thám hiểm Sơn Đoòng"
+thì trả lời đúng. Hai nguyên nhân cộng lại. Thứ nhất, `word_tokenize` tách một
+cụm khác nhau tùy ngữ cảnh: trong bài báo "hang Sơn Đoòng" cho token ghép
+`sơn_đoòng` (7 lần), còn câu hỏi trống ngữ cảnh chỉ cho hai âm tiết rời — với
+TF-IDF đó là những term khác nhau. Thứ hai, một mẹo cũ trong `entities.expand_query` — "nhân đôi thực thể" — nối
+tên riêng vào cuối câu **trước** khi tách từ, nên bộ tách từ dính hai chữ ở chỗ
+nối thành token `đoòng_sơn` không hề tồn tại trong kho, làm "hang Sơn Đoòng" tụt
+từ 0,144 (đạt ngưỡng) xuống 0,109 (trượt). Đo trên cả hai tập, mẹo nhân đôi là
+**lỗ vốn**: giúp 1 câu dev, hại 1 câu dev và 2 câu test. Cách sửa: bỏ hẳn nhân
+đôi, thay bằng việc ghép lại cặp token liền nhau **chỉ khi** dạng ghép đã có
+trong từ vựng của index — điều kiện này bảo đảm không sinh term lạ. Trên dev, số
+câu trả lời đúng tăng 81 → 86; trên test 79 → 83 (đo ở ngưỡng cũ, trước khi dò
+lại).
+
 Cái giá phải nói rõ: đường dự phòng biến một phần câu "từ chối" thành câu "trả
 lời", nên số câu **trả lời sai** tăng (trên tập gõ sai 7 → 8, trên tập sạch 3 →
-5). Bù lại nó không làm lọt thêm câu ngoài phạm vi nào, và mỗi câu trả lời theo
+4). Bù lại nó không làm lọt thêm câu ngoài phạm vi nào, và mỗi câu trả lời theo
 đường này đều kèm lời nhắc "có thể bạn gõ nhầm". Bộ kiểm thử hồi quy tăng từ 21
 lên 26 ca, trong đó có hai ca canh đúng hai bất biến vừa nêu.

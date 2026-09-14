@@ -12,7 +12,7 @@
 Mọi số liệu ở đây tái lập được bằng:
 
 ```powershell
-python src/evaluate.py               # -> data/eval/test_report_v4.txt
+python src/evaluate.py               # -> data/eval/test_report_v5.txt
 python tools/compare_improvements.py # -> data/eval/improvements_report.txt
 ```
 
@@ -43,18 +43,18 @@ thì bot từ chối trả lời; gõ đúng `Sơn Đoòng` thì trả lời nga
 
 Nguyên nhân đo được: cosine của bài đúng chỉ **0.086**, dưới ngưỡng **0.13**.
 Cách sửa "rẻ" nhất là hạ ngưỡng. Đây là bảng dò ngưỡng trên DEV
-(`test_report_v4.txt`, PHA 1.4):
+(`test_report_v5.txt`, PHA 1.4):
 
 | Ngưỡng | Trả lời được câu trong phạm vi | Chặn đúng câu ngoài phạm vi |
 |---|---|---|
-| 0.08 | 99.0% | **58.3%** |
-| 0.10 | 97.1% | 72.2% |
-| 0.12 | 94.2% | 94.4% |
-| **0.13 (hiện hành)** | 90.4% | **100%** |
-| 0.14 | 86.5% | 100% |
+| 0.08 | 100% | **63.9%** |
+| 0.10 | 95.4% | 75.0% |
+| 0.12 | 92.6% | 91.7% |
+| **0.13 (hiện hành)** | 90.7% | **97.2%** |
+| 0.14 | 86.1% | 97.2% |
 
-Hạ xuống 0.08 để cứu một câu gõ sai thì bot bắt đầu **trả lời bừa gần một nửa số
-câu ngoài phạm vi** — hỏi "công thức nấu phở" cũng được đưa cho một bài báo ngẫu
+Hạ xuống 0.08 để cứu một câu gõ sai thì bot bắt đầu **trả lời bừa hơn một phần ba
+số câu ngoài phạm vi** — hỏi "công thức nấu phở" cũng được đưa cho một bài báo ngẫu
 nhiên kèm giọng chắc chắn. Đó chính là lỗi tệ nhất mà cả kiến trúc này sinh ra
 để tránh (docs/02, quyết định 1).
 
@@ -165,31 +165,31 @@ Hai lựa chọn thiết kế quan trọng:
 
 ### Chọn thiết kế bằng số liệu, không bằng cảm tính
 
-`tools/compare_improvements.py` so 12 thiết kế trên DEV (112 câu sạch + 112 câu
+`tools/compare_improvements.py` so 12 thiết kế trên DEV (114 câu sạch + 114 câu
 gõ sai + 36 câu ngoài phạm vi), mỗi thiết kế được dò ngưỡng tốt nhất của riêng nó:
 
 | Trường đưa vào chỉ mục | n | Luật chấp nhận | Ngưỡng | Cứu được | Trả sai | Lọt |
 |---|---|---|---|---|---|---|
-| **chỉ tiêu đề** | **3** | **cộng cosine mức từ** | **0.53** | **36** | **0** | **0** |
-| chỉ tiêu đề | 3 | chỉ n-gram ký tự | 0.47 | 34 | 1 | 0 |
-| tiêu đề + mô tả | 4 | cộng cosine mức từ | 0.40 | 36 | 4 | 0 |
-| cả bài | 4 | chỉ n-gram ký tự | 0.26 | 20 | 5 | 0 |
+| **chỉ tiêu đề** | **3** | **cộng cosine mức từ** | **0.52** | **33** | **0** | **0** |
+| chỉ tiêu đề | 3 | chỉ n-gram ký tự | 0.51 | 28 | 0 | 0 |
+| tiêu đề + mô tả | 4 | cộng cosine mức từ | 0.40 | 35 | 4 | 0 |
+| cả bài | 4 | chỉ n-gram ký tự | 0.27 | 20 | 5 | 0 |
 
 Thêm thân bài làm **giảm hẳn** chất lượng: vector n-gram ký tự của một bài dài
 chứa gần như mọi tổ hợp ba chữ cái, nên bài nào cũng "na ná" câu hỏi nào. Tiêu đề
 thì cô đọng đúng tên riêng mà người dùng đang gõ.
 
-### Kết quả trên TEST (đo một lần, ngưỡng 0.53 chốt trên dev)
+### Kết quả trên TEST (đo một lần, ngưỡng 0.52 chốt trên dev)
 
 | Tập | Dự phòng TẮT | Dự phòng BẬT |
 |---|---|---|
-| test sạch — trả lời đúng | 77.0% (94/122) | **86.1% (105/122)** |
-| test sạch — trả lời sai | 3 | 5 |
-| test_typo (gõ sai) — trả lời đúng | 60.7% (74/122) | **73.8% (90/122)** |
-| test_typo — trả lời sai | 7 | 10 |
+| test sạch — trả lời đúng | 80.3% (98/122) | **87.7% (107/122)** |
+| test sạch — trả lời sai | 3 | 4 |
+| test_typo (gõ sai) — trả lời đúng | 63.1% (77/122) | **77.9% (95/122)** |
+| test_typo — trả lời sai | 7 | 8 |
 | ngoài phạm vi — chặn đúng | 87.5% (21/24) | 87.5% (21/24) |
 
-**Cái giá phải nói rõ:** số câu trả lời SAI tăng (3 → 5 và 7 → 10). Đường dự
+**Cái giá phải nói rõ:** số câu trả lời SAI tăng (3 → 4 và 7 → 8). Đường dự
 phòng biến một phần "từ chối" thành "trả lời", và không phải lần nào cũng đúng
 bài. Đổi lại, nó không làm lọt thêm câu ngoài phạm vi nào, và bot **tự nói ra**
 rằng đây là khớp gần đúng:
@@ -199,8 +199,8 @@ _(Không tìm thấy từ khóa khớp chính xác — có thể bạn gõ nhầ
   Bài có tiêu đề gần nhất với câu hỏi:)_
 ```
 
-Một điểm bất ngờ: dự phòng còn cứu cả **câu gõ đúng** nhưng diễn đạt khác (94 →
-105 câu). Những câu này trước đây trượt ngưỡng vì dùng từ khác với bài báo, nhưng
+Một điểm bất ngờ: dự phòng còn cứu cả **câu gõ đúng** nhưng diễn đạt khác (98 →
+107 câu). Những câu này trước đây trượt ngưỡng vì dùng từ khác với bài báo, nhưng
 tiêu đề vẫn gần về mặt chữ.
 
 ---
@@ -228,7 +228,7 @@ cho qua ca đó:
 - Đưa thẳng các ca ngoài phạm vi dùng trong kiểm thử hồi quy vào dev: ca đã biết
   là khó thì chỗ của nó là tập dò.
 
-Dò lại trên dev mới: ngưỡng 0.51 → **0.53**, và ca kia bị chặn đúng.
+Dò lại trên dev mới: ngưỡng 0.51 → **0.53**, và ca kia bị chặn đúng. (Sau lần sửa ở mục 7, dò lại lần nữa cho **0.52**.)
 
 > Một lần thử sai đáng ghi: ban đầu tôi sửa bằng cách lọc stopword ở mức âm tiết
 > đã bỏ dấu. Hỏng nặng — bỏ dấu làm stopword đụng độ với từ nội dung (`năm` →
@@ -237,7 +237,95 @@ Dò lại trên dev mới: ngưỡng 0.51 → **0.53**, và ca kia bị chặn �
 
 ---
 
-## 7. Tổng kết trước / sau (cùng kho 532 bài, qua `bot.respond()`)
+## 7. Ca 3 — Tên riêng đứng một mình: tách từ lệch ngữ cảnh (đòn bẩy 2)
+
+### Triệu chứng
+
+Người dùng gõ **đúng chính tả** mà bot vẫn từ chối:
+
+| Câu hỏi | Kết quả trước khi sửa |
+|---|---|
+| `thám hiểm Sơn Đoòng` | ✅ trả lời đúng (cosine 0.145) |
+| `thám hiểm Sơn Dòng` *(gõ sai)* | ✅ trả lời đúng qua đường dự phòng |
+| **`Sơn Đoòng`** | ❌ **từ chối** (cosine 0.067) |
+| **`hang Sơn Đoòng`** | ❌ **từ chối** (cosine 0.109) |
+
+Câu gõ sai thì được trả lời, còn câu gõ đúng và ngắn gọn nhất lại bị từ chối.
+
+### Nguyên nhân 1 — tách từ phụ thuộc ngữ cảnh
+
+`word_tokenize` cắt cùng một cụm khác nhau tùy ngữ cảnh xung quanh:
+
+```
+trong bài báo   "hang Sơn Đoòng"  -> token ghép  sơn_đoòng   (bài này có 7 lần)
+câu hỏi trống   "Sơn Đoòng"       -> hai âm tiết rời  ['sơn', 'đoòng']
+```
+
+Với TF-IDF, `sơn_đoòng` và `sơn` + `đoòng` là **những term khác nhau**. Câu hỏi
+chỉ còn khớp được 5 lần `đoòng` đứng lẻ, cộng `sơn` — một từ phổ thông (sơn nhà,
+sơn màu) nên idf thấp. Kết quả: 0.067, trượt xa ngưỡng 0.13.
+
+### Nguyên nhân 2 — "nhân đôi thực thể" phá tách từ
+
+`expand_query` nối thêm tên riêng vào cuối câu để tăng tf **trước khi** tách từ,
+nên bộ tách từ dính hai chữ ở **chỗ nối**:
+
+```
+"hang Sơn Đoòng"  ->  "hang Sơn Đoòng Sơn Đoòng"
+                  ->  ['hang', 'sơn', 'đoòng_sơn', 'đoòng']
+                                     ~~~~~~~~~~~ token không tồn tại trong corpus
+```
+
+Token ghép `sơn_đoòng` bị xé mất, còn vector query (chuẩn hóa L2) thì chia bớt
+trọng số cho một token rác. Riêng câu này: **0.144 (đạt) tụt còn 0.109 (trượt)**.
+
+Đo trên toàn tập, mẹo nhân đôi này **lỗ vốn**: giúp 1 câu dev, hại 1 câu dev và
+**2 câu test** (`"trường Việt Đức sửa sang 300 tỷ"`, `"Xiaomi ra điện thoại gập
+trước Apple"` — cả hai trả lời đúng nếu bỏ nhân đôi).
+
+### Cách sửa
+
+1. **Bỏ hẳn nhân đôi thực thể.** Nó không đắp thêm bằng chứng, chỉ bơm tf — và
+   phải trả giá bằng một token rác.
+2. **Ghép lại cặp token liền nhau khi dạng ghép CÓ trong từ vựng của index**
+   (`retriever._glue_known_compounds`). `['sơn', 'đoòng']` → thêm `sơn_đoòng`.
+   Điều kiện "có trong từ vựng" là chốt an toàn: term lạ không bao giờ được thêm
+   nên không sinh nhiễu, và token gốc vẫn giữ để không mất chiều nào.
+
+So bốn phương án trên dev (tất cả đo ở ngưỡng hiện hành, chưa dò lại):
+
+| Phương án | dev đúng | test đúng |
+|---|---|---|
+| hiện trạng (nhân đôi bằng nối chuỗi) | 81 | 79 |
+| bỏ nhân đôi | 82 | 81 |
+| nhân đôi SAU khi tách từ (sửa chỗ nối) | 81 | 80 |
+| **bỏ nhân đôi + ghép cặp có trong từ vựng** | **86** | **83** |
+
+### Kết quả
+
+| Câu hỏi | Trước | Sau |
+|---|---|---|
+| `Sơn Đoòng` | ❌ từ chối | ✅ trả lời (qua dự phòng, 0.544) |
+| `hang Sơn Đoòng` | ❌ từ chối | ✅ khớp chính xác (0.144) |
+| `tin về Sơn Đoòng` | ❌ từ chối | ✅ trả lời (qua dự phòng) |
+| `thám hiểm Sơn Đoòng` | ✅ | ✅ (0.145) |
+
+Trên TEST, số câu trả lời đúng khi **tắt** đường dự phòng tăng 94 → 98 (câu sạch)
+và 74 → 77 (câu gõ sai) — tức là đường chính thật sự khỏe lên, chứ không phải
+đường dự phòng gánh hộ.
+
+### Một giới hạn còn lại
+
+Câu chỉ có đúng một term (`"tin về Sơn Đoòng"` → chỉ còn `sơn_đoòng` sau khi lọc
+từ khung) có **trần cosine thấp**: bằng đúng trọng số đã chuẩn hóa của term đó
+trong bài (0.089). Bài càng dài, trọng số mỗi term càng nhỏ. Vì vậy câu hỏi
+chỉ-một-tên-riêng gần như luôn phải đi qua đường dự phòng. Muốn chữa tận gốc thì
+phải bỏ chuẩn hóa L2 ở phía câu hỏi hoặc chuyển sang BM25 cho riêng nhánh này —
+cả hai đều đổi thang điểm nên phải dò lại toàn bộ ngưỡng.
+
+---
+
+## 8. Tổng kết trước / sau (cùng kho 532 bài, qua `bot.respond()`)
 
 Nguồn: `data/eval/improvements_report.txt`, phần B.
 
@@ -247,12 +335,12 @@ Nguồn: `data/eval/improvements_report.txt`, phần B.
 | MRR | 0.927 | **0.940** |
 | Ca Cát Linh trên kho hiện tại | ❌ SAI | ✅ đúng |
 | Ca Cát Linh sau khi thêm bài tương lai | ❌ SAI | ✅ đúng |
-| Câu sạch: đúng / sai | 90 / 5 | **101** / **4** |
-| Câu gõ sai: đúng / sai | 74 / 7 | **86** / 8 |
+| Câu sạch: đúng / sai | 90 / 5 | **101** / 5 |
+| Câu gõ sai: đúng / sai | 74 / 7 | **90** / 8 |
 | Câu ngoài phạm vi bị từ chối | 18/24 | 18/24 |
 
 Đầu-cuối trên test với bộ tham số mới: trả lời đúng **82.8%** (101/122), câu gõ
-sai **70.5%** (86/122), từ chối đúng 75.0% (18/24).
+sai **73.8%** (90/122), từ chối đúng 75.0% (18/24).
 
 Tham số thay đổi — tất cả đều là **hệ quả** của việc đổi thuật toán và dữ liệu
 đánh giá, không phải là bản thân cách sửa:
@@ -261,14 +349,16 @@ Tham số thay đổi — tất cả đều là **hệ quả** của việc đ�
 |---|---|---|---|
 | `FRESHNESS_REFERENCE` | *(chưa có)* | `candidates` | ca 1 |
 | `FRESHNESS_ALPHA` | 0.6 | 0.3 | dò lại sau khi đổi mốc |
-| `FUZZY_THRESHOLD` | *(chưa có)* | 0.53 | ca 2, dò trên dev đã bổ sung |
-| `BM25_B` | 0.9 | 0.75 | dò lại trên kho 532 bài (BM25 vẫn **không** được chọn) |
+| `FUZZY_THRESHOLD` | *(chưa có)* | 0.52 | ca 2, dò trên dev đã bổ sung |
+| nhân đôi thực thể | bật | **tắt** | ca 3 — đo được là lỗ vốn |
+| ghép cặp token có trong từ vựng | *(chưa có)* | bật | ca 3 |
+| `BM25_K1` / `BM25_B` | 8.0 / 0.9 | 2.0 / 0.9 | dò lại trên kho 532 bài (BM25 vẫn **không** được chọn) |
 | `RETRIEVAL_THRESHOLD` | 0.13 | 0.13 | không đổi |
 | `INTENT_THRESHOLD` | 0.25 | 0.25 | không đổi |
 
 ---
 
-## 8. Những đòn bẩy CHƯA kéo (việc còn lại)
+## 9. Những đòn bẩy CHƯA kéo (việc còn lại)
 
 | Vấn đề còn lại | Đòn bẩy đúng | Ghi chú |
 |---|---|---|
@@ -280,7 +370,7 @@ Tham số thay đổi — tất cả đều là **hệ quả** của việc đ�
 
 ---
 
-## 9. Tóm tắt một câu
+## 10. Tóm tắt một câu
 
 Khi bot sai, đừng hỏi ngay *"chỉnh tham số nào?"* — hãy hỏi **"lỗi này nằm ở tầng
 nào?"**: dữ liệu, cách biến câu chữ thành con số, công thức xếp hạng, hay ngưỡng

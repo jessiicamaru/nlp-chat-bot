@@ -198,13 +198,39 @@ def extract(text: str, use_ner: bool = True) -> ExtractedInfo:
 
 
 def expand_query(text: str, info: ExtractedInfo | None = None) -> str:
-    """Nhân đôi thực thể trong query để tăng trọng số khi truy hồi.
+    """ĐÃ BỎ phần nhân đôi thực thể — nay trả lại nguyên văn câu hỏi.
 
-    "bạn biết gì về Sa Pa" -> "bạn biết gì về Sa Pa Sa Pa"
+    Bản cũ nối thêm tên riêng vào cuối câu để tăng tf của nó:
 
-    Lặp lại tên riêng làm tăng tf của term đó trong vector query, kéo cosine
-    similarity về phía bài báo thực sự nói về địa danh đó thay vì bài chỉ
-    trùng các từ chung chung như "biết", "gì".
+        "hang Sơn Đoòng"  ->  "hang Sơn Đoòng Sơn Đoòng"
+
+    Ý tưởng đúng, nhưng nó **phá tách từ**. `word_tokenize` chạy SAU khi nối,
+    nên nó dính hai chữ ở chỗ nối thành một token không hề tồn tại trong corpus:
+
+        ['hang', 'sơn', 'đoòng_sơn', 'đoòng']      <- 'đoòng_sơn' là rác
+        (đúng ra phải là ['hang', 'sơn_đoòng'])
+
+    Token ghép `sơn_đoòng` — thứ mà bài báo thực sự chứa — bị xé mất, còn vector
+    query (đã chuẩn hóa L2) thì chia bớt trọng số cho token rác. Đo được trên
+    chính câu đó: cosine 0.144 (đạt ngưỡng) tụt còn 0.109 (trượt).
+
+    Đo trên cả hai tập: nhân đôi giúp 1 câu dev, hại 1 câu dev và 2 câu test —
+    tức là lỗ vốn. Vì vậy bỏ hẳn, thay bằng việc GHÉP LẠI cặp token liền nhau
+    khi dạng ghép có trong từ vựng (retriever._glue_known_compounds), đúng chỗ
+    hơn vì nó sửa nguyên nhân (tách từ sai) thay vì bơm thêm trọng số.
+
+    Giữ lại hàm này để chatbot/evaluate gọi cùng một chỗ nếu sau này muốn thử
+    lại cách mở rộng query khác; hiện tại nó là phép đồng nhất.
+    """
+    return text
+
+
+def expand_query_legacy(text: str, info: ExtractedInfo | None = None) -> str:
+    """BẢN CŨ của expand_query (nhân đôi thực thể bằng cách nối chuỗi).
+
+    KHÔNG dùng trong bot. Giữ lại đúng một mục đích: tools/compare_improvements.py
+    cần tái lập hành vi lúc nộp bài để bảng "TRƯỚC / SAU" là so sánh thật, chứ
+    không phải so bản mới với chính nó.
     """
     info = info or extract(text)
     entities = info.all_entities

@@ -11,9 +11,10 @@ nhánh cập nhật dữ liệu hằng ngày.
 
 **Sinh viên:** Hoàng Công Dũng — 23IT036
 
-> **Nhánh `cap-nhat-du-lieu`.** Sau khi nộp, kho được crawl thêm hằng ngày và hai
-> lỗi thật lộ ra: xếp hạng độ mới hỏng khi kho lớn dần, và bot không nhận ra câu
-> gõ sai chính tả. Cả hai đã sửa — xem [docs/09](docs/09-cai-thien-mo-hinh.md),
+> **Nhánh `cap-nhat-du-lieu`.** Sau khi nộp, kho được crawl thêm hằng ngày và ba
+> lỗi thật lộ ra: xếp hạng độ mới hỏng khi kho lớn dần, bot không nhận ra câu gõ
+> sai chính tả, và câu hỏi **chỉ gồm một tên riêng** ("Sơn Đoòng") bị từ chối dù
+> gõ đúng. Cả ba đã sửa — xem [docs/09](docs/09-cai-thien-mo-hinh.md),
 > tài liệu cũng giải thích *nên kéo đòn bẩy nào* khi muốn cải thiện mô hình.
 
 ---
@@ -45,17 +46,17 @@ Chi tiết phương pháp và lịch sử sửa đổi: [docs/06](docs/06-danh-g
 
 Toàn bộ số liệu tái lập được bằng `python src/evaluate.py` (dò trên dev, báo cáo trên test).
 
-### Sau hai cải tiến trên nhánh `cap-nhat-du-lieu` (kho 532 bài)
+### Sau ba cải tiến trên nhánh `cap-nhat-du-lieu` (kho 532 bài)
 
 Bảng trên là bản **nộp bài**. Trên kho đã crawl thêm, cùng một bộ câu hỏi test,
-đo lại TRƯỚC / SAU hai bản sửa (`python tools/compare_improvements.py`):
+đo lại TRƯỚC / SAU ba bản sửa (`python tools/compare_improvements.py`):
 
 | Chỉ số trên TEST | Trước | Sau |
 |---|---|---|
 | Recall@1 | 109/122 | **112/122** |
 | MRR | 0.927 | **0.940** |
 | Câu hỏi thường → đúng bài | 90/122 | **101/122** |
-| Câu **gõ sai chính tả** → đúng bài | 74/122 | **86/122** |
+| Câu **gõ sai chính tả** → đúng bài | 74/122 | **90/122** |
 | Tin mới phủ định tin cũ (ca Cát Linh) | ❌ sai | ✅ đúng |
 | Câu ngoài phạm vi bị từ chối | 18/24 | 18/24 |
 
@@ -129,6 +130,7 @@ python tools/rebuild_index.py       # dựng lại index + kiểm tra khói sau 
 | **Hiểu câu gõ không dấu** | `tin ve dao hai nam` |
 | **Hiểu teencode** | `bt gì về vụ iphone k b` → `biết gì về vụ iphone không bạn` |
 | **Chịu được gõ sai chính tả** | `thám hiểm Sơn Dòng` → vẫn ra bài "Sơn Đoòng", kèm lời nhắc "có thể bạn gõ nhầm" |
+| **Hiểu câu chỉ có tên riêng** | `Sơn Đoòng`, `hang Sơn Đoòng` — trước đây bị từ chối vì tách từ lệch ngữ cảnh |
 | **Từ chối khi không biết** | `thời tiết sao hỏa hôm nay` → nói thẳng là không có dữ liệu |
 
 ---
@@ -303,8 +305,8 @@ Dòng" từng bị từ chối (cosine 0.086 < 0.13) trong khi "Sơn Đoòng" tr
 Hạ ngưỡng không phải cách sửa: xuống 0.08 thì tỷ lệ chặn đúng câu ngoài phạm vi
 rơi từ 100% còn 58%. Cách sửa là **thêm một chỉ mục n-gram KÝ TỰ của tiêu đề đã
 bỏ dấu**, chạy như đường dự phòng chỉ khi đường chính từ chối, và chấm bằng
-tổng cosine mức từ + cosine ký tự. Trên test: câu gõ sai đúng bài tăng 60.7% →
-73.8%, câu ngoài phạm vi vẫn bị chặn như cũ (21/24). Xem
+tổng cosine mức từ + cosine ký tự. Trên test: câu gõ sai đúng bài tăng 63.1% →
+77.9%, câu ngoài phạm vi vẫn bị chặn như cũ (21/24). Xem
 [docs/09](docs/09-cai-thien-mo-hinh.md).
 
 **8. Không trả lời bằng thông tin lỗi thời.** Với hai bài mâu thuẫn cách nhau

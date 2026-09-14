@@ -118,6 +118,8 @@ class NewsChatbot:
         freshness_reference: str | None = None,
         fuzzy_threshold: float | None = None,
         use_fuzzy: bool = True,
+        glue_compounds: bool = True,
+        legacy_expand: bool = False,
     ):
         """Các tham số None -> dùng giá trị mặc định trong config.py.
 
@@ -126,6 +128,9 @@ class NewsChatbot:
         """
         self.intent_threshold = intent_threshold
         self.use_ner = use_ner
+        # True = dùng lại cách nhân đôi thực thể CŨ. Chỉ tools/compare_improvements.py
+        # bật, để dựng lại đúng hành vi lúc nộp bài (docs/09, mục 7).
+        self.legacy_expand = legacy_expand
         self.rng = random.Random(seed)
 
         # Chuẩn hóa teencode chạy TRƯỚC mọi bước khác. Chỉ áp dụng cho câu
@@ -146,6 +151,7 @@ class NewsChatbot:
                 retriever_kwargs[key] = val
         if not use_fuzzy:
             retriever_kwargs["fuzzy_threshold"] = None
+        retriever_kwargs["glue_compounds"] = glue_compounds
         self.retriever = NewsRetriever(**retriever_kwargs)
         self.state = DialogueState()
         self._ready = False
@@ -319,7 +325,7 @@ class NewsChatbot:
             # đúng đạt 0.097 — dưới ngưỡng toàn cục nhưng cao gấp 2.1 lần bài
             # đứng thứ hai trong cùng chuyên mục.
             scoped = self.retriever.search(
-                expand_query(user_text, info),
+                self._expand(user_text, info),
                 top_k=TOP_K,
                 category=category,
                 min_score=self.retriever.threshold * CATEGORY_SCOPED_THRESHOLD_FACTOR,
@@ -411,6 +417,12 @@ class NewsChatbot:
                 return True
         return False
 
+    def _expand(self, text: str, info) -> str:
+        if self.legacy_expand:
+            from entities import expand_query_legacy
+            return expand_query_legacy(text, info)
+        return expand_query(text, info)
+
     def _format_retrieval(self, results: list[RetrievalResult], route: str) -> BotReply:
         """Định dạng kết quả truy hồi — dùng chung cho cả hai đường vào."""
         top = results[0]
@@ -447,8 +459,9 @@ class NewsChatbot:
         if info.category and not self._has_topic_beyond_category(user_text, info.category):
             return self._act_browse("", user_text, info)
 
-        # Nhân đôi thực thể để tăng trọng số tên riêng trong vector query.
-        query = expand_query(user_text, info)
+        # (expand_query nay là phép đồng nhất — cách nhân đôi thực thể cũ làm
+        #  HỎNG tách từ ở chỗ nối; xem entities.expand_query và docs/09 mục 7.)
+        query = self._expand(user_text, info)
 
         # Nếu người dùng nêu rõ chuyên mục, thu hẹp phạm vi tìm kiếm trước — và
         # dùng CÙNG ngưỡng nới lỏng như nhánh duyệt mục (_act_browse). Trước đây

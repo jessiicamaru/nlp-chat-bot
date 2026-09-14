@@ -122,15 +122,34 @@ def part_b() -> None:
     ev.hr("PHẦN B — TRƯỚC / SAU TRÊN TEST (cùng corpus hiện tại, qua bot.respond)")
     test, test_typo = ev.load_split("test"), ev.load_typo_split("test")
     case = json.loads((ev.EVAL_DIR / "conflict_case.json").read_text(encoding="utf-8"))
+    # "TRƯỚC" phải dựng lại ĐẦY ĐỦ hành vi lúc nộp bài: mốc độ mới theo cả kho,
+    # alpha 0.6, không có đường dự phòng gõ sai, KHÔNG ghép từ ghép ở câu hỏi, và
+    # vẫn nhân đôi thực thể theo kiểu cũ. Thiếu một trong số đó là so bản mới với
+    # chính nó.
     configs = {
-        "TRƯỚC (nộp bài)": dict(freshness_reference="corpus", freshness_alpha=0.6, use_fuzzy=False),
+        "TRƯỚC (nộp bài)": dict(freshness_reference="corpus", freshness_alpha=0.6,
+                                use_fuzzy=False, glue_compounds=False, legacy_expand=True),
         "SAU (hiện hành)": dict(),
     }
     rows = {}
     for name, kwargs in configs.items():
         bot = NewsChatbot(**kwargs).train()
         r = bot.retriever
-        ranks = ev.ranks_for(r, test["retrieval"])
+        legacy = bool(kwargs.get("legacy_expand"))       # nhánh TRƯỚC
+        if legacy:
+            # ranks_for đi qua ev.retrieval_query (expand_query hiện hành = đồng
+            # nhất); với nhánh TRƯỚC phải dùng lại bản nhân đôi cũ.
+            from entities import expand_query_legacy
+            url_of = r.df["url"].tolist()
+            ranks = []
+            for c in test["retrieval"]:
+                gold = set(c["gold_urls"])
+                q = expand_query_legacy(ev.prepared(c["query"]))
+                ranked = r.rank(q, top_k=10)
+                ranks.append(next((i for i, (d, _, _) in enumerate(ranked, 1)
+                                   if url_of[d] in gold), None))
+        else:
+            ranks = ev.ranks_for(r, test["retrieval"])
 
         def answer_rate(cases):
             ok = wrong = 0

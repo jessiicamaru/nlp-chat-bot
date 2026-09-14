@@ -465,6 +465,20 @@ def main() -> int:
     oos_dev_new, oos_test = split([{"text": t, "style": s} for t, s in NEW_OUT_OF_SCOPE])
     int_dev_new, int_test = split([{"text": t, "expected": e} for t, e in NEW_INTENT])
 
+    # Truy vấn CHỈ-TÊN-RIÊNG do người dùng báo lỗi thật (14/09/2026): gõ đúng
+    # chính tả nhưng vẫn bị từ chối. Đây là ca khó có thật của tách từ tiếng
+    # Việt — "Sơn Đoòng" đứng một mình bị tách thành hai âm tiết rời, trong khi
+    # bài báo chứa token ghép "sơn_đoòng" (docs/09, mục 7). Chỗ của ca đã biết
+    # là DEV. Chỉ thêm nếu bài đó còn trong kho, để không vỡ khi kho đổi.
+    dev_only_ret = [
+        ("Sơn Đoòng", "https://vnexpress.net/chiem-nghiem-tu-cuoc-tham-hiem-son-doong-phut-89-cua-ceo-viet-5119565.html", "chỉ tên riêng"),
+        ("tin về Sơn Đoòng", "https://vnexpress.net/chiem-nghiem-tu-cuoc-tham-hiem-son-doong-phut-89-cua-ceo-viet-5119565.html", "chỉ tên riêng"),
+    ]
+    url_to_title = dict(zip(urls, titles))
+    dev_extra = [{"query": q, "gold_urls": [u], "gold_titles": [url_to_title[u]],
+                  "style": st, "origin": "người dùng báo lỗi"}
+                 for q, u, st in dev_only_ret if u in url_to_title]
+
     dev_oos = ([{"text": t, "style": "cũ", "origin": "cũ"} for t in OLD_OUT_OF_SCOPE]
                + oos_dev_new)
 
@@ -507,7 +521,7 @@ def main() -> int:
             "purpose": "DÒ THAM SỐ. Được phép xem và dùng nhiều lần.",
             "seed": SEED,
         },
-        "retrieval": old_ret + ret_dev_new,
+        "retrieval": old_ret + ret_dev_new + dev_extra,
         "out_of_scope": dev_oos,
         "intent": [{"text": t, "expected": e, "origin": "cũ"} for t, e in OLD_INTENT]
                   + int_dev_new,
