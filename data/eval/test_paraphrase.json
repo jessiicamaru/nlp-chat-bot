@@ -1,0 +1,291 @@
+{
+ "meta": {
+  "split": "test_paraphrase",
+  "purpose": "CHỈ BÁO CÁO, một lần, với tham số đã chốt trên dev_paraphrase.",
+  "seed": 2026
+ },
+ "retrieval": [
+  {
+   "query": "trường đại học dùng trí tuệ nhân tạo chấm thi nói",
+   "gold_urls": [
+    "https://vnexpress.net/dai-hoc-dung-ai-ra-de-coi-thi-va-cham-diem-speaking-5119570.html"
+   ],
+   "gold_titles": [
+    "Đại học dùng AI ra đề, coi thi và chấm điểm Speaking"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "số người mở tài khoản mua bán cổ phiếu tăng mạnh",
+   "gold_urls": [
+    "https://vnexpress.net/nguoi-viet-mo-them-2-trieu-tai-khoan-chung-khoan-sau-8-thang-5118477.html"
+   ],
+   "gold_titles": [
+    "Người Việt mở thêm 2 triệu tài khoản chứng khoán sau 8 tháng"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "Samsung làm máy gấp giống điện thoại thường",
+   "gold_urls": [
+    "https://vnexpress.net/cach-samsung-thu-hep-khoang-cach-giua-smartphone-dang-thanh-va-gap-5117475.html"
+   ],
+   "gold_titles": [
+    "Cách Samsung thu hẹp khoảng cách giữa smartphone dạng thanh và gập"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "Elon Musk tặng thiết bị Internet vệ tinh cho vùng mất sóng",
+   "gold_urls": [
+    "https://vnexpress.net/musk-chia-se-starlink-phu-song-vung-lom-tai-viet-nam-5119562.html",
+    "https://vnexpress.net/starlink-trao-254-thiet-bi-internet-ve-tinh-de-phu-song-vung-lom-5119291.html"
+   ],
+   "gold_titles": [
+    "Musk chia sẻ Starlink phủ sóng vùng lõm tại Việt Nam",
+    "Starlink trao 254 thiết bị Internet vệ tinh để phủ sóng vùng lõm"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "giới trẻ cầm sách học đi chụp ảnh ở điểm địa chất",
+   "gold_urls": [
+    "https://vnexpress.net/trao-luu-check-in-theo-sach-giao-khoa-o-trung-quoc-5117403.html"
+   ],
+   "gold_titles": [
+    "Trào lưu 'check in theo sách giáo khoa' ở Trung Quốc"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "thầy hiệu trưởng xoay sở khi gộp nhiều trường thành một",
+   "gold_urls": [
+    "https://vnexpress.net/hieu-truong-xoay-xo-voi-sieu-truong-sau-sap-nhap-5113771.html"
+   ],
+   "gold_titles": [
+    "Hiệu trưởng xoay xở với 'siêu trường' sau sáp nhập"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "robot lau nhà rồi sẽ phổ biến như máy giặt",
+   "gold_urls": [
+    "https://vnexpress.net/ceo-tineco-may-lau-san-kho-uot-se-pho-bien-nhu-may-giat-5115876.html"
+   ],
+   "gold_titles": [
+    "CEO Tineco: Máy lau sàn khô ướt sẽ phổ biến như máy giặt"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "bé gái nhìn gần bị mờ nặng",
+   "gold_urls": [
+    "https://vnexpress.net/be-6-tuoi-vien-thi-7-do-5118243.html"
+   ],
+   "gold_titles": [
+    "Bé 6 tuổi viễn thị 7 độ"
+   ],
+   "style": "mô tả"
+  },
+  {
+   "query": "nơi nghỉ không có internet, muốn đặt chỗ phải gửi thư",
+   "gold_urls": [
+    "https://vnexpress.net/khu-nghi-duong-chi-nhan-dat-phong-bang-thu-tay-5116757.html"
+   ],
+   "gold_titles": [
+    "Khu nghỉ dưỡng chỉ nhận đặt phòng bằng thư tay"
+   ],
+   "style": "mô tả"
+  },
+  {
+   "query": "một phần năm học trò cấp hai bị trêu chọc thường xuyên",
+   "gold_urls": [
+    "https://vnexpress.net/gan-20-hoc-sinh-viet-bi-bat-nat-vai-lan-moi-thang-5118569.html"
+   ],
+   "gold_titles": [
+    "Gần 20% học sinh Việt bị bắt nạt 'vài lần mỗi tháng'"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "vì sao người ta khoái xem người máy té",
+   "gold_urls": [
+    "https://vnexpress.net/tai-sao-con-nguoi-thich-xem-robot-nga-5117414.html"
+   ],
+   "gold_titles": [
+    "Tại sao con người thích xem robot ngã?"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "nhà khoa học trưởng OpenAI nói thế giới chưa sẵn sàng với trí tuệ nhân tạo",
+   "gold_urls": [
+    "https://vnexpress.net/sep-openai-chua-ai-san-sang-cho-he-qua-cua-ai-5117866.html"
+   ],
+   "gold_titles": [
+    "Sếp OpenAI: 'Chưa ai sẵn sàng cho hệ quả của AI'"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "đề xuất đánh thuế các món hàng giá trị nhỏ mua từ nước ngoài",
+   "gold_urls": [
+    "https://vnexpress.net/hang-nhap-khau-tren-100-000-dong-co-the-khong-con-duoc-mien-thue-5118124.html"
+   ],
+   "gold_titles": [
+    "Hàng nhập khẩu trên 100.000 đồng có thể không còn được miễn thuế"
+   ],
+   "style": "mô tả"
+  },
+  {
+   "query": "lợi tức trái phiếu kho bạc Hoa Kỳ cao nhất ba năm",
+   "gold_urls": [
+    "https://vnexpress.net/loi-suat-trai-phieu-chinh-phu-my-len-cao-nhat-3-nam-5118685.html"
+   ],
+   "gold_titles": [
+    "Lợi suất trái phiếu chính phủ Mỹ lên cao nhất 3 năm"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "Ả Rập Xê Út khóa ống dẫn, giá dầu leo thang",
+   "gold_urls": [
+    "https://vnexpress.net/gia-dau-tho-tang-khi-arab-saudi-dong-duong-ong-qua-hormuz-5119896.html"
+   ],
+   "gold_titles": [
+    "Giá dầu thô tăng khi Arab Saudi đóng đường ống qua Hormuz"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "mô hình OpenAI tự tìm lỗ hổng an ninh mạng",
+   "gold_urls": [
+    "https://vnexpress.net/ai-moi-cua-openai-co-the-tu-tim-va-khai-thac-lo-hong-bao-mat-5115861.html"
+   ],
+   "gold_titles": [
+    "AI mới của OpenAI có thể tự tìm và khai thác lỗ hổng bảo mật"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "trẻ em vùng núi Sơn La có nhà ăn mới",
+   "gold_urls": [
+    "https://vnexpress.net/khanh-thanh-bep-an-cho-hoc-sinh-vung-cao-son-la-5117616.html"
+   ],
+   "gold_titles": [
+    "Khánh thành bếp ăn cho học sinh vùng cao Sơn La"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "thịt gia cầm ngoại nhập còn rẻ hơn rau xanh",
+   "gold_urls": [
+    "https://vnexpress.net/thit-ga-phu-pham-nhap-khau-re-hon-nhieu-loai-rau-5117946.html"
+   ],
+   "gold_titles": [
+    "Thịt gà, phụ phẩm nhập khẩu rẻ hơn nhiều loại rau"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "iPhone mới bỏ tùy chọn màu tối",
+   "gold_urls": [
+    "https://vnexpress.net/iphone-18-pro-co-the-khong-con-mau-den-5115866.html"
+   ],
+   "gold_titles": [
+    "iPhone 18 Pro có thể không còn màu đen"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "dầu thô đắt hơn 100 đô một thùng",
+   "gold_urls": [
+    "https://vnexpress.net/gia-dau-the-gioi-vuot-100-usd-5118404.html"
+   ],
+   "gold_titles": [
+    "Giá dầu thế giới vượt 100 USD"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "tưởng đau bụng khó tiêu hóa ra khối u ở gan",
+   "gold_urls": [
+    "https://vnexpress.net/tuong-roi-loan-tieu-hoa-hoa-u-gan-5118624.html"
+   ],
+   "gold_titles": [
+    "Tưởng rối loạn tiêu hóa hóa u gan"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "sếp Anthropic muốn các hãng làm chậm trí tuệ nhân tạo",
+   "gold_urls": [
+    "https://vnexpress.net/lo-ai-mat-kiem-soat-ceo-anthropic-keu-goi-giam-toc-do-phat-trien-mo-hinh-5119678.html"
+   ],
+   "gold_titles": [
+    "Lo AI mất kiểm soát, CEO Anthropic kêu gọi giảm tốc độ phát triển mô hình"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "nhà máy thủy điện có con đập cao nhất hành tinh",
+   "gold_urls": [
+    "https://vnexpress.net/trung-quoc-van-hanh-dap-thuy-dien-cao-nhat-the-gioi-5116497.html"
+   ],
+   "gold_titles": [
+    "Trung Quốc vận hành đập thủy điện cao nhất thế giới"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "cách nấu nước màu caramel cho món kho",
+   "gold_urls": [
+    "https://vnexpress.net/ky-thuat-thang-duong-lam-nuoc-hang-chuan-vi-5117845.html"
+   ],
+   "gold_titles": [
+    "Kỹ thuật thắng đường làm nước hàng chuẩn vị"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "khu phố ở thủ đô Nhật hạn chế homestay vì khách thiếu văn minh",
+   "gold_urls": [
+    "https://vnexpress.net/quan-du-lich-noi-tieng-tokyo-se-cam-cho-thue-nha-vi-khach-y-thuc-kem-5118335.html"
+   ],
+   "gold_titles": [
+    "Quận du lịch nổi tiếng Tokyo sẽ cấm cho thuê nhà vì khách ý thức kém"
+   ],
+   "style": "mô tả"
+  },
+  {
+   "query": "Trung Quốc phóng thành công hỏa tiễn dùng lại được",
+   "gold_urls": [
+    "https://vnexpress.net/ten-lua-tai-su-dung-trung-quoc-bay-thanh-cong-len-quy-dao-5116086.html"
+   ],
+   "gold_titles": [
+    "Tên lửa tái sử dụng Trung Quốc bay thành công lên quỹ đạo"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "bé trai lạc trên núi được tìm thấy sau 17 giờ",
+   "gold_urls": [
+    "https://vnexpress.net/tim-thay-be-trai-tren-nui-sau-hon-17-tieng-di-lac-5119746.html"
+   ],
+   "gold_titles": [
+    "Tìm thấy bé trai trên núi sau hơn 17 tiếng đi lạc"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "fanpage giả mạo lừa tiền đặt phòng dịp lễ",
+   "gold_urls": [
+    "https://vnexpress.net/nhieu-khach-bi-lua-khi-dat-khach-san-o-mang-den-dip-2-9-5116902.html"
+   ],
+   "gold_titles": [
+    "Nhiều khách bị lừa khi đặt khách sạn ở Măng Đen dịp 2/9"
+   ],
+   "style": "mô tả"
+  }
+ ]
+}

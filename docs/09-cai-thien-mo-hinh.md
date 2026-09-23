@@ -26,7 +26,7 @@ python tools/compare_improvements.py # -> data/eval/improvements_report.txt
 | 2 | **Thuật toán** | sửa logic, không phải sửa config | cách so khớp chữ (từ hay n-gram ký tự), cách tính độ mới | phải viết code, thêm kiểm thử, rồi **dò lại tham số** |
 | 3 | **Dữ liệu tham chiếu** | bảng tra, seed data | 164 mẫu câu intent, 342 cặp teencode, 532 bài báo | dễ làm, nhưng thường chỉ sửa được từng ca một |
 | 4 | **Dữ liệu đánh giá** | bộ test | dev/test, `conflict_case.json`, `dev_typo`/`test_typo` | **không có thì không biết mình có tiến bộ hay không** |
-| 5 | **Đổi mô hình** | thay thư viện / đổi CSDL | TF-IDF → embedding (PhoBERT), hoặc ghép LLM | thay đổi lớn, và vượt ra ngoài phạm vi "from scratch" của đồ án |
+| 5 | **Đổi mô hình** | thay thư viện / đổi CSDL | TF-IDF → embedding (Word2Vec — Lab 05; PhoBERT), hoặc ghép LLM | thay đổi lớn. Đã thử Word2Vec tự cài đặt: **thua TF-IDF** trên dữ liệu này (docs/10) |
 
 **Một điều hay làm người mới bất ngờ: dự án này gần như không có bước "train"
 theo nghĩa học sâu.** "Mô hình" chủ yếu là **thống kê đếm từ** trên corpus. Vì
@@ -363,7 +363,7 @@ Tham số thay đổi — tất cả đều là **hệ quả** của việc đ�
 | Vấn đề còn lại | Đòn bẩy đúng | Ghi chú |
 |---|---|---|
 | Intent chỉ đạt 61.5% — điểm yếu lớn nhất | **3 (dữ liệu tham chiếu)**: thêm mẫu câu cho `dong_y`, `cam_on`, `che_bai`, `huong_dan`, rồi dò lại ngưỡng | Hạ ngưỡng intent **không** phải cách sửa: nó bắt đầu định tuyến nhầm câu hỏi tin tức thành câu soạn sẵn |
-| Không hiểu từ đồng nghĩa ("xe hơi" vs "ô tô") | **5 (đổi mô hình)**: embedding | Vượt phạm vi "from scratch" của đồ án |
+| Không hiểu từ đồng nghĩa ("xe hơi" vs "ô tô") | **5 (đổi mô hình)**: embedding | Đã thử Word2Vec (Lab 05) tự huấn luyện trên kho: **không cải thiện**, vì kho không chứa chính các từ đồng nghĩa người dùng gõ ("hỏa tiễn", "thầy thuốc" = 0 lần). Cần vector huấn luyện sẵn trên kho rất lớn — docs/10 |
 | 3 câu ngoài phạm vi vẫn lọt qua truy hồi | 1 + 4 | Đều là câu có từ khóa trùng ngẫu nhiên ("miền bắc", "mèo") |
 | Nhãn vàng của tập đánh giá cũ dần | **4 (dữ liệu đánh giá)** | Kho lớn dần, có bài **mới hơn** cũng trả lời đúng câu hỏi nhưng không nằm trong nhãn — làm điểm số bị chấm thấp oan. Cần rà lại nhãn định kỳ |
 | Không phát hiện mâu thuẫn giữa các bài | 2 | Cần gom cụm "cùng một sự việc" (docs/05) |

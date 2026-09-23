@@ -1,0 +1,203 @@
+{
+ "meta": {
+  "split": "dev_paraphrase",
+  "purpose": "DÒ tham số thí nghiệm Word2Vec / trọng số lai.",
+  "seed": 2026
+ },
+ "retrieval": [
+  {
+   "query": "lịch đá giải bóng đá Đông Nam Á năm 2026",
+   "gold_urls": [
+    "https://vnexpress.net/lich-thi-dau-fifa-asean-cup-2026-5118354.html"
+   ],
+   "gold_titles": [
+    "Lịch thi đấu FIFA ASEAN Cup 2026"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "hãng hàng không bán vé miễn phí ngày 9/9",
+   "gold_urls": [
+    "https://vnexpress.net/vietjet-mo-ban-hang-nghin-ve-bay-0-dong-dip-9-9-5116882.html"
+   ],
+   "gold_titles": [
+    "Vietjet mở bán hàng nghìn vé bay 0 đồng dịp 9/9"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "phi cơ phải đáp khẩn cấp cần biết gì",
+   "gold_urls": [
+    "https://vnexpress.net/5-dieu-can-biet-khi-may-bay-ha-canh-khan-5116382.html"
+   ],
+   "gold_titles": [
+    "5 điều cần biết khi máy bay hạ cánh khẩn"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "cô gái đi chơi xa một mình để quên người cũ",
+   "gold_urls": [
+    "https://vnexpress.net/chua-lanh-bang-chuyen-du-lich-mot-minh-sau-khi-bo-nguoi-yeu-5117859.html"
+   ],
+   "gold_titles": [
+    "Chữa lành bằng chuyến du lịch một mình sau khi bỏ người yêu"
+   ],
+   "style": "mô tả"
+  },
+  {
+   "query": "những chỗ muỗi đẻ trứng trong nhà",
+   "gold_urls": [
+    "https://vnexpress.net/5-khu-vuc-de-thanh-o-muoi-trong-nha-5119486.html"
+   ],
+   "gold_titles": [
+    "5 khu vực dễ thành ổ muỗi trong nhà"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "ngày tựu trường ở ngôi trường có 112 lớp",
+   "gold_urls": [
+    "https://vnexpress.net/ngay-khai-giang-o-truong-hoc-thuoc-dien-dong-nhat-ca-nuoc-5116866.html"
+   ],
+   "gold_titles": [
+    "Ngày khai giảng ở trường học thuộc diện đông nhất cả nước"
+   ],
+   "style": "mô tả"
+  },
+  {
+   "query": "chó máy dắt người khiếm thị đi đường",
+   "gold_urls": [
+    "https://vnexpress.net/cong-ty-trung-quoc-ra-mat-robot-cho-dan-duong-5117128.html"
+   ],
+   "gold_titles": [
+    "Công ty Trung Quốc ra mắt robot chó dẫn đường"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "dân thu nhập thấp ở Hoa Kỳ khó kiếm chỗ ở",
+   "gold_urls": [
+    "https://vnexpress.net/nguoi-ngheo-my-chat-vat-tim-nha-thue-5117975.html"
+   ],
+   "gold_titles": [
+    "Người nghèo Mỹ chật vật tìm nhà thuê"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "thói quen hằng ngày giúp giảm lượng đường trong máu",
+   "gold_urls": [
+    "https://vnexpress.net/7-viec-nen-lam-moi-ngay-co-the-ha-duong-huyet-5119225.html"
+   ],
+   "gold_titles": [
+    "7 việc nên làm mỗi ngày có thể hạ đường huyết"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "smartphone màn hình gấp đầu tiên của Apple",
+   "gold_urls": [
+    "https://vnexpress.net/iphone-duo-dien-thoai-gap-dau-tien-cua-apple-5118592.html",
+    "https://vnexpress.net/iphone-lan-dau-co-gia-tram-trieu-dong-tai-viet-nam-5118591.html",
+    "https://vnexpress.net/hinh-dung-ve-iphone-gap-truoc-le-ra-mat-5117833.html"
+   ],
+   "gold_titles": [
+    "iPhone Duo - điện thoại gập đầu tiên của Apple",
+    "iPhone lần đầu có giá trăm triệu đồng tại Việt Nam",
+    "Hình dung về iPhone gập trước lễ ra mắt"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "tỉnh thưởng tiền cho thầy cô có trò đoạt giải quốc tế",
+   "gold_urls": [
+    "https://vnexpress.net/thuong-giao-vien-co-hoc-sinh-dat-giai-quoc-te-toi-500-trieu-dong-5119535.html"
+   ],
+   "gold_titles": [
+    "Thưởng giáo viên có học sinh đạt giải quốc tế tới 500 triệu đồng"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "mẹo giữ an toàn khi ra nước ngoài chơi",
+   "gold_urls": [
+    "https://vnexpress.net/bi-kip-song-con-de-di-du-lich-nuoc-ngoai-an-toan-5117062.html"
+   ],
+   "gold_titles": [
+    "Bí kíp sống còn để đi du lịch nước ngoài an toàn"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "sưng chân vì tĩnh mạch bị đứt đoạn",
+   "gold_urls": [
+    "https://vnexpress.net/phu-chan-do-bat-thuong-mach-mau-5118619.html"
+   ],
+   "gold_titles": [
+    "Phù chân do bất thường mạch máu"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "linh kiện điện tử nhập nhiều hơn xuất tới 60 tỷ đô",
+   "gold_urls": [
+    "https://vnexpress.net/dien-tu-nhap-sieu-60-ty-usd-chinh-phu-yeu-cau-tim-giai-phap-thuc-day-xuat-khau-5118063.html"
+   ],
+   "gold_titles": [
+    "Điện tử nhập siêu 60 tỷ USD, Chính phủ yêu cầu tìm giải pháp thúc đẩy xuất khẩu"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "người Việt ngại tới hòn đảo Hàn Quốc sau vụ án mạng",
+   "gold_urls": [
+    "https://vnexpress.net/khach-viet-ne-du-lich-jeju-sau-vu-phat-hien-4-thi-the-5117584.html"
+   ],
+   "gold_titles": [
+    "Khách Việt né du lịch Jeju sau vụ phát hiện 4 thi thể"
+   ],
+   "style": "mô tả"
+  },
+  {
+   "query": "chả giò chiên bị khét hai đầu",
+   "gold_urls": [
+    "https://vnexpress.net/vi-sao-nem-ran-thuong-chay-den-hai-dau-5114901.html"
+   ],
+   "gold_titles": [
+    "Vì sao nem rán thường cháy đen hai đầu?"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "nghe lời trí tuệ nhân tạo leo núi rồi bị lạc trong đêm",
+   "gold_urls": [
+    "https://vnexpress.net/ket-dang-cua-du-khach-qua-tin-vao-ai-5117047.html"
+   ],
+   "gold_titles": [
+    "Kết đắng của du khách quá tin vào AI"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "học bổng đại học Hồng Kông",
+   "gold_urls": [
+    "https://vnexpress.net/co-hoi-tim-hoc-bong-du-hoc-hong-kong-5117794.html"
+   ],
+   "gold_titles": [
+    "Cơ hội tìm học bổng du học Hong Kong"
+   ],
+   "style": "đồng nghĩa"
+  },
+  {
+   "query": "nhiều trường ở Sài Gòn chưa cho học trò ăn trưa tại trường",
+   "gold_urls": [
+    "https://vnexpress.net/hai-ly-do-khien-loat-truong-o-tp-hcm-nghen-ban-tru-5117980.html"
+   ],
+   "gold_titles": [
+    "Hai lý do khiến loạt trường ở TP HCM 'nghẽn' bán trú"
+   ],
+   "style": "đồng nghĩa"
+  }
+ ]
+}

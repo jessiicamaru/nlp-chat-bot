@@ -1,0 +1,126 @@
+==============================================================================
+THÍ NGHIỆM LAB 05 — WORD2VEC (tự cài đặt) vs TF-IDF
+==============================================================================
+Kho: 532 bài, 163,769 token sau tách từ + bỏ stopword, 18,724 từ khác nhau
+Câu hỏi: dev 114, test 122, dev_paraphrase 19, test_paraphrase 28, ngoài phạm vi (dev) 36
+Độ mới TẮT ở mọi phương pháp — so chất lượng xếp hạng thuần.
+
+------------------------------------------------------------------------------
+PHẦN 1 — CHỌN CẤU HÌNH WORD2VEC TRÊN DEV (window=5, skip-gram, epochs=30)
+------------------------------------------------------------------------------
+TF-IDF (tham chiếu)                dev: R@1 110/114 (96.5%)  R@3 110/114  MRR 0.970
+                                   para: R@1  12/19 (63.2%)  R@3  15/19  MRR 0.721
+
+(huấn luyện song song 6 cấu hình: 640s)
+
+d=50  min_count=1 TB thường (Lab 05) dev: R@1  78/114 (68.4%)  R@3  93/114  MRR 0.757
+                                   para: R@1   8/19 (42.1%)  R@3  15/19  MRR 0.603   (18,724 từ, 375s)
+d=50  min_count=1 TB trọng số idf  dev: R@1  83/114 (72.8%)  R@3  95/114  MRR 0.786
+                                   para: R@1   8/19 (42.1%)  R@3  13/19  MRR 0.594   (18,724 từ, 375s)
+d=50  min_count=3 TB thường (Lab 05) dev: R@1  80/114 (70.2%)  R@3  93/114  MRR 0.771
+                                   para: R@1   8/19 (42.1%)  R@3  13/19  MRR 0.577   (6,928 từ, 327s)
+d=50  min_count=3 TB trọng số idf  dev: R@1  84/114 (73.7%)  R@3  96/114  MRR 0.796
+                                   para: R@1   8/19 (42.1%)  R@3  12/19  MRR 0.561   (6,928 từ, 327s)
+d=50  min_count=5 TB thường (Lab 05) dev: R@1  81/114 (71.1%)  R@3  94/114  MRR 0.774
+                                   para: R@1   9/19 (47.4%)  R@3  13/19  MRR 0.622   (4,785 từ, 298s)
+d=50  min_count=5 TB trọng số idf  dev: R@1  81/114 (71.1%)  R@3  93/114  MRR 0.768
+                                   para: R@1   9/19 (47.4%)  R@3  12/19  MRR 0.611   (4,785 từ, 298s)
+d=100 min_count=1 TB thường (Lab 05) dev: R@1  81/114 (71.1%)  R@3  96/114  MRR 0.779
+                                   para: R@1   9/19 (47.4%)  R@3  14/19  MRR 0.623   (18,724 từ, 636s)
+d=100 min_count=1 TB trọng số idf  dev: R@1  83/114 (72.8%)  R@3  98/114  MRR 0.794
+                                   para: R@1  10/19 (52.6%)  R@3  14/19  MRR 0.666   (18,724 từ, 636s)
+d=100 min_count=3 TB thường (Lab 05) dev: R@1  85/114 (74.6%)  R@3  97/114  MRR 0.798
+                                   para: R@1   9/19 (47.4%)  R@3  12/19  MRR 0.622   (6,928 từ, 572s)
+d=100 min_count=3 TB trọng số idf  dev: R@1  87/114 (76.3%)  R@3  98/114  MRR 0.810
+                                   para: R@1   9/19 (47.4%)  R@3  12/19  MRR 0.613   (6,928 từ, 572s)
+d=100 min_count=5 TB thường (Lab 05) dev: R@1  83/114 (72.8%)  R@3  94/114  MRR 0.786
+                                   para: R@1  11/19 (57.9%)  R@3  15/19  MRR 0.698   (4,785 từ, 538s)
+d=100 min_count=5 TB trọng số idf  dev: R@1  86/114 (75.4%)  R@3  95/114  MRR 0.806
+                                   para: R@1  10/19 (52.6%)  R@3  14/19  MRR 0.654   (4,785 từ, 538s)
+
+-> chốt Word2Vec: d=100, min_count=5, TB thường (Lab 05) (mục tiêu: TB MRR của dev và dev_paraphrase)
+
+------------------------------------------------------------------------------
+PHẦN 2 — VECTOR HỌC ĐƯỢC TRÔNG THẾ NÀO? (mô hình đã chốt)
+------------------------------------------------------------------------------
+Cặp từ đồng nghĩa / gần nghĩa (cosine; '-' = một trong hai từ KHÔNG có vector):
+        máy_bay ~ phi_cơ       +0.471   (số lần xuất hiện: 176 / 5)
+       học_sinh ~ học_trò      +0.415   (số lần xuất hiện: 299 / 20)
+         bác_sĩ ~ thầy_thuốc      -     (số lần xuất hiện: 240 / 0)
+     điện_thoại ~ smartphone   +0.653   (số lần xuất hiện: 155 / 55)
+        tên_lửa ~ hỏa_tiễn        -     (số lần xuất hiện: 73 / 0)
+            giá ~ tiền         +0.183   (số lần xuất hiện: 398 / 367)
+             mỹ ~ hoa_kỳ          -     (số lần xuất hiện: 297 / 0)
+           ô_tô ~ xe_hơi          -     (số lần xuất hiện: 0 / 0)
+
+Hàng xóm gần nhất (Lab 05: 'Similar ≠ Synonym'):
+       máy_bay: boeing, siêu_thanh, x-59, air_france, bay, hạ_cánh
+        bác_sĩ: chuyên_khoa, nội_trú, srimathi, sản_phụ, y, tú
+      học_sinh: giáo_viên, năm_học, năng_khiếu, thcs, khai_giảng, trường
+    điện_thoại: gập, smartphone, huawei_famcare, đăng_ảnh, cài_đặt, kiểu_dáng
+        iphone: pro, pro_max, duo, ultra, phonearena, apple
+           dầu: dầu_thô, diesel, brent, leo_thang, trung_đông, wti
+         chuối: mọng, chua, yến_mạch, chất_xơ, củ, nguyên_hạt
+         robot: robot_hình, hình_dạng, unitree, lynx_m20, xpeng, xiaoyuan
+
+------------------------------------------------------------------------------
+PHẦN 3 — ĐỘ PHỦ (Lab 05, Phần 5): câu hỏi có bao nhiêu token có vector?
+------------------------------------------------------------------------------
+   dev             chỉ tên riêng  n=  2  độ phủ TB 83.3%  câu KHÔNG có token nào: 0
+   dev             có dấu         n= 78  độ phủ TB 84.1%  câu KHÔNG có token nào: 0
+   dev             không dấu      n= 23  độ phủ TB 36.3%  câu KHÔNG có token nào: 1
+   dev             teencode       n= 11  độ phủ TB 77.1%  câu KHÔNG có token nào: 0
+   dev_paraphrase  mô tả          n=  3  độ phủ TB 82.1%  câu KHÔNG có token nào: 0
+   dev_paraphrase  đồng nghĩa     n= 16  độ phủ TB 86.4%  câu KHÔNG có token nào: 0
+
+------------------------------------------------------------------------------
+PHẦN 4 — LAI: điểm = cosine TF-IDF + λ · cosine Word2Vec (chọn λ trên DEV)
+------------------------------------------------------------------------------
+    λ   dev R@1  dev MRR   para R@1  para MRR
+ 0.00    110/114    0.970      12/19     0.721
+ 0.05    110/114    0.971      12/19     0.728
+ 0.10    110/114    0.972      12/19     0.728
+ 0.20    110/114    0.972      12/19     0.741
+ 0.30    109/114    0.967      12/19     0.739
+ 0.50    109/114    0.968      12/19     0.752
+ 0.75    105/114    0.946      12/19     0.753
+ 1.00    102/114    0.923      12/19     0.754
+ 1.50    100/114    0.896      12/19     0.752
+ 2.00    100/114    0.894      11/19     0.719
+
+-> chốt λ = 0.5
+
+------------------------------------------------------------------------------
+PHẦN 5 — DÙNG LÀM NGƯỠNG CHẤP NHẬN ĐƯỢC KHÔNG? (DEV: trong phạm vi vs ngoài phạm vi)
+------------------------------------------------------------------------------
+   TF-IDF    điểm top-1 câu trong phạm vi: trung vị 0.205 | ngoài phạm vi: trung vị 0.067, max 0.190
+             ngưỡng tốt nhất 0.132 -> TB(trả lời được, chặn đúng) = 91.1%
+   Word2Vec  điểm top-1 câu trong phạm vi: trung vị 0.826 | ngoài phạm vi: trung vị 0.676, max 0.842
+             ngưỡng tốt nhất 0.716 -> TB(trả lời được, chặn đúng) = 79.2%
+
+------------------------------------------------------------------------------
+PHẦN 6 — BÁO CÁO TRÊN TEST (MỘT lần; d=100, min_count=5, TB thường (Lab 05), λ=0.5)
+------------------------------------------------------------------------------
+
+[test]
+   TF-IDF    R@1 111/122 (91.0%)  R@3 117/122  MRR 0.937
+   Word2Vec  R@1  84/122 (68.9%)  R@3  95/122  MRR 0.742
+   Lai       R@1 110/122 (90.2%)  R@3 114/122  MRR 0.923
+   Word2Vec so với TF-IDF: tốt hơn 4 câu, kém hơn 37 câu -> p = 0.000  (CÓ ý nghĩa)
+   Lai so với TF-IDF: tốt hơn 4 câu, kém hơn 8 câu -> p = 0.388  (không có ý nghĩa thống kê)
+
+[test_paraphrase]
+   TF-IDF    R@1  18/28 (64.3%)  R@3  21/28  MRR 0.729
+   Word2Vec  R@1  11/28 (39.3%)  R@3  20/28  MRR 0.563
+   Lai       R@1  15/28 (53.6%)  R@3  21/28  MRR 0.658
+   Word2Vec so với TF-IDF: tốt hơn 5 câu, kém hơn 9 câu -> p = 0.424  (không có ý nghĩa thống kê)
+   Lai so với TF-IDF: tốt hơn 6 câu, kém hơn 6 câu -> p = 1.000  (không có ý nghĩa thống kê)
+
+[test — theo kiểu câu, Recall@1]
+   có dấu      TF-IDF 80/86  Word2Vec 69/86  Lai 80/86
+   không dấu   TF-IDF 20/22  Word2Vec  7/22  Lai 19/22
+   teencode    TF-IDF 11/14  Word2Vec  8/14  Lai 11/14
+
+[test_paraphrase — nếu đưa bản Lai vào bot, cổng chấp nhận vẫn là cosine TF-IDF >= 0.13]
+   TF-IDF    trả lời ĐÚNG bài và vượt ngưỡng: 10/28
+   Lai       trả lời ĐÚNG bài và vượt ngưỡng: 11/28

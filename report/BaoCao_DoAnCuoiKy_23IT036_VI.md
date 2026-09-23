@@ -1439,3 +1439,59 @@ lời", nên số câu **trả lời sai** tăng (trên tập gõ sai 7 → 8, t
 4). Bù lại nó không làm lọt thêm câu ngoài phạm vi nào, và mỗi câu trả lời theo
 đường này đều kèm lời nhắc "có thể bạn gõ nhầm". Bộ kiểm thử hồi quy tăng từ 21
 lên 26 ca, trong đó có hai ca canh đúng hai bất biến vừa nêu.
+
+---
+
+### Phụ lục H — Thí nghiệm Lab 05: có nên đưa Word2Vec vào chatbot?
+
+Lab 05 dạy Word Embedding (Word2Vec) và mở đầu đúng bằng hạn chế mà báo cáo này
+đã ghi nhận ở mục 10: với TF-IDF, `ô_tô` và `xe_hơi` là hai chiều tách biệt.
+Thay vì lập luận, chúng tôi **đo**. Chi tiết đầy đủ ở `docs/10-word2vec-lab05.md`,
+số liệu thô ở `data/eval/word2vec_report.txt`.
+
+**H.1. Cài đặt.** Lab 05 dùng `gensim`. Để giữ nguyên tắc "lõi tự cài đặt",
+Word2Vec được viết lại bằng NumPy (`src/word2vec.py`): skip-gram + negative
+sampling, cửa sổ động, subsampling, nhiễu unigram^0,75. Kiểm chứng bằng
+`tests/test_word2vec.py` (12/12 đạt): gradient giải tích khớp đạo hàm số tới
+~3×10⁻⁸; trên kho đồ chơi hai nhóm từ tách biệt, cosine cùng nhóm 0,965 so với
+0,135 khác nhóm. Nghĩa là kết quả dưới đây phản ánh kỹ thuật, không phải lỗi cài
+đặt. Module **không** được chatbot dùng.
+
+**H.2. Thiết kế.** Tập dev/test gốc toàn câu kiểu từ khóa — sân nhà của TF-IDF,
+đo trên đó là không công bằng với embedding. Vì vậy viết thêm **47 câu diễn đạt
+lại** (19 dev / 28 test), mỗi câu mô tả một bài báo bằng từ khác tiêu đề ("chả
+giò chiên bị khét hai đầu" cho bài "Vì sao nem rán thường cháy đen hai đầu?").
+Quy trình như thí nghiệm BM25 (mục 5.10): độ mới tắt; chọn cấu hình (12 phương
+án: `vector_size` × `min_count` × cách lấy trung bình) và trọng số lai λ trên
+dev; test chạy một lần; kiểm định dấu có cặp.
+
+**H.3. Kết quả trên test.**
+
+| Tập | TF-IDF | Word2Vec (TB vector, Lab 05) | Lai (TF-IDF + 0,5·W2V) |
+|---|---|---|---|
+| test — R@1 | **91,0%** | 68,9% (kém hơn 37 câu, hơn 4; p < 0,001) | 90,2% (p = 0,39) |
+| test_paraphrase — R@1 | **64,3%** | 39,3% (p = 0,42) | 53,6% (p = 1,0) |
+| câu không dấu — R@1 | **20/22** | 7/22 | 19/22 |
+| làm ngưỡng từ chối — TB(trả lời được, chặn đúng) trên dev | **91,1%** | 79,2% | — |
+
+Word2Vec kém TF-IDF có ý nghĩa thống kê trên câu hỏi thật, và **không** tốt hơn
+ngay cả trên câu diễn đạt lại — loại câu nó sinh ra để giải. Bản lai cho mức tăng
+trên dev (MRR diễn đạt lại 0,721 → 0,752) nhưng mức tăng đó **không lặp lại** trên
+test (0,729 → 0,658) — đúng hiện tượng mà quy tắc "chỉ đổi khi p < 0,05" ngăn.
+
+**H.4. Nguyên nhân.** (1) Kho không chứa chính các từ đồng nghĩa người dùng gõ:
+"tên lửa" 73 lần nhưng "hỏa tiễn" 0 lần, "thầy thuốc" 0, "ô tô" và "xe hơi" đều 0 —
+không thể học quan hệ giữa hai từ khi một từ chưa từng xuất hiện. (2) Kho quá nhỏ
+cho embedding: 163.769 token, chỉ 4.785 từ xuất hiện ≥ 5 lần; hàng xóm gần nhất
+của `bác_sĩ` có cả `srimathi` — tên một người trong một bài báo. (3) Lấy trung
+bình pha loãng tên riêng hiếm, thứ mà IDF khuếch đại. (4) Cosine của vector trung
+bình luôn cao (câu ngoài phạm vi đạt tới 0,842, cao hơn trung vị câu trong phạm vi
+0,826), nên không làm được ngưỡng từ chối — nguyên tắc cốt lõi của kiến trúc.
+
+**H.5. Quyết định.** Không đưa Word2Vec vào chatbot; giữ TF-IDF. Đây là một kết quả
+âm có kiểm chứng, cùng loại với BM25. Giới hạn của kết luận: tập diễn đạt lại nhỏ
+(khoảng tin cậy rộng), chỉ thử cách lấy trung bình của Lab 05, và chỉ thử vector
+tự huấn luyện trên kho. Hướng có triển vọng thật là vector huấn luyện sẵn trên kho
+tiếng Việt rất lớn, vector n-gram ký tự (fastText), hoặc dùng embedding cho bài
+toán **phân loại ý định** — đúng "cầu nối sang Buổi 6" mà Lab 05 đặt ra, và là
+điểm yếu nhất hiện tại của đồ án (61,5%).

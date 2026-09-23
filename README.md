@@ -91,10 +91,13 @@ python src/api.py
 python tests/test_vectorizer.py     # đối chiếu TF-IDF với sklearn + BM25 với cài đặt tham chiếu
 python tests/test_chatbot.py        # 26 kiểm thử hồi quy, mỗi cái ứng với một lỗi thật
 python tests/test_rag.py            # 29 kiểm thử lớp RAG, không cần GPU
+python tests/test_word2vec.py       # 12 kiểm thử Word2Vec tự cài đặt (kiểm tra gradient)
 python src/evaluate.py              # dò trên DEV, báo cáo trên TEST (Recall@k, MRR, F1, KTC 95%)
 python tools/build_eval_sets.py     # tái tạo tập dev/test (seed cố định)
 python tools/build_typo_sets.py     # sinh tập truy vấn GÕ SAI từ dev/test
 python tools/compare_improvements.py # chọn thiết kế chống gõ sai + so trước/sau
+python tools/exp_word2vec.py        # thí nghiệm Lab 05: Word2Vec vs TF-IDF (docs/10)
+python tools/stress_test.py         # thử 136 câu hỏi kiểu người dùng thật
 python src/normalizer.py            # học + đánh giá từ điển teencode (ERR)
 python src/generator.py             # thí nghiệm sinh văn bản n-gram
 
@@ -197,6 +200,7 @@ final-project/
 │   ├── config.py            # đường dẫn + siêu tham số (đã dò thực nghiệm)
 │   ├── preprocess.py        # pipeline tiếng Việt (Lab 03) + xử lý không dấu
 │   ├── vectorizer.py        # BoW / n-gram / TF-IDF / cosine / BM25 — TỰ CÀI ĐẶT
+│   ├── word2vec.py          # Word2Vec skip-gram — TỰ CÀI ĐẶT, chỉ dùng cho thí nghiệm
 │   ├── intent_classifier.py # Naive Bayes TỰ CÀI ĐẶT + ensemble cosine
 │   ├── retriever.py         # truy hồi 2 tầng: bài báo -> câu
 │   ├── normalizer.py        # chuẩn hóa teencode học từ ViLexNorm
@@ -240,13 +244,18 @@ final-project/
 │   ├── 06-danh-gia-trung-thuc-va-bm25.md
 │   ├── 07-rag-phogpt.md
 │   ├── 08-runbook-cap-nhat-du-lieu.md   # crawl hằng ngày + cập nhật mô hình
-│   └── 09-cai-thien-mo-hinh.md          # năm "đòn bẩy" cải thiện + hai ca sửa thật
+│   ├── 09-cai-thien-mo-hinh.md          # năm "đòn bẩy" cải thiện + ba ca sửa thật
+│   └── 10-word2vec-lab05.md             # Lab 05: có nên đưa Word2Vec vào bot? (không)
 ├── tests/test_vectorizer.py         # TF-IDF vs sklearn, BM25 vs tham chiếu
 ├── tests/test_chatbot.py            # 26 kiểm thử hồi quy
 ├── tests/test_rag.py                # 29 kiểm thử RAG (không cần GPU)
+├── tests/test_word2vec.py           # 12 kiểm thử Word2Vec (gradient, kho đồ chơi)
 ├── tools/build_eval_sets.py         # sinh tập dev/test
 ├── tools/build_typo_sets.py         # sinh tập truy vấn gõ sai chính tả
 ├── tools/compare_improvements.py    # số liệu cho docs/09 (chọn thiết kế, trước/sau)
+├── tools/build_paraphrase_set.py    # tập câu hỏi DIỄN ĐẠT LẠI cho thí nghiệm Lab 05
+├── tools/exp_word2vec.py            # thí nghiệm Word2Vec vs TF-IDF (docs/10)
+├── tools/stress_test.py             # thử tải 136 câu hỏi kiểu người dùng
 ├── tools/build_notebook.py          # sinh notebook báo cáo
 ├── tools/build_rag_notebook.py      # sinh notebook RAG cho Colab
 ├── tools/make_colab_bundle.py       # đóng gói mã + dữ liệu cho Colab
@@ -266,6 +275,7 @@ final-project/
 | **Lab 02** | requests + BeautifulSoup, validation | `crawler.py` — mở rộng corpus lên 381 bài |
 | **Lab 03** | `preprocess_vi(text, config)`, stopwords | `preprocess.py` — pipeline dùng chung |
 | **Lab 04** | BoW, n-gram, TF-IDF, cosine similarity | `vectorizer.py`, `retriever.py`, và phần **TF-IDF + cosine** của `intent_classifier.py` |
+| **Lab 05** | Word2Vec, vector tài liệu trung bình, OOV & độ phủ | `word2vec.py` — **tự cài đặt**, dùng cho **thí nghiệm**, KHÔNG vào bot vì thua TF-IDF trên dữ liệu này ([docs/10](docs/10-word2vec-lab05.md)) |
 
 **Những phần KHÔNG đến từ lab** (tự bổ sung, để không nhận vơ): bộ phân lớp
 **Multinomial Naive Bayes** (`intent_classifier.py` — Lab 04 chỉ dạy biểu diễn
@@ -341,7 +351,11 @@ chép nguyên văn). Lựa chọn kiến trúc dựa trên số liệu, không p
 1. **Không hiểu từ đồng nghĩa** — TF-IDF so khớp trên mặt chữ; "xe hơi" không
    tìm ra bài dùng "ô tô". Đây là hạn chế cốt lõi của mô hình túi từ. (Gõ **sai
    chính tả** thì đã xử lý được bằng chỉ mục n-gram ký tự — docs/09 — nhưng đó
-   là "gần giống mặt chữ", không phải "gần giống nghĩa".)
+   là "gần giống mặt chữ", không phải "gần giống nghĩa".) Đã thử Word Embedding
+   của Lab 05 để sửa hạn chế này — không được: kho không chứa chính những từ
+   đồng nghĩa người dùng gõ ("hỏa tiễn", "thầy thuốc", "ô tô" đều 0 lần), nên
+   Word2Vec tự huấn luyện không học được chúng. Chi tiết và số liệu:
+   [docs/10](docs/10-word2vec-lab05.md).
 2. **Không suy luận, không sinh văn bản, không diễn đạt lại** — bot lõi trích
    xuất 100%, chỉ trả về câu đã có sẵn trong corpus. Đây là giới hạn **kiến
    trúc**, đã kiểm chứng bằng thực nghiệm ở [docs/04](docs/04-thi-nghiem-sinh-van-ban.md).

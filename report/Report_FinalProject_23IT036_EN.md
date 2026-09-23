@@ -1459,3 +1459,65 @@ set, 3 → 4 on the clean set). In exchange it leaks no additional out-of-scope
 questions, and every answer produced through this path carries an explicit "you
 may have mistyped" note. The regression suite grew from 21 to 26 cases, two of
 which guard the invariants described above.
+
+---
+
+### Appendix H — Lab 05 Experiment: Should Word2Vec Go into the Chatbot?
+
+Lab 05 teaches word embeddings (Word2Vec) and opens with exactly the limitation
+this report records in Section 10: under TF-IDF, `ô_tô` and `xe_hơi` are separate
+dimensions. Rather than argue, we **measured**. Full details are in
+`docs/10-word2vec-lab05.md`; raw numbers in `data/eval/word2vec_report.txt`.
+
+**H.1. Implementation.** Lab 05 uses `gensim`. To keep the project's
+"hand-implemented core" principle, Word2Vec was rewritten in NumPy
+(`src/word2vec.py`): skip-gram with negative sampling, dynamic window,
+subsampling, unigram^0.75 noise distribution. It is verified by
+`tests/test_word2vec.py` (12/12 pass): analytic gradients match numerical
+derivatives to ~3×10⁻⁸, and on a toy corpus of two disjoint word groups the
+within-group cosine is 0.965 versus 0.135 across groups. The results below
+therefore reflect the technique, not an implementation bug. The module is **not**
+used by the chatbot.
+
+**H.2. Design.** The original dev/test questions are keyword-style — TF-IDF's
+home ground, so measuring there alone would be unfair to embeddings. We therefore
+wrote **47 paraphrase questions** (19 dev / 28 test), each describing an article
+in words that avoid its title ("chả giò chiên bị khét hai đầu" for the article
+"Vì sao nem rán thường cháy đen hai đầu?"). The protocol mirrors the BM25
+experiment (Section 5.10): freshness off; the configuration (12 variants:
+`vector_size` × `min_count` × averaging scheme) and the hybrid weight λ are chosen
+on dev; test is run once; paired sign test.
+
+**H.3. Test results.**
+
+| Set | TF-IDF | Word2Vec (averaged vectors, Lab 05) | Hybrid (TF-IDF + 0.5·W2V) |
+|---|---|---|---|
+| test — R@1 | **91.0%** | 68.9% (worse on 37, better on 4; p < 0.001) | 90.2% (p = 0.39) |
+| test_paraphrase — R@1 | **64.3%** | 39.3% (p = 0.42) | 53.6% (p = 1.0) |
+| unaccented questions — R@1 | **20/22** | 7/22 | 19/22 |
+| as a refusal gate — mean(answerable, correctly refused) on dev | **91.1%** | 79.2% | — |
+
+Word2Vec is significantly worse than TF-IDF on real questions and is **not**
+better even on paraphrases — the very case it exists for. The hybrid showed a gain
+on dev (paraphrase MRR 0.721 → 0.752) that **did not replicate** on test
+(0.729 → 0.658), exactly the pattern the "switch only when p < 0.05" rule guards
+against.
+
+**H.4. Causes.** (1) The corpus does not contain the synonyms users actually
+type: "tên lửa" appears 73 times but "hỏa tiễn" 0, "thầy thuốc" 0, and "ô tô" and
+"xe hơi" both 0 — no model can learn a relation to a word it has never seen.
+(2) The corpus is too small for embeddings: 163,769 tokens, only 4,785 words with
+≥ 5 occurrences; the nearest neighbours of `bác_sĩ` include `srimathi`, a person's
+name from a single article. (3) Averaging dilutes rare proper nouns, which IDF
+amplifies. (4) Averaged-vector cosines are uniformly high (an out-of-scope
+question reached 0.842, above the in-scope median of 0.826), so they cannot act
+as the refusal gate that the architecture is built around.
+
+**H.5. Decision.** Word2Vec is not added to the chatbot; TF-IDF stays. This is a
+verified negative result of the same kind as BM25. Limits of the conclusion: the
+paraphrase set is small (wide confidence intervals), only Lab 05's averaging
+scheme was tried, and only vectors trained on our own corpus. Promising directions
+are embeddings pretrained on a very large Vietnamese corpus, character n-gram
+vectors (fastText), or applying embeddings to **intent classification** — exactly
+the "bridge to Session 6" that Lab 05 sets up, and the project's weakest component
+(61.5%).
